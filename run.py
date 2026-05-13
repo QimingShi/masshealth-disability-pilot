@@ -88,7 +88,20 @@ def main(argv: list[str]) -> int:
 
         print(f"[5/6] Consolidating tree for {listing.code}...")
         root = consolidate(listing.rule_json, leaf_results)
-        print(f"      VERDICT: {form_verdict(root)}")
+        verdict_label = form_verdict(root)
+        print(f"      VERDICT: {verdict_label}")
+
+        # Filename prefix sorts forms by reviewer-attention priority:
+        #   1_MEETS         — needs reviewer verification + signature
+        #   2_INSUFFICIENT  — AI couldn't decide; reviewer must investigate
+        #   3_DOES_NOT_MEET — AI confident the listing is not met; skim/skip
+        # The leading digit guarantees correct alphabetical sort in any file browser.
+        priority_prefix = {
+            "Meets": "1_MEETS",
+            "Insufficient evidence (review chart)": "2_INSUFFICIENT",
+            "Does not meet/equal": "3_DOES_NOT_MEET",
+        }.get(verdict_label, "9_UNKNOWN")
+        file_stem = f"{priority_prefix}_{listing.code}"
 
         print(f"[6/6] Writing form for {listing.code}...")
         content = render_form(
@@ -98,7 +111,7 @@ def main(argv: list[str]) -> int:
             case_id=case.case_id,
             chunks_by_id=chunks_by_id,
         )
-        out_path = out_dir / f"{listing.code}.md"
+        out_path = out_dir / f"{file_stem}.md"
         write_form(out_path, content)
         print(f"      -> {out_path}")
 
@@ -122,7 +135,7 @@ def main(argv: list[str]) -> int:
             chunks_by_id=chunks_by_id,
             source_pdf_path=source_pdf_path,
         )
-        html_path = out_dir / f"{listing.code}.html"
+        html_path = out_dir / f"{file_stem}.html"
         write_form(html_path, html)
         print(f"      -> {html_path}")
 

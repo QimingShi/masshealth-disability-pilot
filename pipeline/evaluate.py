@@ -98,6 +98,15 @@ def evaluate_leaf(
     else:
         response_text = _call_claude(_SYSTEM, user)
         parsed = _parse_response(response_text)
+        # Retry once if the response didn't parse — guards against the
+        # occasional malformed-JSON glitch. Without this, a single bad response
+        # can flip a Meets verdict to Insufficient via the AND consolidation.
+        if not parsed:
+            response_text = _call_claude(
+                _SYSTEM + "\n\nIMPORTANT: Return strictly valid JSON only, no preamble or markdown fence.",
+                user,
+            )
+            parsed = _parse_response(response_text)
 
     # ---- guardrails ----
     debug = [
@@ -152,7 +161,13 @@ def _call_claude(system: str, user: str) -> str:
     client = Anthropic()  # reads ANTHROPIC_API_KEY from env
     msg = client.messages.create(
         model=MODEL,
-        max_tokens=1024,
+        max_tokens=4096,  # leaves with many retrieved chunks can produce
+                          # multi-evidence JSON > 1024 tokens; 1024 truncates
+                          # mid-string and the parse fails.
+        # NOTE: leaving temperature at SDK default (1.0). Setting temperature=0
+        # was observed to occasionally produce overly-strict "insufficient"
+        # verdicts on clear-cut leaves (e.g. 13.18 PRECONDITION on a chart
+        # with pathology-confirmed CRC). Default temperature performs better.
         system=system,
         messages=[{"role": "user", "content": user}],
     )
