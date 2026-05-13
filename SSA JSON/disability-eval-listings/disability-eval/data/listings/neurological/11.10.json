@@ -1,0 +1,32 @@
+{
+  "code": "11.10",
+  "title": "Amyotrophic lateral sclerosis (ALS)",
+  "body_system": "neurological",
+  "version": 1,
+  "summary": "Amyotrophic lateral sclerosis with documentation of clinically appropriate medical history, neurological findings, and EMG findings.",
+  "synonyms": {
+    "ALS":                     ["amyotrophic lateral sclerosis", "Lou Gehrig's disease", "motor neuron disease", "MND"],
+    "EMG":                     ["electromyography", "needle EMG", "nerve conduction study", "NCS"],
+    "fasciculations":          ["muscle twitching", "fasciculations on exam"],
+    "atrophy":                 ["muscle wasting", "muscle atrophy"],
+    "bulbar":                  ["bulbar onset", "dysphagia", "dysarthria", "swallowing difficulty"],
+    "UMN signs":               ["upper motor neuron signs", "hyperreflexia", "Babinski", "spasticity"],
+    "LMN signs":               ["lower motor neuron signs", "weakness", "atrophy", "fasciculations"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Documented diagnosis of ALS by clinical history showing progressive UMN and LMN signs",
+        "keywords": ["ALS", "amyotrophic lateral sclerosis", "Lou Gehrig", "motor neuron disease", "MND", "progressive weakness", "UMN signs", "LMN signs", "fasciculations", "atrophy"]
+      },
+      {
+        "path": "B",
+        "criterion": "EMG/NCS findings consistent with ALS (denervation, fasciculations) when needed for diagnostic confirmation",
+        "keywords": ["EMG", "needle EMG", "denervation", "fibrillations", "fasciculations on EMG", "NCS"]
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "code": "7.08",
+  "title": "Disorders of thrombosis and hemostasis",
+  "body_system": "hematological",
+  "version": 1,
+  "summary": "Thrombotic or coagulation disorder with complications requiring at least three hospitalizations within 12-month period, each lasting ≥48 hours and at least 30 days apart.",
+  "synonyms": {
+    "hemophilia":              ["hemophilia A", "factor VIII deficiency", "hemophilia B", "factor IX deficiency", "Christmas disease"],
+    "von Willebrand":          ["von Willebrand disease", "vWD", "von Willebrand factor"],
+    "thrombosis":              ["DVT", "deep vein thrombosis", "PE", "pulmonary embolism", "VTE", "venous thromboembolism"],
+    "anticoagulation":         ["warfarin", "Coumadin", "heparin", "Lovenox", "enoxaparin", "Eliquis", "apixaban", "Xarelto", "rivaroxaban"],
+    "factor levels":           ["factor VIII level", "factor IX level", "vWF level"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Disorder of thrombosis or hemostasis (hemophilia, von Willebrand disease, recurrent thromboembolism, etc.)",
+       "keywords": ["hemophilia", "von Willebrand disease", "vWD", "thrombotic disorder", "recurrent DVT", "recurrent PE", "factor VIII", "factor IX", "factor levels"]},
+      {"path": "B", "criterion": "Three hospitalizations within 12-month period for complications of the disorder (bleeding episodes, thrombotic events), each lasting ≥48 hours, at least 30 days apart",
+       "keywords": ["three hospitalizations", "bleeding episodes", "thrombotic events", "48 hours", "30 days apart"],
+       "duration_months_required": 12}
+    ]
+  }
+}

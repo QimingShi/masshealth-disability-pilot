@@ -1,0 +1,63 @@
+{
+  "code": "11.04",
+  "title": "Vascular insult to the brain",
+  "body_system": "neurological",
+  "version": 1,
+  "summary": "Stroke (CVA) with persistent sensory or motor aphasia, OR disorganization of motor function in two extremities, OR marked limitation in physical functioning AND in one mental functioning area, persisting at least 3 months post-stroke.",
+  "synonyms": {
+    "stroke":                  ["CVA", "cerebrovascular accident", "cerebral infarct", "ischemic stroke", "hemorrhagic stroke", "intracerebral hemorrhage", "ICH", "subarachnoid hemorrhage", "SAH"],
+    "TIA":                     ["transient ischemic attack", "mini-stroke"],
+    "aphasia":                 ["expressive aphasia", "Broca's aphasia", "receptive aphasia", "Wernicke's aphasia", "global aphasia", "speech impairment"],
+    "hemiparesis":             ["hemiplegia", "weakness on one side", "left-sided weakness", "right-sided weakness", "unilateral weakness"],
+    "ataxia":                  ["incoordination", "unsteady gait", "cerebellar signs"],
+    "MRI brain":               ["MRI of brain", "brain MRI", "DWI", "diffusion-weighted imaging"],
+    "CT head":                 ["head CT", "CT scan of head", "non-contrast CT"],
+    "3 months":                ["three months", "90 days", "3-month post-stroke"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "AND",
+        "path": "A",
+        "criterion": "Sensory or motor aphasia resulting in ineffective speech or communication, persisting ≥3 months post-stroke",
+        "children": [
+          {"path": "A.1", "criterion": "Sensory or motor aphasia resulting in ineffective speech or communication",
+           "keywords": ["aphasia", "expressive aphasia", "Broca's aphasia", "receptive aphasia", "Wernicke's aphasia", "global aphasia", "ineffective speech"]},
+          {"path": "A.2", "criterion": "Persisting at least 3 months post-stroke",
+           "keywords": ["3 months", "post-stroke", "persistent aphasia"],
+           "duration_months_required": 3}
+        ]
+      },
+      {
+        "logic": "AND",
+        "path": "B",
+        "criterion": "Disorganization of motor function in two extremities resulting in extreme limitation in standing, balancing, or use of upper extremities, persisting ≥3 months",
+        "children": [
+          {"path": "B.1", "criterion": "Disorganization of motor function in two extremities (lower extremities, upper extremities, or one of each)",
+           "keywords": ["hemiparesis", "hemiplegia", "motor weakness", "motor function disorganization", "two extremity weakness"]},
+          {"path": "B.2", "criterion": "Resulting in extreme limitation in ability to stand from seated position, balance while standing/walking, or use upper extremities",
+           "keywords": ["cannot stand", "loss of balance", "cannot use arms", "fine motor loss", "ambulation impaired", "extreme limitation"]},
+          {"path": "B.3", "criterion": "Persisting at least 3 months post-stroke",
+           "keywords": ["3 months", "post-stroke", "persistent"],
+           "duration_months_required": 3}
+        ]
+      },
+      {
+        "logic": "AND",
+        "path": "C",
+        "criterion": "Marked limitation in physical functioning AND in one of the four mental functioning areas, persisting ≥3 months post-stroke",
+        "children": [
+          {"path": "C.1", "criterion": "Marked limitation in physical functioning",
+           "keywords": ["marked physical limitation", "limited mobility", "decreased ADLs"]},
+          {"path": "C.2", "criterion": "Marked limitation in one of: understanding/remembering/applying information, interacting with others, concentrating/persisting/maintaining pace, or adapting/managing oneself",
+           "keywords": ["marked cognitive limitation", "post-stroke depression", "executive dysfunction", "marked limitation mental functioning"]},
+          {"path": "C.3", "criterion": "Persisting at least 3 months post-stroke",
+           "keywords": ["3 months", "post-stroke"],
+           "duration_months_required": 3}
+        ]
+      }
+    ]
+  }
+}

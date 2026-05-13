@@ -1,0 +1,220 @@
+{
+  "code": "12.04",
+  "title": "Depressive, bipolar and related disorders",
+  "body_system": "mental",
+  "version": 1,
+  "summary": "Depressive disorder OR bipolar disorder meeting paragraph A symptom criteria, AND either paragraph B (extreme/marked limitation in mental functioning areas) OR paragraph C (medically documented disorder ≥2 years with ongoing treatment and minimal capacity to adapt to changes).",
+  "synonyms": {
+    "depression":              ["major depressive disorder", "MDD", "depressive disorder", "major depression", "clinical depression", "low mood", "depressed mood"],
+    "bipolar disorder":        ["bipolar", "BPD", "bipolar I", "bipolar II", "manic depression", "manic-depressive"],
+    "depressed mood":          ["sad", "low mood", "feeling down", "depressed", "tearful", "hopeless"],
+    "anhedonia":               ["loss of interest", "loss of pleasure", "no interest", "doesn't enjoy", "lack of enjoyment"],
+    "appetite change":         ["decreased appetite", "increased appetite", "weight loss", "weight gain", "not eating"],
+    "sleep disturbance":       ["insomnia", "hypersomnia", "trouble sleeping", "early morning awakening", "sleeping too much", "sleeping too little"],
+    "psychomotor":             ["psychomotor agitation", "psychomotor retardation", "slowed movement", "restlessness"],
+    "fatigue":                 ["tired", "low energy", "exhausted", "anergia", "decreased energy"],
+    "guilt":                   ["feelings of guilt", "self-blame", "worthlessness", "low self-worth", "feeling worthless"],
+    "concentration":           ["difficulty concentrating", "poor concentration", "trouble focusing", "decreased focus", "indecisiveness"],
+    "suicidal ideation":       ["SI", "suicidal thoughts", "thoughts of death", "thoughts of suicide", "passive SI", "active SI"],
+    "manic":                   ["mania", "manic episode", "hypomania", "elevated mood", "expansive mood"],
+    "pressured speech":        ["fast speech", "rapid speech", "hyperverbal"],
+    "flight of ideas":         ["racing thoughts", "thought racing"],
+    "grandiosity":             ["inflated self-esteem", "grandiose"],
+    "psychiatrist":            ["psych", "MD", "DO", "behavioral health", "mental health provider"],
+    "therapist":               ["therapy", "counselor", "LCSW", "psychologist", "PsyD"],
+    "medication":              ["antidepressant", "SSRI", "SNRI", "Prozac", "Zoloft", "Lexapro", "Cymbalta", "mood stabilizer", "lithium", "Depakote"],
+    "marked limitation":       ["marked", "moderately severe", "significant limitation"],
+    "extreme limitation":      ["extreme", "severe limitation", "unable to function"],
+    "ADL":                     ["activities of daily living", "self-care", "personal care", "hygiene"],
+    "2 years":                 ["two years", "24 months", "longstanding", "chronic mental illness"],
+    "psychosocial support":    ["case manager", "ACT team", "supportive housing", "group home", "day treatment"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "OR",
+        "path": "A",
+        "criterion": "Medical documentation of depressive disorder OR bipolar disorder",
+        "children": [
+          {
+            "logic": "AND",
+            "path": "A.depressive",
+            "criterion": "Depressive disorder: medically documented presence of FIVE or more characteristic symptoms",
+            "children": [
+              {
+                "path": "A.depressive.required",
+                "criterion": "Depressive disorder diagnosis present in medical record (psychiatry or PCP note)",
+                "keywords": ["depression", "MDD", "major depressive disorder", "depressive disorder diagnosis"]
+              },
+              {
+                "logic": "OR",
+                "path": "A.depressive.symptoms",
+                "criterion": "FIVE or more of the following depressive symptoms",
+                "children": [
+                  {
+                    "path": "A.depressive.symptoms.depressed_mood",
+                    "criterion": "Depressed mood",
+                    "keywords": ["depressed mood", "sad", "low mood", "feeling down", "tearful"]
+                  },
+                  {
+                    "path": "A.depressive.symptoms.anhedonia",
+                    "criterion": "Diminished interest in almost all activities (anhedonia)",
+                    "keywords": ["anhedonia", "loss of interest", "loss of pleasure", "no interest"]
+                  },
+                  {
+                    "path": "A.depressive.symptoms.appetite",
+                    "criterion": "Appetite disturbance with change in weight",
+                    "keywords": ["appetite change", "weight loss", "weight gain", "decreased appetite", "not eating"]
+                  },
+                  {
+                    "path": "A.depressive.symptoms.sleep",
+                    "criterion": "Sleep disturbance (insomnia or hypersomnia)",
+                    "keywords": ["insomnia", "hypersomnia", "trouble sleeping", "early morning awakening", "sleeping too much"]
+                  },
+                  {
+                    "path": "A.depressive.symptoms.psychomotor",
+                    "criterion": "Observable psychomotor agitation or retardation",
+                    "keywords": ["psychomotor agitation", "psychomotor retardation", "slowed", "restless", "fidgety"]
+                  },
+                  {
+                    "path": "A.depressive.symptoms.energy",
+                    "criterion": "Decreased energy or fatigue",
+                    "keywords": ["fatigue", "low energy", "tired", "exhausted", "anergia"]
+                  },
+                  {
+                    "path": "A.depressive.symptoms.guilt",
+                    "criterion": "Feelings of guilt or worthlessness",
+                    "keywords": ["guilt", "worthlessness", "self-blame", "feels worthless"]
+                  },
+                  {
+                    "path": "A.depressive.symptoms.concentration",
+                    "criterion": "Difficulty concentrating or thinking",
+                    "keywords": ["difficulty concentrating", "poor concentration", "indecisiveness", "trouble focusing"]
+                  },
+                  {
+                    "path": "A.depressive.symptoms.suicidal",
+                    "criterion": "Thoughts of death or suicide",
+                    "keywords": ["suicidal ideation", "SI", "thoughts of death", "suicidal thoughts", "passive SI"]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "logic": "AND",
+            "path": "A.bipolar",
+            "criterion": "Bipolar disorder: medically documented presence of THREE or more characteristic symptoms",
+            "children": [
+              {
+                "path": "A.bipolar.required",
+                "criterion": "Bipolar disorder diagnosis present in medical record",
+                "keywords": ["bipolar disorder", "bipolar I", "bipolar II", "manic depression", "bipolar diagnosis"]
+              },
+              {
+                "logic": "OR",
+                "path": "A.bipolar.symptoms",
+                "criterion": "THREE or more of the following manic/hypomanic symptoms",
+                "children": [
+                  {
+                    "path": "A.bipolar.symptoms.pressured_speech",
+                    "criterion": "Pressured speech",
+                    "keywords": ["pressured speech", "rapid speech", "hyperverbal", "fast speech"]
+                  },
+                  {
+                    "path": "A.bipolar.symptoms.flight_of_ideas",
+                    "criterion": "Flight of ideas / racing thoughts",
+                    "keywords": ["flight of ideas", "racing thoughts", "thought racing"]
+                  },
+                  {
+                    "path": "A.bipolar.symptoms.grandiosity",
+                    "criterion": "Inflated self-esteem / grandiosity",
+                    "keywords": ["grandiosity", "inflated self-esteem", "grandiose"]
+                  },
+                  {
+                    "path": "A.bipolar.symptoms.decreased_sleep",
+                    "criterion": "Decreased need for sleep",
+                    "keywords": ["decreased need for sleep", "going without sleep", "not needing sleep"]
+                  },
+                  {
+                    "path": "A.bipolar.symptoms.distractibility",
+                    "criterion": "Distractibility",
+                    "keywords": ["distractibility", "easily distracted", "poor attention"]
+                  },
+                  {
+                    "path": "A.bipolar.symptoms.goal_directed",
+                    "criterion": "Involvement in activities with high probability of painful consequences (impulsivity)",
+                    "keywords": ["impulsivity", "risky behavior", "spending sprees", "hypersexuality"]
+                  },
+                  {
+                    "path": "A.bipolar.symptoms.psychomotor_agitation",
+                    "criterion": "Increased goal-directed activity or psychomotor agitation",
+                    "keywords": ["increased activity", "psychomotor agitation", "goal-directed activity"]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "logic": "OR",
+        "path": "B_OR_C",
+        "criterion": "Paragraph B (functional limitations) OR Paragraph C (serious and persistent)",
+        "children": [
+          {
+            "logic": "OR",
+            "path": "B",
+            "criterion": "Extreme limitation of one, OR marked limitation of two, of the four areas of mental functioning",
+            "children": [
+              {
+                "path": "B.1",
+                "criterion": "Marked or extreme limitation in understanding, remembering, or applying information",
+                "keywords": ["understanding instructions", "remembering instructions", "memory deficit", "cognitive limitation", "MMSE", "MoCA", "neuropsych testing"]
+              },
+              {
+                "path": "B.2",
+                "criterion": "Marked or extreme limitation in interacting with others",
+                "keywords": ["social interaction", "social withdrawal", "isolation", "interpersonal difficulties", "GAF", "social functioning"]
+              },
+              {
+                "path": "B.3",
+                "criterion": "Marked or extreme limitation in concentrating, persisting, or maintaining pace",
+                "keywords": ["concentration", "persistence", "pace", "cannot complete tasks", "off task", "attention deficit"]
+              },
+              {
+                "path": "B.4",
+                "criterion": "Marked or extreme limitation in adapting or managing oneself",
+                "keywords": ["self-care", "ADLs", "managing finances", "household management", "personal hygiene", "self-management", "regulating emotions"]
+              }
+            ]
+          },
+          {
+            "logic": "AND",
+            "path": "C",
+            "criterion": "Serious and persistent: medically documented mental disorder ≥2 years with ongoing treatment AND minimal capacity to adapt",
+            "children": [
+              {
+                "path": "C.duration",
+                "criterion": "Medically documented history of the mental disorder over a period of at least 2 years",
+                "keywords": ["2 years", "24 months", "longstanding mental illness", "chronic depression", "chronic bipolar", "history of"],
+                "duration_months_required": 24
+              },
+              {
+                "path": "C.1",
+                "criterion": "Reliance on medical treatment, mental health therapy, psychosocial supports, or highly structured setting on ongoing basis to diminish symptoms",
+                "keywords": ["psychiatric medication", "psychotherapy", "case manager", "ACT team", "day treatment", "supportive housing", "group home", "ongoing treatment"]
+              },
+              {
+                "path": "C.2",
+                "criterion": "Minimal capacity to adapt to changes in environment or to demands not already part of daily life",
+                "keywords": ["minimal adaptation", "cannot adapt", "decompensation with stress", "rigid", "structured environment needed"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

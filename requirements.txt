@@ -1,0 +1,8 @@
+# Pipeline runtime
+anthropic>=0.40              # Claude API client (only required when MOCK_EVAL=0)
+sentence-transformers>=2.2   # Local embedding model (all-MiniLM-L6-v2)
+numpy>=1.24                  # Vector math
+pymupdf>=1.23                # PDF rendering / survey utilities
+
+# Optional: only needed if you implement the Textract ingest path
+# boto3>=1.28

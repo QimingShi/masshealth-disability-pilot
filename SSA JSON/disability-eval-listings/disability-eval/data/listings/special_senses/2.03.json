@@ -1,0 +1,25 @@
+{
+  "code": "2.03",
+  "title": "Contraction of the visual field in the better eye",
+  "body_system": "special_senses",
+  "version": 1,
+  "summary": "Contraction of visual field in the better eye meeting one of: widest diameter ≤20°, mean deviation worse than -22 dB, or visual field efficiency ≤20%.",
+  "synonyms": {
+    "visual field":            ["peripheral vision", "VF", "visual field test"],
+    "perimetry":               ["automated perimetry", "Humphrey field analyzer", "HFA", "Goldmann perimetry", "kinetic perimetry"],
+    "MD":                      ["mean deviation", "MD on HFA"],
+    "tunnel vision":           ["constricted visual field", "concentric contraction"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Widest diameter of visual field in the better eye, subtending an angle around the point of fixation, no greater than 20°",
+       "keywords": ["visual field 20 degrees", "tunnel vision", "constricted visual field", "Goldmann perimetry", "III-4-e isopter"]},
+      {"path": "B", "criterion": "Mean deviation (MD) of -22 dB or worse in the better eye on automated static threshold perimetry (HFA)",
+       "keywords": ["mean deviation", "MD -22", "Humphrey field analyzer", "HFA 30-2", "automated perimetry"]},
+      {"path": "C", "criterion": "Visual field efficiency of 20% or less in the better eye",
+       "keywords": ["visual field efficiency", "VFE 20%"]}
+    ]
+  }
+}

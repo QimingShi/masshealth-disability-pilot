@@ -1,0 +1,30 @@
+{
+  "code": "7.10",
+  "title": "Disorders of bone marrow failure",
+  "body_system": "hematological",
+  "version": 1,
+  "summary": "Bone marrow failure (aplastic anemia, myelodysplastic syndrome, etc.) with severe infection or bleeding requiring hospitalizations, OR transfusion-dependence, OR severe cytopenias.",
+  "synonyms": {
+    "aplastic anemia":         ["aplasia", "AA"],
+    "myelodysplastic syndrome": ["MDS", "preleukemia"],
+    "myelofibrosis":           ["primary myelofibrosis", "PMF"],
+    "pancytopenia":            ["low blood counts"],
+    "neutropenia":             ["low ANC", "low neutrophils", "absolute neutrophil count low"],
+    "thrombocytopenia":        ["low platelets", "low PLT"],
+    "anemia":                  ["low hemoglobin", "Hgb low"],
+    "bone marrow biopsy":      ["BMBx", "BM biopsy", "bone marrow aspirate"],
+    "transfusion":             ["PRBC", "packed red blood cells", "platelet transfusion"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Hospitalization for complications (severe infection or hemorrhage) requiring ≥48-hour hospitalization, occurring at least three times within 12-month period",
+       "keywords": ["bone marrow failure", "aplastic anemia", "MDS", "severe infection", "neutropenic fever", "hemorrhage", "three hospitalizations", "48 hours"],
+       "duration_months_required": 12},
+      {"path": "B", "criterion": "Transfusion-dependent severe anemia (Hgb ≤7.0) on at least 3 occasions in 12 months, OR thrombocytopenia (PLT ≤30,000) on at least 3 evaluations 30+ days apart in 12 months",
+       "keywords": ["transfusion-dependent", "Hgb 7", "platelets 30,000", "PLT 30K", "severe cytopenia", "30 days apart"],
+       "duration_months_required": 12}
+    ]
+  }
+}

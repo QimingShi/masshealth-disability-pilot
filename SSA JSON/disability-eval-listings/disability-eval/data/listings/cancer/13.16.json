@@ -1,0 +1,23 @@
+{
+  "code": "13.16",
+  "title": "Esophagus or stomach cancer",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Cancer of the esophagus or stomach. Esophageal cancer at any stage qualifies. Gastric cancer with inoperable/unresectable disease, recurrence, or metastases qualifies.",
+  "synonyms": {
+    "esophageal cancer":       ["esophageal carcinoma", "esophageal adenocarcinoma", "esophageal squamous cell carcinoma"],
+    "stomach cancer":          ["gastric cancer", "gastric carcinoma", "gastric adenocarcinoma"],
+    "GE junction":             ["gastroesophageal junction", "GEJ"],
+    "biopsy":                  ["EGD with biopsy", "endoscopic biopsy"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Carcinoma or sarcoma of the esophagus, at any stage",
+       "keywords": ["esophageal cancer", "esophageal carcinoma", "esophageal adenocarcinoma", "esophageal squamous cell carcinoma", "GEJ cancer"]},
+      {"path": "B", "criterion": "Stomach cancer that is inoperable, unresectable, extending to surrounding structures, recurrent, OR with distant metastases",
+       "keywords": ["gastric cancer", "stomach cancer", "gastric carcinoma", "inoperable", "unresectable", "recurrent gastric cancer", "metastatic gastric cancer"]}
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "code": "13.26",
+  "title": "Penis — carcinoma with metastases beyond the regional lymph nodes",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Penile carcinoma with metastases beyond the regional lymph nodes (distant metastases).",
+  "synonyms": {
+    "penile cancer":           ["penile carcinoma", "carcinoma of penis", "squamous cell carcinoma of penis", "penile SCC"],
+    "metastasis":              ["distant metastases", "M1 disease", "regional lymph nodes"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Pathology-confirmed penile carcinoma",
+       "keywords": ["penile cancer", "penile carcinoma", "squamous cell carcinoma of penis", "penile SCC", "biopsy"]},
+      {"path": "B", "criterion": "Metastases beyond the regional (inguinal) lymph nodes",
+       "keywords": ["distant metastases", "M1 disease", "metastases beyond regional nodes", "para-aortic nodes"]}
+    ]
+  }
+}

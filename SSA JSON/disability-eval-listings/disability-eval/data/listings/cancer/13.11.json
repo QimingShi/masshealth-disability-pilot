@@ -1,0 +1,34 @@
+{
+  "code": "13.11",
+  "title": "Skeletal system — sarcoma or carcinoma",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Skeletal cancer (osteosarcoma, Ewing sarcoma, chondrosarcoma) with inoperable/unresectable disease, recurrence, OR distant metastases.",
+  "synonyms": {
+    "osteosarcoma":            ["osteogenic sarcoma", "bone cancer"],
+    "Ewing sarcoma":           ["Ewing's sarcoma", "PNET"],
+    "chondrosarcoma":          ["cartilaginous sarcoma"],
+    "biopsy":                  ["bone biopsy", "core biopsy"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "PRECONDITION", "criterion": "Pathology-confirmed skeletal cancer",
+       "keywords": ["osteosarcoma", "Ewing sarcoma", "chondrosarcoma", "skeletal sarcoma", "bone biopsy"]},
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Inoperable, recurrent, or metastatic disease",
+        "children": [
+          {"path": "A", "criterion": "Inoperable or unresectable disease",
+           "keywords": ["inoperable", "unresectable"]},
+          {"path": "B", "criterion": "Recurrent cancer (except local recurrence that remits with anticancer therapy)",
+           "keywords": ["recurrent disease", "tumor recurrence"]},
+          {"path": "C", "criterion": "Distant metastases",
+           "keywords": ["distant metastases", "M1 disease", "lung metastases"]}
+        ]
+      }
+    ]
+  }
+}

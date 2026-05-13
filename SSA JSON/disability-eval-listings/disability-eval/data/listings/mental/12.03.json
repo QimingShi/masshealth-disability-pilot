@@ -1,0 +1,85 @@
+{
+  "code": "12.03",
+  "title": "Schizophrenia spectrum and other psychotic disorders",
+  "body_system": "mental",
+  "version": 1,
+  "summary": "Schizophrenia, schizoaffective, delusional disorder, or psychotic disorder due to medical condition meeting paragraph A symptom criteria, AND paragraph B (functional limitations) OR paragraph C (serious and persistent ≥2 years).",
+  "synonyms": {
+    "schizophrenia":           ["schizophrenia spectrum", "schizoaffective disorder", "schizophreniform"],
+    "psychosis":               ["psychotic disorder", "psychotic", "psychotic features"],
+    "delusion":                ["delusions", "delusional thinking", "paranoid delusions", "grandiose delusions", "fixed false beliefs"],
+    "hallucination":           ["hallucinations", "auditory hallucinations", "AH", "visual hallucinations", "VH", "command hallucinations", "voices"],
+    "disorganized speech":     ["thought disorder", "loose associations", "tangentiality", "circumstantiality", "word salad"],
+    "disorganized behavior":   ["bizarre behavior", "disorganized", "catatonia", "catatonic"],
+    "negative symptoms":       ["flat affect", "blunted affect", "alogia", "avolition", "anhedonia", "social withdrawal"],
+    "antipsychotic":           ["neuroleptic", "Risperdal", "risperidone", "Zyprexa", "olanzapine", "Abilify", "aripiprazole", "Haldol", "haloperidol", "clozapine"],
+    "psychiatrist":            ["psych", "behavioral health", "MD"],
+    "marked limitation":       ["marked", "moderately severe"],
+    "extreme limitation":      ["extreme", "severe limitation"],
+    "2 years":                 ["two years", "24 months", "longstanding", "chronic"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "OR",
+        "path": "A",
+        "criterion": "Medical documentation of one or more of the following: delusions/hallucinations, disorganized thinking, or grossly disorganized/catatonic behavior",
+        "children": [
+          {
+            "path": "A.1",
+            "criterion": "Delusions or hallucinations",
+            "keywords": ["delusions", "hallucinations", "auditory hallucinations", "visual hallucinations", "voices", "paranoid delusions"]
+          },
+          {
+            "path": "A.2",
+            "criterion": "Disorganized thinking (speech)",
+            "keywords": ["thought disorder", "disorganized speech", "loose associations", "tangentiality", "word salad"]
+          },
+          {
+            "path": "A.3",
+            "criterion": "Grossly disorganized behavior or catatonia",
+            "keywords": ["disorganized behavior", "catatonia", "catatonic", "bizarre behavior"]
+          }
+        ]
+      },
+      {
+        "logic": "OR",
+        "path": "B_OR_C",
+        "criterion": "Paragraph B (functional limitations) OR Paragraph C (serious and persistent)",
+        "children": [
+          {
+            "logic": "OR",
+            "path": "B",
+            "criterion": "Extreme limitation of one, OR marked limitation of two, of the four functioning areas",
+            "children": [
+              {"path": "B.1", "criterion": "Marked/extreme limitation: understand, remember, apply information",
+               "keywords": ["memory deficit", "cognitive impairment", "neuropsych testing"]},
+              {"path": "B.2", "criterion": "Marked/extreme limitation: interact with others",
+               "keywords": ["social isolation", "social withdrawal", "interpersonal difficulties", "paranoia"]},
+              {"path": "B.3", "criterion": "Marked/extreme limitation: concentrate, persist, maintain pace",
+               "keywords": ["concentration", "persistence", "pace", "off task"]},
+              {"path": "B.4", "criterion": "Marked/extreme limitation: adapt, manage oneself",
+               "keywords": ["self-care", "ADLs", "personal hygiene", "self-management"]}
+            ]
+          },
+          {
+            "logic": "AND",
+            "path": "C",
+            "criterion": "Serious and persistent ≥2 years with ongoing treatment AND minimal capacity to adapt",
+            "children": [
+              {"path": "C.duration", "criterion": "Medically documented psychotic disorder over period of ≥2 years",
+               "keywords": ["2 years", "24 months", "longstanding", "chronic schizophrenia"],
+               "duration_months_required": 24},
+              {"path": "C.1", "criterion": "Reliance on ongoing treatment, therapy, psychosocial supports, or highly structured setting",
+               "keywords": ["antipsychotic medication", "ACT team", "supportive housing", "case manager", "ongoing treatment"]},
+              {"path": "C.2", "criterion": "Minimal capacity to adapt to changes in environment",
+               "keywords": ["minimal adaptation", "decompensation", "cannot adapt"]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

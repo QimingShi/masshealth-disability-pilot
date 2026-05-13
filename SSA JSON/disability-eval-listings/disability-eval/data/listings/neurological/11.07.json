@@ -1,0 +1,46 @@
+{
+  "code": "11.07",
+  "title": "Cerebral palsy",
+  "body_system": "neurological",
+  "version": 1,
+  "summary": "Cerebral palsy with disorganization of motor function in two extremities, OR significant interference with communication, OR significant emotional/behavioral disorder.",
+  "synonyms": {
+    "cerebral palsy":          ["CP", "spastic CP", "spastic diplegia", "spastic quadriplegia", "spastic hemiplegia", "athetoid CP", "ataxic CP"],
+    "spasticity":              ["spastic", "increased tone", "hypertonia", "stiff muscles"],
+    "communication impairment": ["dysarthria", "speech impairment", "ineffective speech", "communication deficit"],
+    "developmental":            ["since childhood", "developmental delay", "lifelong"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "PRECONDITION",
+        "criterion": "Cerebral palsy diagnosis (typically present from infancy/childhood)",
+        "keywords": ["cerebral palsy", "CP", "spastic CP", "developmental disability", "lifelong condition"]
+      },
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Motor disorganization OR communication interference OR emotional/behavioral disorder",
+        "children": [
+          {
+            "path": "A",
+            "criterion": "Disorganization of motor function in two extremities resulting in extreme limitation in standing, balancing, or use of upper extremities",
+            "keywords": ["spastic diplegia", "spastic quadriplegia", "spastic hemiplegia", "two extremity weakness", "extreme limitation"]
+          },
+          {
+            "path": "B",
+            "criterion": "Significant interference in communication due to speech, hearing, or visual deficit",
+            "keywords": ["dysarthria", "ineffective speech", "communication deficit", "speech impairment"]
+          },
+          {
+            "path": "C",
+            "criterion": "Significant emotional disturbance or significant intellectual disability evidenced by marked limitation in mental functioning",
+            "keywords": ["intellectual disability", "behavioral disorder", "emotional disturbance", "marked cognitive limitation"]
+          }
+        ]
+      }
+    ]
+  }
+}

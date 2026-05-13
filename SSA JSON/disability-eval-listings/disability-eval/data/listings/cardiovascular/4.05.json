@@ -1,0 +1,41 @@
+{
+  "code": "4.05",
+  "title": "Recurrent arrhythmias",
+  "body_system": "cardiovascular",
+  "version": 1,
+  "summary": "Recurrent arrhythmias (not due to reversible cause) with uncontrolled syncope or near-syncope, despite prescribed treatment, with documented arrhythmia coincident with symptoms by ECG or Holter monitor.",
+  "synonyms": {
+    "recurrent arrhythmias":   ["arrhythmia", "irregular heartbeat", "dysrhythmia", "arrhythmias"],
+    "syncope":                 ["passing out", "fainting", "loss of consciousness", "LOC", "fainted"],
+    "near syncope":            ["near-syncope", "presyncope", "lightheadedness", "almost passed out"],
+    "ventricular tachycardia": ["VT", "v-tach", "vtach", "sustained VT"],
+    "ventricular fibrillation": ["VF", "v-fib", "vfib"],
+    "supraventricular tachycardia": ["SVT", "atrial tachycardia", "AVNRT"],
+    "atrial fibrillation":     ["A-fib", "AFib", "atrial fib", "AF with RVR"],
+    "ECG":                     ["EKG", "electrocardiogram", "12-lead ECG"],
+    "Holter":                  ["Holter monitor", "ambulatory ECG", "24-hour Holter", "event monitor", "loop recorder"],
+    "ICD":                     ["implantable cardioverter defibrillator", "defibrillator", "AICD"],
+    "pacemaker":               ["PPM", "permanent pacemaker", "cardiac pacemaker"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Recurrent arrhythmias not related to reversible cause (electrolyte abnormality, thyroid dysfunction, drug effect)",
+        "keywords": ["recurrent arrhythmia", "VT", "VF", "AF with RVR", "SVT", "not reversible cause"]
+      },
+      {
+        "path": "B",
+        "criterion": "Uncontrolled recurrent episodes of syncope or near-syncope despite adherence to prescribed treatment",
+        "keywords": ["syncope", "near-syncope", "presyncope", "fainting", "passing out", "despite treatment", "recurrent episodes"]
+      },
+      {
+        "path": "C",
+        "criterion": "Documentation by ECG, ambulatory monitoring (Holter), or other appropriate testing showing arrhythmia coincident with the syncope or near-syncope",
+        "keywords": ["ECG", "EKG", "Holter monitor", "event monitor", "loop recorder", "arrhythmia documented", "coincident with symptoms"]
+      }
+    ]
+  }
+}

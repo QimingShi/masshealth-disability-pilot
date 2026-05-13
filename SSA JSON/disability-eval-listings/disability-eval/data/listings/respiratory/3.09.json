@@ -1,0 +1,20 @@
+{
+  "code": "3.09",
+  "title": "Chronic pulmonary hypertension due to any cause",
+  "body_system": "respiratory",
+  "version": 1,
+  "summary": "Chronic pulmonary hypertension confirmed by right heart catheterization showing mean pulmonary artery pressure ≥40 mm Hg.",
+  "synonyms": {
+    "pulmonary hypertension":  ["pulmonary HTN", "PH", "PAH", "pulmonary arterial hypertension"],
+    "right heart catheterization": ["RHC", "right heart cath", "Swan-Ganz", "pulmonary artery catheterization"],
+    "mean pulmonary artery pressure": ["mPAP", "mean PA pressure"],
+    "echocardiogram":          ["echo", "TTE", "transthoracic echocardiogram", "RVSP"],
+    "shortness of breath":     ["SOB", "DOE", "dyspnea on exertion", "dyspnea"],
+    "syncope":                 ["passing out", "fainting", "loss of consciousness"]
+  },
+  "rule_json": {
+    "path": "ROOT",
+    "criterion": "Chronic pulmonary hypertension confirmed by right heart catheterization showing mean pulmonary artery pressure ≥40 mm Hg",
+    "keywords": ["right heart catheterization", "RHC", "mean pulmonary artery pressure", "mPAP", "pulmonary hypertension", "40 mm Hg", "pulmonary HTN"]
+  }
+}

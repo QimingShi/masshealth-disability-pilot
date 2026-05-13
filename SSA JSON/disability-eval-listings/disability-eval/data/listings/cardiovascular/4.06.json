@@ -1,0 +1,50 @@
+{
+  "code": "4.06",
+  "title": "Symptomatic congenital heart disease",
+  "body_system": "cardiovascular",
+  "version": 1,
+  "summary": "Symptomatic congenital heart disease with one of: cyanosis at rest, intermittent right-to-left shunting with hypoxemia, or secondary pulmonary vascular disease.",
+  "synonyms": {
+    "congenital heart disease": ["CHD", "congenital cardiac defect", "congenital heart defect"],
+    "cyanosis":                ["central cyanosis", "blue lips", "bluish skin"],
+    "right-to-left shunt":     ["R-to-L shunt", "intracardiac shunt", "Eisenmenger"],
+    "Eisenmenger":             ["Eisenmenger syndrome", "Eisenmenger physiology"],
+    "tetralogy of Fallot":     ["TOF", "Fallot's tetralogy"],
+    "ABG":                     ["arterial blood gas", "PaO2", "blood gas"],
+    "hematocrit":              ["Hct", "elevated hematocrit", "polycythemia"],
+    "echocardiogram":          ["echo", "TTE", "TEE", "transesophageal echo"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Documented symptomatic congenital heart disease",
+        "keywords": ["congenital heart disease", "CHD", "tetralogy of Fallot", "transposition", "single ventricle", "Eisenmenger", "echocardiogram"]
+      },
+      {
+        "logic": "OR",
+        "path": "B",
+        "criterion": "One of: cyanosis at rest, hypoxemic spells, or pulmonary vascular disease",
+        "children": [
+          {
+            "path": "B.1",
+            "criterion": "Cyanosis at rest with hematocrit ≥55% on two evaluations 3+ months apart in a 12-month period, or arterial PaO2 ≤60 mm Hg at altitude <3000 feet",
+            "keywords": ["central cyanosis", "hematocrit 55", "polycythemia", "PaO2 60", "ABG", "blood gas at rest"]
+          },
+          {
+            "path": "B.2",
+            "criterion": "Intermittent right-to-left shunting with hypoxemia at rest or with exercise",
+            "keywords": ["right-to-left shunt", "intermittent shunting", "exercise hypoxemia", "echocardiogram bubble study"]
+          },
+          {
+            "path": "B.3",
+            "criterion": "Secondary pulmonary vascular disease with mean pulmonary artery pressure ≥40 mm Hg",
+            "keywords": ["pulmonary hypertension", "mPAP 40", "right heart catheterization", "Eisenmenger physiology"]
+          }
+        ]
+      }
+    ]
+  }
+}

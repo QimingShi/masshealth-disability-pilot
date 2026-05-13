@@ -1,0 +1,33 @@
+{
+  "code": "3.14",
+  "title": "Respiratory failure",
+  "body_system": "respiratory",
+  "version": 1,
+  "summary": "Respiratory failure due to chronic respiratory disorder requiring invasive mechanical ventilation or noninvasive ventilation with BiPAP for ≥48 consecutive hours, twice within 12 months with at least 30 days between events.",
+  "synonyms": {
+    "respiratory failure":     ["acute respiratory failure", "type I respiratory failure", "type II respiratory failure", "hypercapnic respiratory failure", "hypoxic respiratory failure", "ARF"],
+    "mechanical ventilation":  ["intubation", "ventilator", "vent", "endotracheal intubation", "ET tube"],
+    "BiPAP":                   ["bilevel positive airway pressure", "noninvasive ventilation", "NIV", "NIPPV"],
+    "ICU":                     ["intensive care unit", "critical care"],
+    "ABG":                     ["arterial blood gas", "blood gas", "PaCO2 elevated", "respiratory acidosis"],
+    "hospitalization":         ["hospital admission", "inpatient"],
+    "12 months":               ["1 year", "one year", "12-month period"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Respiratory failure due to chronic respiratory disorder",
+        "keywords": ["respiratory failure", "chronic respiratory disorder", "COPD", "ILD", "neuromuscular respiratory failure"]
+      },
+      {
+        "path": "B",
+        "criterion": "Two episodes of respiratory failure requiring invasive mechanical ventilation or BiPAP for ≥48 consecutive hours, occurring within a 12-month period with at least 30 days between events",
+        "keywords": ["two episodes", "mechanical ventilation", "intubation", "BiPAP", "NIV", "48 hours", "ICU admission", "30 days apart"],
+        "duration_months_required": 12
+      }
+    ]
+  }
+}

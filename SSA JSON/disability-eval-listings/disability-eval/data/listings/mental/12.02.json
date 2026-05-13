@@ -1,0 +1,130 @@
+{
+  "code": "12.02",
+  "title": "Neurocognitive disorders",
+  "body_system": "mental",
+  "version": 1,
+  "summary": "Neurocognitive disorder (dementia, mild cognitive impairment, neurocognitive impairment from Alzheimer's, vascular, TBI, or substance-induced) with documented cognitive decline AND paragraph B (functional limitations) OR paragraph C (serious and persistent ≥2 years).",
+  "synonyms": {
+    "neurocognitive disorder": ["NCD", "cognitive disorder", "cognitive impairment", "MCI", "mild cognitive impairment"],
+    "dementia":                ["Alzheimer's", "Alzheimer disease", "AD", "vascular dementia", "Lewy body dementia", "frontotemporal dementia", "FTD"],
+    "memory impairment":       ["short-term memory loss", "memory deficit", "amnesia", "forgetfulness", "memory lapses"],
+    "executive function":      ["executive dysfunction", "planning deficit", "decision-making impairment", "cognitive control"],
+    "visuospatial":            ["visuospatial impairment", "spatial disorientation", "getting lost"],
+    "language":                ["aphasia", "word-finding difficulty", "expressive aphasia", "receptive aphasia"],
+    "MMSE":                    ["Mini-Mental State Examination", "MMSE score"],
+    "MoCA":                    ["Montreal Cognitive Assessment", "MoCA score"],
+    "neuropsych":              ["neuropsychological testing", "neuropsych eval", "cognitive testing"],
+    "imaging":                 ["MRI brain", "CT head", "PET scan", "amyloid PET", "tau PET", "neuroimaging"],
+    "TBI":                     ["traumatic brain injury", "head injury", "concussion", "post-concussive"],
+    "marked limitation":       ["marked", "moderately severe", "significant limitation"],
+    "extreme limitation":      ["extreme", "severe limitation"],
+    "2 years":                 ["two years", "24 months", "longstanding", "chronic"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "AND",
+        "path": "A",
+        "criterion": "Medical documentation of neurocognitive disorder with significant cognitive decline in one or more areas",
+        "children": [
+          {
+            "path": "A.diagnosis",
+            "criterion": "Documented diagnosis of neurocognitive disorder (Alzheimer's, vascular dementia, TBI sequelae, etc.)",
+            "keywords": ["dementia", "Alzheimer's", "neurocognitive disorder", "MCI", "TBI", "vascular dementia", "Lewy body", "FTD"]
+          },
+          {
+            "logic": "OR",
+            "path": "A.decline",
+            "criterion": "Significant cognitive decline in one or more areas",
+            "children": [
+              {
+                "path": "A.decline.1",
+                "criterion": "Disturbance in complex attention, executive function, or processing speed",
+                "keywords": ["executive dysfunction", "complex attention", "processing speed", "cognitive slowing"]
+              },
+              {
+                "path": "A.decline.2",
+                "criterion": "Memory and learning impairment",
+                "keywords": ["memory impairment", "memory loss", "amnesia", "short-term memory loss", "delayed recall"]
+              },
+              {
+                "path": "A.decline.3",
+                "criterion": "Language impairment (expressive or receptive)",
+                "keywords": ["aphasia", "word-finding difficulty", "expressive aphasia", "receptive aphasia", "language impairment"]
+              },
+              {
+                "path": "A.decline.4",
+                "criterion": "Visuospatial impairment",
+                "keywords": ["visuospatial impairment", "spatial disorientation", "getting lost", "visual-spatial deficits"]
+              },
+              {
+                "path": "A.decline.5",
+                "criterion": "Disturbances in social cognition (recognizing emotions, behavioral inhibition)",
+                "keywords": ["social cognition", "behavioral changes", "personality change", "disinhibition"]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "logic": "OR",
+        "path": "B_OR_C",
+        "criterion": "Paragraph B OR Paragraph C",
+        "children": [
+          {
+            "logic": "OR",
+            "path": "B",
+            "criterion": "Extreme limitation of one, OR marked limitation of two, of the four mental functioning areas",
+            "children": [
+              {
+                "path": "B.1",
+                "criterion": "Marked or extreme limitation in understanding, remembering, or applying information",
+                "keywords": ["memory deficit", "MMSE", "MoCA", "neuropsych testing", "cognitive testing", "remember instructions"]
+              },
+              {
+                "path": "B.2",
+                "criterion": "Marked or extreme limitation in interacting with others",
+                "keywords": ["social withdrawal", "interpersonal difficulties", "agitation", "behavioral changes"]
+              },
+              {
+                "path": "B.3",
+                "criterion": "Marked or extreme limitation in concentrating, persisting, or maintaining pace",
+                "keywords": ["concentration", "persistence", "pace", "off task", "cannot complete tasks"]
+              },
+              {
+                "path": "B.4",
+                "criterion": "Marked or extreme limitation in adapting or managing oneself",
+                "keywords": ["self-care", "ADLs", "personal hygiene", "needs assistance", "supervision needed"]
+              }
+            ]
+          },
+          {
+            "logic": "AND",
+            "path": "C",
+            "criterion": "Serious and persistent ≥2 years with ongoing treatment AND minimal capacity to adapt",
+            "children": [
+              {
+                "path": "C.duration",
+                "criterion": "Medically documented neurocognitive disorder over at least 2 years",
+                "keywords": ["2 years", "24 months", "longstanding", "chronic dementia", "progressive cognitive decline"],
+                "duration_months_required": 24
+              },
+              {
+                "path": "C.1",
+                "criterion": "Reliance on ongoing treatment, therapy, psychosocial supports, or highly structured setting",
+                "keywords": ["memory care", "supervised setting", "case manager", "structured environment", "caregiver"]
+              },
+              {
+                "path": "C.2",
+                "criterion": "Minimal capacity to adapt to changes",
+                "keywords": ["minimal adaptation", "decompensation with change", "rigid", "cannot adapt"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "code": "11.18",
+  "title": "Traumatic brain injury",
+  "body_system": "neurological",
+  "version": 1,
+  "summary": "Traumatic brain injury with disorganization of motor function in two extremities persisting ≥3 months, OR marked limitation in physical functioning AND in one mental functioning area persisting ≥3 months.",
+  "synonyms": {
+    "TBI":                     ["traumatic brain injury", "head injury", "concussion", "post-concussive syndrome", "PCS", "closed head injury", "open head injury"],
+    "MRI brain":               ["brain MRI", "MRI of brain"],
+    "CT head":                 ["head CT", "non-contrast CT", "CT scan of head"],
+    "Glasgow Coma Scale":      ["GCS", "GCS score"],
+    "neuropsych":              ["neuropsychological testing", "neuropsych eval", "cognitive testing"],
+    "3 months":                ["three months", "12 weeks", "post-injury"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "PRECONDITION",
+        "criterion": "Documented traumatic brain injury",
+        "keywords": ["traumatic brain injury", "TBI", "head injury", "concussion", "MRI brain", "CT head", "GCS"]
+      },
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Motor disorganization persisting ≥3 months OR marked limitation pattern persisting ≥3 months",
+        "children": [
+          {
+            "logic": "AND",
+            "path": "A",
+            "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities, persisting ≥3 months",
+            "children": [
+              {"path": "A.1", "criterion": "Motor function disorganization in two extremities",
+               "keywords": ["motor weakness", "hemiparesis", "two extremity weakness", "extreme limitation"]},
+              {"path": "A.2", "criterion": "Persisting at least 3 months post-injury",
+               "keywords": ["3 months post-TBI", "persistent"],
+               "duration_months_required": 3}
+            ]
+          },
+          {
+            "logic": "AND",
+            "path": "B",
+            "criterion": "Marked limitation in physical functioning AND in one mental functioning area, persisting ≥3 months",
+            "children": [
+              {"path": "B.1", "criterion": "Marked limitation in physical functioning",
+               "keywords": ["marked physical limitation"]},
+              {"path": "B.2", "criterion": "Marked limitation in one mental functioning area",
+               "keywords": ["post-TBI cognitive impairment", "memory deficit", "executive dysfunction", "post-concussive symptoms"]},
+              {"path": "B.3", "criterion": "Persisting at least 3 months post-injury",
+               "keywords": ["3 months", "post-injury"],
+               "duration_months_required": 3}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

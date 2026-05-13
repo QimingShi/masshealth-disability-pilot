@@ -1,0 +1,48 @@
+{
+  "code": "12.05",
+  "title": "Intellectual disorder",
+  "body_system": "mental",
+  "version": 1,
+  "summary": "Intellectual disorder demonstrated by significantly subaverage general intellectual functioning AND significant deficits in adaptive functioning, with onset before age 22.",
+  "synonyms": {
+    "intellectual disorder":   ["intellectual disability", "ID", "mental retardation", "MR", "developmental delay"],
+    "IQ":                      ["intelligence quotient", "full-scale IQ", "FSIQ", "verbal IQ", "performance IQ"],
+    "WAIS":                    ["Wechsler", "Wechsler Adult Intelligence Scale", "WAIS-IV"],
+    "Stanford-Binet":          ["Stanford Binet"],
+    "adaptive functioning":    ["adaptive skills", "adaptive deficits", "Vineland", "ABAS"],
+    "before age 22":           ["childhood onset", "developmental", "since childhood", "lifelong", "from birth"],
+    "school records":          ["IEP", "504 plan", "special education", "individual education plan", "school IQ testing"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "AND",
+        "path": "A",
+        "criterion": "Cognitive inability to participate in standardized testing AND significant adaptive deficits AND onset before age 22",
+        "children": [
+          {"path": "A.1", "criterion": "Significantly subaverage general intellectual functioning evidenced by cognitive inability to participate in standardized testing",
+           "keywords": ["unable to test", "cannot complete IQ testing", "untestable", "severe intellectual disability"]},
+          {"path": "A.2", "criterion": "Significant deficits in current adaptive functioning manifested by dependence upon others for personal needs",
+           "keywords": ["dependent on others", "cannot perform ADLs", "needs supervision", "adaptive deficits"]},
+          {"path": "A.3", "criterion": "Evidence demonstrating disorder began prior to age 22",
+           "keywords": ["before age 22", "since childhood", "lifelong", "developmental", "school records", "IEP", "special education"]}
+        ]
+      },
+      {
+        "logic": "AND",
+        "path": "B",
+        "criterion": "IQ ≤70 (or 71-75 with verbal/performance IQ ≤70) AND significant deficits in adaptive functioning AND onset before age 22",
+        "children": [
+          {"path": "B.1", "criterion": "Full-scale IQ score of 70 or below, or full-scale IQ 71-75 with verbal or performance IQ ≤70, on individually administered standardized test",
+           "keywords": ["IQ 70", "IQ score", "FSIQ", "WAIS-IV", "verbal IQ", "performance IQ", "Stanford-Binet"]},
+          {"path": "B.2", "criterion": "Significant deficits in adaptive functioning demonstrated by extreme limitation in one, or marked limitation in two, areas of mental functioning",
+           "keywords": ["adaptive functioning", "Vineland", "ABAS", "marked limitation", "extreme limitation"]},
+          {"path": "B.3", "criterion": "Evidence demonstrating disorder began prior to age 22",
+           "keywords": ["before age 22", "since childhood", "lifelong", "school records", "IEP", "special education"]}
+        ]
+      }
+    ]
+  }
+}

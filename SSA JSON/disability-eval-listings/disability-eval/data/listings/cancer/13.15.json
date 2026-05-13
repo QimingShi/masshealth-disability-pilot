@@ -1,0 +1,22 @@
+{
+  "code": "13.15",
+  "title": "Pleura or mediastinum cancer",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Cancer of pleura (mesothelioma) or mediastinum that is inoperable/unresectable, recurrent, OR with distant metastases.",
+  "synonyms": {
+    "mesothelioma":            ["malignant pleural mesothelioma", "MPM", "pleural mesothelioma", "asbestos-related cancer"],
+    "thymoma":                 ["thymic carcinoma", "thymic cancer"],
+    "biopsy":                  ["pleural biopsy", "mediastinoscopy", "VATS biopsy"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Mesothelioma or other pleural cancer",
+       "keywords": ["mesothelioma", "malignant pleural mesothelioma", "pleural cancer", "MPM"]},
+      {"path": "B", "criterion": "Mediastinal cancer (thymic carcinoma, germ cell tumor, etc.) that is inoperable, recurrent, or with distant metastases",
+       "keywords": ["thymic carcinoma", "thymoma", "mediastinal cancer", "inoperable", "distant metastases"]}
+    ]
+  }
+}

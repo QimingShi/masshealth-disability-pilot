@@ -1,0 +1,134 @@
+{
+  "code": "1.15",
+  "title": "Disorders of the skeletal spine resulting in compromise of a nerve root(s)",
+  "body_system": "musculoskeletal",
+  "version": 1,
+  "summary": "Spine disorder compressing a nerve root, with radicular symptoms, neurological signs on exam or electrodiagnostic testing, imaging confirmation in cervical or lumbosacral spine, and ≥12-month physical limitation requiring an assistive device or producing inability to use upper extremities.",
+  "synonyms": {
+    "nerve root compromise":   ["radiculopathy", "nerve root compression", "nerve root impingement", "pinched nerve"],
+    "radicular pain":          ["sciatica", "radiating pain", "shooting pain", "leg pain", "arm pain", "dermatomal pain"],
+    "paresthesia":             ["tingling", "numbness", "pins and needles", "burning sensation", "altered sensation"],
+    "muscle weakness":         ["motor deficit", "weakness", "myotomal weakness", "decreased strength", "5/5", "4/5"],
+    "straight leg raise":      ["SLR", "Lasegue", "Lasegue's sign", "Lasegue maneuver", "straight leg raising test"],
+    "Spurling":                ["Spurling's test", "Spurling sign", "cervical compression test"],
+    "decreased sensation":     ["hypoesthesia", "sensory loss", "diminished sensation", "decreased pinprick", "decreased light touch"],
+    "decreased reflexes":      ["hyporeflexia", "DTR diminished", "areflexia", "absent reflex", "trace reflex"],
+    "EMG":                     ["electromyography", "electromyogram", "needle EMG"],
+    "NCS":                     ["nerve conduction study", "nerve conduction velocity", "NCV"],
+    "MRI":                     ["magnetic resonance imaging", "MR imaging", "MR scan", "MRI of spine"],
+    "disc herniation":         ["herniated disc", "HNP", "herniated nucleus pulposus", "disc protrusion", "disc extrusion", "disc bulge"],
+    "foraminal stenosis":      ["neural foraminal narrowing", "foraminal narrowing", "neuroforaminal stenosis"],
+    "12 months":               ["1 year", "one year", "year-long", "longstanding", "chronic", "for over a year", "12+ months"],
+    "walker":                  ["rollator", "rolling walker", "wheeled walker", "front-wheeled walker"],
+    "bilateral canes":         ["two canes", "double cane", "pair of canes"],
+    "wheelchair":              ["w/c", "manual wheelchair", "power wheelchair", "wheeled mobility device"],
+    "fine motor":              ["fine and gross movements", "fine manipulation", "dexterity", "manual dexterity"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "OR",
+        "path": "A",
+        "criterion": "Radicular distribution of symptoms consistent with nerve root compromise",
+        "children": [
+          {
+            "path": "A.1",
+            "criterion": "Pain in radicular distribution consistent with nerve root compromise",
+            "keywords": ["radicular pain", "radiculopathy", "sciatica", "dermatomal pain", "shooting pain"]
+          },
+          {
+            "path": "A.2",
+            "criterion": "Paresthesia in radicular distribution consistent with nerve root compromise",
+            "keywords": ["paresthesia", "tingling", "numbness", "pins and needles", "dermatomal numbness"]
+          },
+          {
+            "path": "A.3",
+            "criterion": "Muscle fatigue in radicular distribution consistent with nerve root compromise",
+            "keywords": ["muscle fatigue", "weakness with exertion", "fatigability"]
+          }
+        ]
+      },
+      {
+        "logic": "AND",
+        "path": "B",
+        "criterion": "Radicular neurological signs on physical examination or diagnostic test",
+        "children": [
+          {
+            "path": "B.1",
+            "criterion": "Muscle weakness in a myotomal pattern documented on physical examination",
+            "keywords": ["muscle weakness", "motor deficit", "MMT", "myotomal weakness", "5/5", "4/5", "3/5"]
+          },
+          {
+            "path": "B.2",
+            "criterion": "Signs of nerve root irritation, tension, or compression on physical exam (e.g., positive straight leg raise, Spurling, Lasegue)",
+            "keywords": ["straight leg raise", "SLR positive", "Spurling positive", "Lasegue", "nerve tension sign", "femoral stretch"]
+          },
+          {
+            "logic": "OR",
+            "path": "B.3_OR_B.4",
+            "criterion": "Sensory changes OR decreased deep tendon reflexes",
+            "children": [
+              {
+                "path": "B.3.a",
+                "criterion": "Decreased sensation in radicular distribution on physical exam",
+                "keywords": ["decreased sensation", "hypoesthesia", "sensory loss", "decreased pinprick", "dermatomal sensory loss"]
+              },
+              {
+                "path": "B.3.b",
+                "criterion": "Abnormal sensory nerve latency on electrodiagnostic testing (EMG/NCS)",
+                "keywords": ["EMG abnormal", "nerve conduction study", "NCS", "abnormal latency", "prolonged latency", "denervation"]
+              },
+              {
+                "path": "B.4",
+                "criterion": "Decreased deep tendon reflexes in radicular distribution",
+                "keywords": ["decreased reflexes", "hyporeflexia", "DTR diminished", "absent reflex", "trace reflex", "areflexia"]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "C",
+        "criterion": "Imaging findings consistent with nerve root compromise in cervical or lumbosacral spine (e.g., disc herniation, foraminal stenosis on MRI/CT/myelogram)",
+        "keywords": ["MRI", "CT myelogram", "disc herniation", "foraminal stenosis", "nerve root compression", "cervical spine", "lumbosacral spine", "L4-L5", "L5-S1", "C5-C6"]
+      },
+      {
+        "logic": "AND",
+        "path": "D",
+        "criterion": "Physical limitation lasting ≥12 months with documented assistive device need OR upper extremity inability",
+        "children": [
+          {
+            "path": "D.duration",
+            "criterion": "Impairment-related physical limitation of musculoskeletal functioning lasting or expected to last ≥12 continuous months",
+            "keywords": ["chronic", "12 months", "1 year", "longstanding", "ongoing", "persistent"],
+            "duration_months_required": 12
+          },
+          {
+            "logic": "OR",
+            "path": "D.mobility",
+            "criterion": "Documented medical need for two-handed assistive device OR limitation of one or both upper extremities",
+            "children": [
+              {
+                "path": "D.1",
+                "criterion": "Documented medical need for walker, bilateral canes, bilateral crutches, or two-handed wheeled mobility device",
+                "keywords": ["walker", "rollator", "bilateral canes", "two canes", "bilateral crutches", "wheelchair", "two-handed device"]
+              },
+              {
+                "path": "D.2",
+                "criterion": "Inability to use one upper extremity for fine and gross movements; needs one-handed assistive device requiring the other upper extremity",
+                "keywords": ["one-handed device", "single cane", "upper extremity weakness", "fine motor limitation", "cannot grasp"]
+              },
+              {
+                "path": "D.3",
+                "criterion": "Inability to use either upper extremity for fine and gross movements (work-related activities)",
+                "keywords": ["bilateral upper extremity", "cannot manipulate", "fine and gross movements", "loss of manual dexterity", "cannot perform ADLs"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

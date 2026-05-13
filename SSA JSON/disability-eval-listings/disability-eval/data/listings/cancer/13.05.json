@@ -1,0 +1,38 @@
+{
+  "code": "13.05",
+  "title": "Lymphoma",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Lymphoma (Hodgkin or non-Hodgkin) qualifying under one of: aggressive lymphoma not meeting initial response criteria after anticancer therapy, indolent lymphoma requiring more than initial anticancer treatment, mantle cell lymphoma, or stem cell transplantation.",
+  "synonyms": {
+    "lymphoma":                ["non-Hodgkin lymphoma", "NHL", "Hodgkin lymphoma", "HL", "Hodgkin disease"],
+    "DLBCL":                   ["diffuse large B-cell lymphoma"],
+    "follicular lymphoma":     ["FL", "indolent lymphoma"],
+    "mantle cell lymphoma":    ["MCL"],
+    "Burkitt lymphoma":        ["Burkitt's lymphoma"],
+    "T-cell lymphoma":         ["peripheral T-cell lymphoma", "PTCL", "cutaneous T-cell lymphoma", "CTCL", "mycosis fungoides"],
+    "biopsy":                  ["lymph node biopsy", "excisional biopsy", "core biopsy", "bone marrow biopsy"],
+    "PET":                     ["PET/CT", "PET-CT", "FDG-PET"],
+    "stem cell transplant":    ["BMT", "bone marrow transplant", "HSCT", "hematopoietic stem cell transplant", "autologous transplant", "allogeneic transplant"],
+    "chemotherapy":            ["chemo", "R-CHOP", "ABVD", "BEACOPP", "CHOP", "rituximab"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Non-Hodgkin lymphoma: aggressive lymphoma (DLBCL, mantle cell, etc.) persistent or recurrent following initial anticancer therapy",
+       "keywords": ["DLBCL", "diffuse large B-cell lymphoma", "aggressive lymphoma", "mantle cell lymphoma", "Burkitt", "persistent disease", "recurrent disease", "treatment failure"]},
+      {"path": "B", "criterion": "Non-Hodgkin lymphoma: indolent lymphoma (follicular, marginal zone, small lymphocytic) requiring initiation of more than one anticancer treatment regimen within 12-month period",
+       "keywords": ["follicular lymphoma", "indolent lymphoma", "marginal zone lymphoma", "more than one regimen", "multiple lines of therapy"],
+       "duration_months_required": 12},
+      {"path": "C", "criterion": "Hodgkin lymphoma with failure to achieve clinically complete remission, OR recurrence within 12 months of completing initial anticancer therapy",
+       "keywords": ["Hodgkin lymphoma", "Hodgkin disease", "ABVD", "BEACOPP", "no complete remission", "recurrence within 12 months"],
+       "duration_months_required": 12},
+      {"path": "D", "criterion": "Mantle cell lymphoma diagnosis",
+       "keywords": ["mantle cell lymphoma", "MCL"]},
+      {"path": "E", "criterion": "Bone marrow or stem cell transplantation; considered disabled for 12 months from date of transplantation",
+       "keywords": ["stem cell transplant", "HSCT", "BMT", "bone marrow transplant", "autologous transplant", "allogeneic transplant"],
+       "duration_months_required": 12}
+    ]
+  }
+}

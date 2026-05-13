@@ -1,0 +1,46 @@
+{
+  "code": "11.13",
+  "title": "Muscular dystrophy",
+  "body_system": "neurological",
+  "version": 1,
+  "summary": "Muscular dystrophy with disorganization of motor function in two extremities, OR marked limitation in physical functioning AND in one mental functioning area.",
+  "synonyms": {
+    "muscular dystrophy":      ["MD", "Duchenne muscular dystrophy", "DMD", "Becker muscular dystrophy", "BMD", "myotonic dystrophy", "DM1", "DM2", "limb-girdle muscular dystrophy", "LGMD", "FSHD", "facioscapulohumeral muscular dystrophy"],
+    "muscle biopsy":           ["biopsy of muscle"],
+    "EMG":                     ["electromyography", "myopathic EMG"],
+    "CK":                      ["creatine kinase", "elevated CK", "CPK"],
+    "genetic testing":         ["gene panel", "DMD gene", "dystrophin gene"],
+    "Gowers sign":             ["Gowers maneuver"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "PRECONDITION",
+        "criterion": "Muscular dystrophy diagnosis (clinical, EMG, biopsy, or genetic testing)",
+        "keywords": ["muscular dystrophy", "Duchenne", "Becker", "myotonic dystrophy", "limb-girdle", "FSHD", "muscle biopsy", "elevated CK", "genetic testing"]
+      },
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Motor disorganization OR marked limitation pattern",
+        "children": [
+          {"path": "A", "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities",
+           "keywords": ["muscle weakness", "proximal weakness", "two extremity weakness", "extreme limitation", "Gowers sign"]},
+          {
+            "logic": "AND",
+            "path": "B",
+            "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+            "children": [
+              {"path": "B.1", "criterion": "Marked limitation in physical functioning",
+               "keywords": ["marked physical limitation", "decreased mobility"]},
+              {"path": "B.2", "criterion": "Marked limitation in one mental functioning area",
+               "keywords": ["cognitive impairment", "myotonic dystrophy cognitive symptoms"]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

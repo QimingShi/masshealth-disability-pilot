@@ -1,0 +1,47 @@
+{
+  "code": "14.10",
+  "title": "Sjögren's syndrome",
+  "body_system": "immune",
+  "version": 1,
+  "summary": "Sjögren's syndrome with multi-organ involvement and constitutional symptoms, OR repeated manifestations with marked functional limitation.",
+  "synonyms": {
+    "Sjögren's":               ["Sjogren's syndrome", "Sjogren syndrome", "SS", "primary Sjögren's", "secondary Sjögren's"],
+    "anti-SSA":                ["anti-Ro", "SSA antibody", "Ro antibody"],
+    "anti-SSB":                ["anti-La", "SSB antibody", "La antibody"],
+    "Schirmer test":           ["dry eye test"],
+    "minor salivary gland biopsy": ["lip biopsy"],
+    "sicca symptoms":          ["dry eyes", "dry mouth", "xerostomia", "xerophthalmia"],
+    "constitutional symptoms": ["fatigue", "fever", "malaise"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "AND",
+        "path": "A",
+        "criterion": "Two or more organs/body systems involved with at least one at moderate severity AND two constitutional symptoms",
+        "children": [
+          {"path": "A.1", "criterion": "Sjögren's diagnosis with involvement of two or more organs/body systems",
+           "keywords": ["Sjögren's syndrome", "SS", "anti-Ro", "anti-La", "minor salivary gland biopsy", "renal involvement", "pulmonary involvement", "neurologic involvement"]},
+          {"path": "A.2", "criterion": "At least one organ/body system at moderate severity",
+           "keywords": ["moderate severity", "active disease"]},
+          {"path": "A.3", "criterion": "Two constitutional symptoms",
+           "keywords": ["fatigue", "fever", "malaise", "weight loss"]}
+        ]
+      },
+      {
+        "logic": "AND",
+        "path": "B",
+        "criterion": "Repeated manifestations with two constitutional symptoms AND marked limitation",
+        "children": [
+          {"path": "B.1", "criterion": "Repeated manifestations of Sjögren's",
+           "keywords": ["repeated manifestations", "active Sjögren's"]},
+          {"path": "B.2", "criterion": "Two constitutional symptoms", "keywords": ["fatigue", "fever", "malaise", "weight loss"]},
+          {"path": "B.3", "criterion": "Marked limitation in ADLs, social functioning, or completing tasks",
+           "keywords": ["ADLs", "social functioning", "concentration"]}
+        ]
+      }
+    ]
+  }
+}

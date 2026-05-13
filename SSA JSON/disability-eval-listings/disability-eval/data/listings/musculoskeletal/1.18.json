@@ -1,0 +1,75 @@
+{
+  "code": "1.18",
+  "title": "Abnormality of a major joint(s) in any extremity",
+  "body_system": "musculoskeletal",
+  "version": 1,
+  "summary": "Major joint abnormality with chronic pain or stiffness, abnormal motion or instability, imaging confirmation of joint abnormality, and ≥12-month limitation requiring assistive device or producing inability to use upper extremities.",
+  "synonyms": {
+    "joint pain":              ["arthralgia", "joint discomfort", "joint ache"],
+    "joint stiffness":         ["stiffness", "decreased ROM", "limited range of motion", "reduced mobility"],
+    "abnormal motion":         ["limited ROM", "decreased range of motion", "joint instability", "instability"],
+    "joint instability":       ["giving way", "buckling", "laxity", "ligamentous laxity"],
+    "anatomical abnormality":  ["joint deformity", "subluxation", "dislocation", "ankylosis", "joint space narrowing"],
+    "imaging":                 ["X-ray", "x-ray", "radiograph", "MRI", "CT scan", "ultrasound"],
+    "12 months":               ["1 year", "one year", "longstanding", "chronic", "for over a year"],
+    "walker":                  ["rollator", "rolling walker", "wheeled walker"],
+    "bilateral canes":         ["two canes", "double cane"],
+    "fine motor":              ["fine and gross movements", "fine manipulation", "dexterity"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Chronic joint pain or stiffness in a major joint",
+        "keywords": ["arthralgia", "joint pain", "joint stiffness", "chronic pain", "decreased ROM"]
+      },
+      {
+        "path": "B",
+        "criterion": "Abnormal motion, instability, or immobility on physical examination of the joint",
+        "keywords": ["limited ROM", "joint instability", "ligamentous laxity", "giving way", "ankylosis", "subluxation"]
+      },
+      {
+        "path": "C",
+        "criterion": "Imaging or other findings of joint abnormality (joint space narrowing, bony destruction, ankylosis, instability)",
+        "keywords": ["X-ray", "MRI", "CT", "joint space narrowing", "bony destruction", "ankylosis", "instability on stress views"]
+      },
+      {
+        "logic": "AND",
+        "path": "D",
+        "criterion": "Physical limitation lasting ≥12 months with documented assistive device need OR upper extremity inability",
+        "children": [
+          {
+            "path": "D.duration",
+            "criterion": "Impairment-related physical limitation lasting or expected to last ≥12 continuous months",
+            "keywords": ["chronic", "12 months", "1 year", "longstanding", "ongoing"],
+            "duration_months_required": 12
+          },
+          {
+            "logic": "OR",
+            "path": "D.mobility",
+            "criterion": "Documented two-handed assistive device need OR upper extremity limitation",
+            "children": [
+              {
+                "path": "D.1",
+                "criterion": "Documented medical need for walker, bilateral canes, bilateral crutches, or two-handed wheeled mobility device",
+                "keywords": ["walker", "rollator", "bilateral canes", "bilateral crutches", "wheelchair"]
+              },
+              {
+                "path": "D.2",
+                "criterion": "Inability to use one upper extremity for fine and gross movements; needs one-handed assistive device requiring the other upper extremity",
+                "keywords": ["one-handed device", "single cane", "fine motor limitation", "cannot grasp"]
+              },
+              {
+                "path": "D.3",
+                "criterion": "Inability to use either upper extremity for fine and gross movements",
+                "keywords": ["bilateral upper extremity", "cannot manipulate", "fine and gross movements", "loss of manual dexterity"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

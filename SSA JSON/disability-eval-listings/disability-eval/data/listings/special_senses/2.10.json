@@ -1,0 +1,25 @@
+{
+  "code": "2.10",
+  "title": "Hearing loss not treated with cochlear implantation",
+  "body_system": "special_senses",
+  "version": 1,
+  "summary": "Hearing loss in the better ear meeting one of: pure-tone average ≥90 dB AND bone conduction average ≥60 dB, OR word recognition score 40% or less.",
+  "synonyms": {
+    "hearing loss":            ["hearing impairment", "deafness", "sensorineural hearing loss", "SNHL", "conductive hearing loss"],
+    "audiogram":               ["audiometry", "hearing test", "pure-tone audiometry"],
+    "PTA":                     ["pure-tone average"],
+    "bone conduction":         ["bone conduction threshold"],
+    "word recognition":        ["WRS", "speech discrimination", "speech recognition"],
+    "audiologist":             ["audiology evaluation", "audiology"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Average air conduction hearing threshold of 90 decibels (dB) or greater in the better ear AND average bone conduction hearing threshold of 60 dB or greater in the better ear (at 500, 1000, and 2000 Hz)",
+       "keywords": ["pure-tone average", "PTA", "90 dB", "bone conduction 60 dB", "audiogram", "audiometry", "better ear", "500 Hz 1000 Hz 2000 Hz"]},
+      {"path": "B", "criterion": "Word recognition score of 40% or less in the better ear, determined using a standardized list of phonetically balanced monosyllabic words",
+       "keywords": ["word recognition score", "WRS", "40%", "speech discrimination", "monosyllabic words", "audiology"]}
+    ]
+  }
+}

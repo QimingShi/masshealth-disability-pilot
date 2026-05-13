@@ -1,0 +1,28 @@
+{
+  "code": "2.07",
+  "title": "Disturbance of labyrinthine-vestibular function",
+  "body_system": "special_senses",
+  "version": 1,
+  "summary": "Disturbance of labyrinthine-vestibular function with disturbed equilibrium AND hearing impairment, all confirmed by appropriate tests.",
+  "synonyms": {
+    "labyrinthine":            ["inner ear", "vestibular", "labyrinthitis"],
+    "vestibular dysfunction":  ["vestibulopathy", "vertigo", "imbalance"],
+    "Meniere":                 ["Meniere's disease", "Meniere disease"],
+    "vertigo":                 ["dizziness", "spinning sensation", "BPPV"],
+    "tinnitus":                ["ringing in ears", "ear noise"],
+    "audiogram":               ["audiometry", "hearing test", "pure-tone average", "PTA"],
+    "ENG":                     ["electronystagmography", "VNG", "videonystagmography", "calorics", "caloric testing"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "History of frequent attacks of balance disturbance, tinnitus, and progressive hearing loss",
+       "keywords": ["vertigo", "balance disturbance", "tinnitus", "hearing loss", "Meniere's disease", "vestibular dysfunction"]},
+      {"path": "B", "criterion": "Disturbed function of vestibular labyrinth demonstrated by caloric or other vestibular tests",
+       "keywords": ["caloric testing", "ENG", "VNG", "videonystagmography", "vestibular testing", "abnormal calorics"]},
+      {"path": "C", "criterion": "Hearing loss established by audiometry",
+       "keywords": ["audiogram", "audiometry", "hearing loss", "pure-tone average", "PTA"]}
+    ]
+  }
+}

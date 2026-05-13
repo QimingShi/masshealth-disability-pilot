@@ -1,0 +1,22 @@
+{
+  "code": "6.09",
+  "title": "Kidney transplant",
+  "body_system": "genitourinary",
+  "version": 1,
+  "summary": "Kidney transplantation; considered disabled for 1 year following the date of transplantation.",
+  "synonyms": {
+    "kidney transplant":       ["renal transplant", "kidney transplantation", "renal transplantation"],
+    "operative report":        ["op report", "transplant report"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Kidney transplantation documented by operative report or transplant center records",
+       "keywords": ["kidney transplant", "renal transplant", "kidney transplantation", "operative report"]},
+      {"path": "B", "criterion": "Within 1 year of transplant date (claimant considered disabled for 1 year post-transplant)",
+       "keywords": ["1 year", "transplant date", "post-transplant"],
+       "duration_months_required": 12}
+    ]
+  }
+}

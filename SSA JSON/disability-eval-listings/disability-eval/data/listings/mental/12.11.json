@@ -1,0 +1,49 @@
+{
+  "code": "12.11",
+  "title": "Neurodevelopmental disorders",
+  "body_system": "mental",
+  "version": 1,
+  "summary": "Neurodevelopmental disorder (specific learning disorder, borderline intellectual functioning, tic disorder, ADHD) with paragraph A symptoms AND paragraph B functional limitations.",
+  "synonyms": {
+    "ADHD":                    ["attention deficit hyperactivity disorder", "ADD", "attention deficit disorder"],
+    "specific learning disorder": ["learning disability", "LD", "dyslexia", "dyscalculia", "dysgraphia"],
+    "tic disorder":            ["Tourette syndrome", "Tourette's", "motor tics", "vocal tics"],
+    "borderline intellectual functioning": ["BIF", "low-average intelligence"],
+    "marked limitation":       ["marked", "moderately severe"],
+    "extreme limitation":      ["extreme", "severe limitation"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "OR",
+        "path": "A",
+        "criterion": "Medical documentation of one or more of: tic disorder, learning disorder/borderline intellectual functioning, or symptoms of cognitive impairment",
+        "children": [
+          {"path": "A.1", "criterion": "Frequent distractibility, difficulty sustaining attention, and difficulty organizing tasks",
+           "keywords": ["ADHD", "attention deficit", "distractibility", "difficulty organizing", "impulsivity"]},
+          {"path": "A.2", "criterion": "Hyperactive and impulsive behavior",
+           "keywords": ["hyperactivity", "impulsivity", "ADHD", "fidgeting", "interrupting"]},
+          {"path": "A.3", "criterion": "Significant difficulties learning and using academic skills (reading, math, writing)",
+           "keywords": ["specific learning disorder", "dyslexia", "dyscalculia", "dysgraphia", "academic skills deficit"]},
+          {"path": "A.4", "criterion": "Recurrent motor movement or vocalization (tics)",
+           "keywords": ["tic disorder", "Tourette syndrome", "motor tics", "vocal tics"]}
+        ]
+      },
+      {
+        "logic": "OR",
+        "path": "B",
+        "criterion": "Extreme limitation of one, OR marked limitation of two, of the four areas",
+        "children": [
+          {"path": "B.1", "criterion": "Marked/extreme limitation: understand, remember, apply information", "keywords": ["learning", "memory", "cognitive"]},
+          {"path": "B.2", "criterion": "Marked/extreme limitation: interact with others", "keywords": ["social interaction"]},
+          {"path": "B.3", "criterion": "Marked/extreme limitation: concentrate, persist, maintain pace",
+           "keywords": ["concentration", "attention", "off task", "distractibility"]},
+          {"path": "B.4", "criterion": "Marked/extreme limitation: adapt, manage oneself",
+           "keywords": ["self-management", "executive functioning", "self-regulation"]}
+        ]
+      }
+    ]
+  }
+}

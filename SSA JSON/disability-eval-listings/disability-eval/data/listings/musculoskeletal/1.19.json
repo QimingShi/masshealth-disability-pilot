@@ -1,0 +1,56 @@
+{
+  "code": "1.19",
+  "title": "Pathologic fractures due to any cause",
+  "body_system": "musculoskeletal",
+  "version": 1,
+  "summary": "Three pathologic fractures within a 12-month period from a disorder weakening bone (osteoporosis, osteogenesis imperfecta, etc.), with limitation requiring assistive device or producing inability to use upper extremities.",
+  "synonyms": {
+    "pathologic fracture":     ["pathological fracture", "fragility fracture", "insufficiency fracture", "fracture from minor trauma"],
+    "osteoporosis":            ["low bone density", "osteopenia", "decreased bone mineral density", "BMD low", "T-score below"],
+    "osteogenesis imperfecta": ["OI", "brittle bone disease"],
+    "skeletal dysplasia":      ["bone dysplasia", "dysplastic bone"],
+    "DEXA":                    ["DXA", "DEXA scan", "bone density scan", "BMD scan"],
+    "fracture":                ["#", "broken bone", "fx"],
+    "12 months":               ["1 year", "one year", "12-month period", "within a year"],
+    "walker":                  ["rollator", "rolling walker", "wheeled walker"],
+    "bilateral canes":         ["two canes", "double cane"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Three pathologic fractures occurring on separate, distinct occasions within any 12-month period",
+        "keywords": ["pathologic fracture", "fragility fracture", "three fractures", "multiple fractures", "fracture history"]
+      },
+      {
+        "path": "B",
+        "criterion": "Underlying disorder that weakens bone (osteoporosis, osteogenesis imperfecta, skeletal dysplasia, medication side effect, endocrine disorder)",
+        "keywords": ["osteoporosis", "osteogenesis imperfecta", "skeletal dysplasia", "DEXA", "T-score", "low BMD", "endocrine disorder", "steroid-induced"]
+      },
+      {
+        "logic": "OR",
+        "path": "C",
+        "criterion": "Documented assistive device need OR upper extremity inability",
+        "children": [
+          {
+            "path": "C.1",
+            "criterion": "Documented medical need for walker, bilateral canes, bilateral crutches, or two-handed wheeled mobility device",
+            "keywords": ["walker", "bilateral canes", "bilateral crutches", "wheelchair"]
+          },
+          {
+            "path": "C.2",
+            "criterion": "Inability to use one upper extremity for fine and gross movements; needs one-handed assistive device requiring the other upper extremity",
+            "keywords": ["one-handed device", "single cane", "fine motor limitation"]
+          },
+          {
+            "path": "C.3",
+            "criterion": "Inability to use either upper extremity for fine and gross movements",
+            "keywords": ["bilateral upper extremity", "cannot manipulate", "fine and gross movements"]
+          }
+        ]
+      }
+    ]
+  }
+}

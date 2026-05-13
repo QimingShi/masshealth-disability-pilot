@@ -1,0 +1,162 @@
+{
+  "case_id": "demo-synthetic-001",
+  "source_pdf": "",
+  "_note": "SYNTHETIC DEMO DATA — entirely fabricated. Not a real patient. All names, facilities, MRNs, dates, lab values, and clinical details are invented for demonstrating the pipeline. The case mimics a metastatic colorectal cancer presentation so the SSA 13.18 listing demonstrates correctly end-to-end. Replace this file (or pass a real chunks file as the first CLI arg) when running against a real packet.",
+  "documents": [
+    {
+      "doc_id": "synth-onc",
+      "doc_type": "oncology_progress_note",
+      "doc_title": "Atlas Demo Medical Center — GI Oncology Follow-Up Note",
+      "encounter_date": "2099-03-15",
+      "facility": "Atlas Demo Medical Center (FICTIONAL)",
+      "page_range_in_packet": [1, 4]
+    },
+    {
+      "doc_id": "synth-labs",
+      "doc_type": "lab_report",
+      "doc_title": "Atlas Demo Medical Center — Laboratory Report",
+      "encounter_date": "2099-03-14",
+      "facility": "Atlas Demo Medical Center (FICTIONAL)",
+      "page_range_in_packet": [5, 6]
+    },
+    {
+      "doc_id": "synth-ct",
+      "doc_type": "ct_imaging_report",
+      "doc_title": "Atlas Demo Medical Center — CT Abdomen/Pelvis Report",
+      "encounter_date": "2099-03-10",
+      "facility": "Atlas Demo Medical Center (FICTIONAL)",
+      "page_range_in_packet": [7, 8]
+    },
+    {
+      "doc_id": "synth-path",
+      "doc_type": "pathology_report",
+      "doc_title": "Atlas Demo Medical Center — Surgical Pathology Report",
+      "encounter_date": "2099-02-20",
+      "facility": "Atlas Demo Medical Center (FICTIONAL)",
+      "page_range_in_packet": [9, 10]
+    }
+  ],
+  "chunks": [
+    {
+      "chunk_id": "synth-onc:p1:Header:0",
+      "doc_id": "synth-onc",
+      "page_start": 1,
+      "page_end": 1,
+      "section": "Header",
+      "text": "Atlas Demo Medical Center — GI Oncology (FICTIONAL DEMO DATA). Oncology Follow-Up Note. Provider: Dr. A. Sample, MD. Patient MRN: ATLAS-DEMO-9999. Diagnosis/Chief Complaint: metastatic colorectal cancer."
+    },
+    {
+      "chunk_id": "synth-onc:p1:HPI:0",
+      "doc_id": "synth-onc",
+      "page_start": 1,
+      "page_end": 1,
+      "section": "HPI",
+      "text": "HPI: The patient is a middle-aged adult with newly diagnosed RAS/RAF wild-type, MMR-proficient metastatic colorectal adenocarcinoma originating in the sigmoid colon. Diagnosed February 2099 following workup for several months of hematochezia and unintentional weight loss. Currently in cycle 3 of first-line FOLFOX-equivalent demonstration regimen DEMO-PROTO-A. Tolerating treatment with mild peripheral neuropathy and grade 2 hand-foot syndrome managed with topical urea. Anticoagulated on apixaban following prior segmental pulmonary embolism diagnosed at presentation."
+    },
+    {
+      "chunk_id": "synth-onc:p1:PMH:0",
+      "doc_id": "synth-onc",
+      "page_start": 1,
+      "page_end": 1,
+      "section": "Past Medical History",
+      "text": "Past Medical History: Type 2 diabetes mellitus (HbA1c 7.1, on metformin). Prior segmental pulmonary embolism (Feb 2099, on apixaban). No prior abdominal surgery."
+    },
+    {
+      "chunk_id": "synth-onc:p2:Medications:0",
+      "doc_id": "synth-onc",
+      "page_start": 2,
+      "page_end": 2,
+      "section": "Medications",
+      "text": "Current Medications: apixaban 5 mg twice daily; metformin 1000 mg twice daily; ondansetron 8 mg every 8 hours as needed for nausea; urea 20% cream topically twice daily to hands; multivitamin daily. No known drug allergies."
+    },
+    {
+      "chunk_id": "synth-onc:p3:Vitals:0",
+      "doc_id": "synth-onc",
+      "page_start": 3,
+      "page_end": 3,
+      "section": "Vitals",
+      "text": "Vitals: BP 128/76 (sitting, right arm). Pulse 82 regular. Temp 36.8 °C. Resp 16. SpO2 98% room air. Weight 78.5 kg. Height 178 cm. BMI 24.8."
+    },
+    {
+      "chunk_id": "synth-onc:p4:VisitDiagnoses:0",
+      "doc_id": "synth-onc",
+      "page_start": 4,
+      "page_end": 4,
+      "section": "Visit Diagnoses",
+      "text": "Visit Diagnoses: Primary: Colon adenocarcinoma C18.9. Secondary: Type 2 diabetes mellitus without complications E11.9. Personal history of pulmonary embolism Z86.711."
+    },
+    {
+      "chunk_id": "synth-labs:p5:LabsCMP:0",
+      "doc_id": "synth-labs",
+      "page_start": 5,
+      "page_end": 5,
+      "section": "Labs — Comprehensive Metabolic Panel (CMP)",
+      "text": "Comprehensive Metabolic Panel (CMP). Collection: 2099-03-14 07:30. Specimen: Blood. Sodium 139 (ref 136-145 mmol/L). Potassium 4.1 (ref 3.4-5.1 mmol/L). Chloride 102 (ref 98-107 mmol/L). CO2 27 (ref 20-31 mmol/L). BUN 14 (ref 6-23 mg/dL). Creatinine 0.85 (ref 0.60-1.30 mg/dL). Glucose 142 (H) (ref 70-99 mg/dL). Calcium 9.4 (ref 8.5-10.5 mg/dL). AST 38 (ref 10-40 U/L). ALT 42 (ref 10-55 U/L). Alkaline Phosphatase 108 (ref 40-130 U/L). Bilirubin Total 0.7 (ref 0.0-1.2 mg/dL). Total Protein 7.0 (ref 6.4-8.3 g/dL). Albumin 3.8 (ref 3.5-5.2 g/dL). eGFR 92 (ref >59 mL/min/1.73m2)."
+    },
+    {
+      "chunk_id": "synth-labs:p5:LabsCBC:0",
+      "doc_id": "synth-labs",
+      "page_start": 5,
+      "page_end": 5,
+      "section": "Labs — CBC and Differential",
+      "text": "CBC and Differential. Collection: 2099-03-14 07:30. Specimen: Blood. WBC 6.4 (ref 4.0-11.0 K/uL). RBC 4.20 (L) (ref 4.50-5.90 M/uL). Hemoglobin 12.8 (L) (ref 13.5-17.5 g/dL). Hematocrit 38.6 (L) (ref 41.0-53.0 %). MCV 89 (ref 80-100 fL). PLT 245 (ref 150-450 K/uL). Absolute Neutrophils 3.85 (ref 1.92-7.60 K/uL)."
+    },
+    {
+      "chunk_id": "synth-labs:p6:LabsCEA:0",
+      "doc_id": "synth-labs",
+      "page_start": 6,
+      "page_end": 6,
+      "section": "Labs — Carcinoembryonic Antigen (CEA)",
+      "text": "Carcinoembryonic Antigen (CEA). Collection: 2099-03-14 07:30. Specimen: Blood. CEA 52.3 (H) (ref 0.0-3.7 ng/mL). Markedly elevated, consistent with known metastatic disease."
+    },
+    {
+      "chunk_id": "synth-ct:p7:CTImpression:0",
+      "doc_id": "synth-ct",
+      "page_start": 7,
+      "page_end": 7,
+      "section": "CT Abdomen/Pelvis — Impression",
+      "text": "CT Abdomen and Pelvis with IV Contrast — Impression: 1. Primary sigmoid colon mass with mural thickening and partially exophytic component measuring 3.2 x 2.4 cm at the sigmoid-rectosigmoid junction, consistent with the patient's known adenocarcinoma. 2. Two hepatic metastases in the right hepatic lobe, measuring 1.8 cm and 0.9 cm respectively, consistent with metastatic disease beyond the regional lymph nodes. 3. Mildly enlarged retroperitoneal and porta hepatis lymph nodes (largest 1.4 cm short axis), suspicious for nodal involvement. 4. No suspicious pulmonary lesions on chest CT. 5. Cholelithiasis, incidental finding."
+    },
+    {
+      "chunk_id": "synth-ct:p8:CTBody:0",
+      "doc_id": "synth-ct",
+      "page_start": 8,
+      "page_end": 8,
+      "section": "CT Abdomen/Pelvis — Body",
+      "text": "Findings: Sigmoid colon demonstrates a partially exophytic eccentric mass with mural thickening, measuring 3.2 x 2.4 cm. Two hypoenhancing lesions in segments 7 and 8 of the right hepatic lobe, the larger measuring 1.8 cm and the smaller 0.9 cm; appearance is consistent with hepatic metastases given the clinical context. Mildly enlarged retroperitoneal lymph nodes including a 1.4 cm node near the porta hepatis and a 1.1 cm aortocaval node. No mesenteric lymphadenopathy. Liver dome and remainder of the liver parenchyma otherwise unremarkable. Spleen, pancreas, adrenals, and kidneys unremarkable. Cholelithiasis without evidence of cholecystitis."
+    },
+    {
+      "chunk_id": "synth-path:p9:PathologyDx:0",
+      "doc_id": "synth-path",
+      "page_start": 9,
+      "page_end": 9,
+      "section": "Pathology — Final Diagnosis",
+      "text": "SURGICAL PATHOLOGY REPORT. Specimen: Sigmoid colon mass, endoscopic biopsy. FINAL DIAGNOSIS: Invasive, moderately differentiated colorectal adenocarcinoma. Mucinous features present in approximately 20% of the tumor. Immunohistochemistry for Mismatch Repair (MMR) Proteins: MLH1 intact nuclear expression; MSH2 intact; MSH6 intact; PMS2 intact. IHC Interpretation: MMR-proficient; low probability of microsatellite instability-high (MSI-H). Next-generation sequencing: KRAS wild-type, NRAS wild-type, BRAF wild-type."
+    },
+    {
+      "chunk_id": "synth-path:p10:PathologyGross:0",
+      "doc_id": "synth-path",
+      "page_start": 10,
+      "page_end": 10,
+      "section": "Pathology — Gross / Clinical History",
+      "text": "GROSS DESCRIPTION: Specimen received in formalin, labeled 'sigmoid colon biopsy.' Multiple pink-tan tissue fragments measuring in aggregate 0.4 x 0.3 x 0.2 cm. Entirely submitted in cassette A. CLINICAL HISTORY: Hematochezia, suspected colorectal malignancy. Preliminary diagnosis prior to MMR studies: Invasive colorectal adenocarcinoma."
+    }
+  ],
+  "allegations": [
+    {
+      "text": "metastatic colorectal cancer",
+      "source": "chief_complaint",
+      "source_chunk_id": "synth-onc:p1:Header:0"
+    },
+    {
+      "text": "type 2 diabetes mellitus",
+      "source": "past_medical_history",
+      "source_chunk_id": "synth-onc:p1:PMH:0"
+    },
+    {
+      "text": "history of pulmonary embolism",
+      "source": "past_medical_history",
+      "source_chunk_id": "synth-onc:p1:PMH:0"
+    }
+  ]
+}

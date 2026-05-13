@@ -1,0 +1,53 @@
+{
+  "code": "11.08",
+  "title": "Spinal cord disorders",
+  "body_system": "neurological",
+  "version": 1,
+  "summary": "Spinal cord disorder (traumatic or non-traumatic) with complete loss of function lasting or expected to last ≥12 months, OR disorganization of motor function in two extremities, OR marked physical AND mental limitation.",
+  "synonyms": {
+    "spinal cord disorder":    ["spinal cord injury", "SCI", "myelopathy", "spinal cord compression", "transverse myelitis"],
+    "paraplegia":              ["paraplegic", "paralysis below waist", "lower extremity paralysis"],
+    "quadriplegia":            ["tetraplegia", "all-extremity paralysis"],
+    "hemiplegia":              ["one-sided paralysis"],
+    "MRI spine":               ["MRI of spine", "spinal MRI", "spinal cord imaging"],
+    "12 months":               ["1 year", "one year", "longstanding", "chronic"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "AND",
+        "path": "A",
+        "criterion": "Complete loss of function lasting or expected to last ≥12 months due to spinal cord disorder",
+        "children": [
+          {"path": "A.1", "criterion": "Spinal cord disorder with complete loss of function (paraplegia, quadriplegia, etc.)",
+           "keywords": ["paraplegia", "quadriplegia", "tetraplegia", "spinal cord injury", "complete SCI", "transverse myelitis"]},
+          {"path": "A.2", "criterion": "Lasting or expected to last 12 continuous months",
+           "keywords": ["12 months", "1 year", "permanent", "chronic", "longstanding"],
+           "duration_months_required": 12}
+        ]
+      },
+      {
+        "path": "B",
+        "criterion": "Disorganization of motor function in two extremities resulting in extreme limitation in standing, balancing, or using upper extremities, persisting ≥3 months",
+        "keywords": ["motor weakness", "two extremity weakness", "extreme limitation", "spinal cord injury", "myelopathy"],
+        "duration_months_required": 3
+      },
+      {
+        "logic": "AND",
+        "path": "C",
+        "criterion": "Marked limitation in physical functioning AND in one mental functioning area, persisting ≥3 months",
+        "children": [
+          {"path": "C.1", "criterion": "Marked limitation in physical functioning",
+           "keywords": ["marked physical limitation", "limited mobility"]},
+          {"path": "C.2", "criterion": "Marked limitation in one mental functioning area",
+           "keywords": ["marked cognitive limitation", "depression", "adjustment disorder"]},
+          {"path": "C.3", "criterion": "Persisting at least 3 months",
+           "keywords": ["3 months", "persistent"],
+           "duration_months_required": 3}
+        ]
+      }
+    ]
+  }
+}

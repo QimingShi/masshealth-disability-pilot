@@ -1,0 +1,42 @@
+{
+  "code": "14.04",
+  "title": "Systemic sclerosis (scleroderma)",
+  "body_system": "immune",
+  "version": 1,
+  "summary": "Systemic sclerosis with one of: severe pulmonary involvement, severe peripheral vascular disease causing finger amputation/ulceration, severe esophageal involvement with weight loss, OR repeated manifestations with constitutional symptoms and marked functional limitation.",
+  "synonyms": {
+    "systemic sclerosis":      ["scleroderma", "SSc", "diffuse scleroderma", "limited scleroderma", "CREST syndrome"],
+    "pulmonary fibrosis":      ["interstitial lung disease", "ILD"],
+    "pulmonary hypertension":  ["pulmonary HTN", "PH"],
+    "Raynaud":                 ["Raynaud's phenomenon", "Raynaud syndrome", "digital ischemia"],
+    "digital ulcer":           ["fingertip ulcer", "digital ulceration", "finger ulcer"],
+    "esophageal dysmotility":  ["esophageal involvement", "GERD", "dysphagia"],
+    "skin tightening":         ["skin thickening", "sclerodactyly"],
+    "ANA":                     ["antinuclear antibody"],
+    "anti-Scl-70":             ["topoisomerase I antibody"],
+    "anticentromere":          ["centromere antibody"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Severe involvement of two or more organ/body systems with significant documented constitutional symptoms",
+       "keywords": ["scleroderma", "systemic sclerosis", "ILD", "pulmonary hypertension", "renal crisis", "esophageal involvement", "constitutional symptoms"]},
+      {"path": "B", "criterion": "One of: pulmonary fibrosis with persistent imaging changes plus low DLCO, severe peripheral vascular disease with finger amputation/ulceration, severe esophageal involvement with weight loss",
+       "keywords": ["pulmonary fibrosis", "DLCO low", "digital ulcer", "fingertip ulcer", "auto-amputation", "weight loss", "esophageal stricture"]},
+      {
+        "logic": "AND",
+        "path": "C",
+        "criterion": "Repeated manifestations with constitutional symptoms AND marked limitation in one functional area",
+        "children": [
+          {"path": "C.1", "criterion": "Repeated manifestations of scleroderma",
+           "keywords": ["repeated manifestations", "active scleroderma", "scleroderma flare"]},
+          {"path": "C.2", "criterion": "At least two constitutional symptoms",
+           "keywords": ["fatigue", "fever", "malaise", "weight loss"]},
+          {"path": "C.3", "criterion": "Marked limitation in ADLs, social functioning, or completing tasks",
+           "keywords": ["ADLs", "social functioning", "concentration", "persistence", "pace"]}
+        ]
+      }
+    ]
+  }
+}

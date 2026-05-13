@@ -1,0 +1,62 @@
+{
+  "code": "4.02",
+  "title": "Chronic heart failure",
+  "body_system": "cardiovascular",
+  "version": 1,
+  "summary": "Chronic heart failure (systolic or diastolic) with documented ventricular dysfunction by echocardiogram or other testing, persistent symptoms despite treatment, plus inability to perform exercise testing safely OR three episodes of heart failure within 12 months.",
+  "synonyms": {
+    "chronic heart failure":   ["CHF", "congestive heart failure", "heart failure", "HF", "HFrEF", "HFpEF"],
+    "systolic dysfunction":    ["reduced ejection fraction", "HFrEF", "low EF", "decreased LV function"],
+    "diastolic dysfunction":   ["preserved ejection fraction", "HFpEF", "diastolic heart failure"],
+    "ejection fraction":       ["EF", "LVEF", "left ventricular ejection fraction"],
+    "echocardiogram":          ["echo", "TTE", "transthoracic echocardiogram"],
+    "ventricular dysfunction": ["LV dysfunction", "left ventricular dysfunction", "ventricular impairment"],
+    "shortness of breath":     ["SOB", "DOE", "dyspnea on exertion", "dyspnea"],
+    "edema":                   ["lower extremity edema", "LE edema", "swelling", "fluid retention", "pitting edema"],
+    "fluid retention":         ["volume overload", "fluid overload", "edema"],
+    "NYHA":                    ["NYHA class", "New York Heart Association", "NYHA III", "NYHA IV"],
+    "exercise tolerance test": ["ETT", "stress test", "treadmill test", "exercise stress test"],
+    "BNP":                     ["B-type natriuretic peptide", "NT-proBNP", "elevated BNP"],
+    "hospitalization":         ["hospital admission", "inpatient", "ER visit", "emergency department"],
+    "12 months":               ["1 year", "one year", "12-month period"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Documented chronic heart failure (systolic or diastolic) on imaging while medically stable: ejection fraction ≤30% during stable period, OR diastolic dysfunction with LV posterior wall + septum ≥2.5 cm and enlarged left atrium",
+        "keywords": ["echocardiogram", "ejection fraction", "EF 30%", "LVEF", "diastolic dysfunction", "left atrial enlargement", "wall thickness"]
+      },
+      {
+        "path": "B",
+        "criterion": "Persistent symptoms of heart failure that very seriously limit ability to do activities of daily living",
+        "keywords": ["NYHA III", "NYHA IV", "DOE", "orthopnea", "PND", "fatigue", "limited ADLs", "shortness of breath at rest"]
+      },
+      {
+        "logic": "OR",
+        "path": "C",
+        "criterion": "Inability to perform exercise tolerance test OR three episodes of heart failure",
+        "children": [
+          {
+            "path": "C.1",
+            "criterion": "Inability to perform exercise tolerance test at workload equivalent to 5 METs or less due to symptoms (chest discomfort, dyspnea, fatigue, ischemic ECG changes, arrhythmia, BP drop)",
+            "keywords": ["exercise tolerance test", "ETT", "5 METs", "stress test", "low workload", "ischemic ECG changes", "arrhythmia on stress"]
+          },
+          {
+            "path": "C.2",
+            "criterion": "Three or more separate episodes of acute heart failure within 12 months requiring emergency department or hospital treatment, with intervening period of stability",
+            "keywords": ["three hospitalizations", "acute heart failure", "decompensated heart failure", "ER visit", "hospital admission", "diuresis"],
+            "duration_months_required": 12
+          },
+          {
+            "path": "C.3",
+            "criterion": "Inability to perform exercise tolerance test at workload of 5 METs because exercise testing would present significant risk to the individual",
+            "keywords": ["exercise testing contraindicated", "high risk", "unable to exercise"]
+          }
+        ]
+      }
+    ]
+  }
+}

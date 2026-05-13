@@ -1,0 +1,32 @@
+{
+  "code": "13.08",
+  "title": "Salivary gland cancer",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Salivary gland cancer with metastases beyond regional lymph nodes, OR recurrent disease following initial anticancer therapy.",
+  "synonyms": {
+    "salivary gland cancer":   ["parotid cancer", "submandibular gland cancer", "sublingual gland cancer", "minor salivary gland cancer"],
+    "mucoepidermoid":          ["mucoepidermoid carcinoma"],
+    "adenoid cystic carcinoma": ["ACC"],
+    "metastasis":              ["distant metastases", "M1 disease"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "PRECONDITION", "criterion": "Pathology-confirmed salivary gland cancer",
+       "keywords": ["salivary gland cancer", "parotid cancer", "mucoepidermoid carcinoma", "adenoid cystic carcinoma", "biopsy"]},
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Distant metastases or recurrent disease",
+        "children": [
+          {"path": "A", "criterion": "Distant metastases (beyond regional lymph nodes)",
+           "keywords": ["distant metastases", "M1 disease", "lung metastases", "bone metastases"]},
+          {"path": "B", "criterion": "Recurrent disease following initial anticancer therapy",
+           "keywords": ["recurrent disease", "tumor recurrence", "treatment failure"]}
+        ]
+      }
+    ]
+  }
+}

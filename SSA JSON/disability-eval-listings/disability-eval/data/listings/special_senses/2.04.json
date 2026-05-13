@@ -1,0 +1,18 @@
+{
+  "code": "2.04",
+  "title": "Visual impairment (combined acuity and field impairment)",
+  "body_system": "special_senses",
+  "version": 1,
+  "summary": "Visual impairment value of 1.00 or greater in the better eye, calculated by adding visual acuity impairment value and visual field impairment value.",
+  "synonyms": {
+    "visual impairment value": ["VIV", "combined visual impairment"],
+    "visual acuity impairment value": ["VAIV"],
+    "visual field impairment value": ["VFIV"],
+    "perimetry":               ["automated perimetry", "HFA"]
+  },
+  "rule_json": {
+    "path": "ROOT",
+    "criterion": "Visual impairment value of 1.00 or greater in the better eye (sum of visual acuity impairment value and visual field impairment value calculated per SSA formula)",
+    "keywords": ["visual impairment value", "VIV", "1.00 or greater", "visual acuity impairment value", "visual field impairment value", "automated perimetry"]
+  }
+}

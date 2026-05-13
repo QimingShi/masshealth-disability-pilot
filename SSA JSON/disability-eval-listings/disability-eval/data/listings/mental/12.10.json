@@ -1,0 +1,49 @@
+{
+  "code": "12.10",
+  "title": "Autism spectrum disorder",
+  "body_system": "mental",
+  "version": 1,
+  "summary": "Autism spectrum disorder with qualitative deficits in social communication AND restricted/repetitive behaviors, AND paragraph B functional limitations.",
+  "synonyms": {
+    "autism":                  ["autism spectrum disorder", "ASD", "autistic", "Asperger's", "Asperger syndrome", "PDD"],
+    "social communication":    ["social interaction", "social skills deficit", "communication impairment"],
+    "restricted interests":    ["restricted interests", "narrow interests", "fixated interests"],
+    "repetitive behaviors":    ["stereotypy", "stereotyped movements", "rocking", "hand flapping", "stimming"],
+    "ADOS":                    ["Autism Diagnostic Observation Schedule", "ADOS-2"],
+    "ADI-R":                   ["Autism Diagnostic Interview"],
+    "marked limitation":       ["marked", "moderately severe"],
+    "extreme limitation":      ["extreme", "severe limitation"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "AND",
+        "path": "A",
+        "criterion": "Medical documentation of qualitative deficits AND restricted/repetitive behaviors",
+        "children": [
+          {"path": "A.1", "criterion": "Qualitative deficits in verbal communication, nonverbal communication, and social interaction",
+           "keywords": ["autism", "ASD", "Asperger's", "social communication deficit", "social interaction impairment", "ADOS"]},
+          {"path": "A.2", "criterion": "Significantly restricted, repetitive patterns of behavior, interests, or activities",
+           "keywords": ["restricted interests", "repetitive behaviors", "stereotypy", "stimming", "fixated interests"]}
+        ]
+      },
+      {
+        "logic": "OR",
+        "path": "B",
+        "criterion": "Extreme limitation of one, OR marked limitation of two, of the four areas",
+        "children": [
+          {"path": "B.1", "criterion": "Marked/extreme limitation: understand, remember, apply information",
+           "keywords": ["cognitive testing", "intellectual functioning"]},
+          {"path": "B.2", "criterion": "Marked/extreme limitation: interact with others",
+           "keywords": ["social interaction", "social communication", "isolation"]},
+          {"path": "B.3", "criterion": "Marked/extreme limitation: concentrate, persist, maintain pace",
+           "keywords": ["concentration", "pace", "task completion"]},
+          {"path": "B.4", "criterion": "Marked/extreme limitation: adapt, manage oneself",
+           "keywords": ["self-care", "ADLs", "rigid routine", "behavioral inflexibility"]}
+        ]
+      }
+    ]
+  }
+}

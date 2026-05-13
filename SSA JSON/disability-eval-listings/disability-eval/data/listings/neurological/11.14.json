@@ -1,0 +1,47 @@
+{
+  "code": "11.14",
+  "title": "Peripheral neuropathy",
+  "body_system": "neurological",
+  "version": 1,
+  "summary": "Peripheral neuropathy with disorganization of motor function in two extremities, OR marked limitation in physical functioning AND in one mental functioning area.",
+  "synonyms": {
+    "peripheral neuropathy":   ["polyneuropathy", "neuropathy", "diabetic neuropathy", "DPN", "chemotherapy-induced peripheral neuropathy", "CIPN", "CIDP", "chronic inflammatory demyelinating polyneuropathy", "GBS", "Guillain-Barre"],
+    "EMG":                     ["electromyography", "needle EMG"],
+    "NCS":                     ["nerve conduction study", "nerve conduction velocity", "NCV"],
+    "decreased sensation":     ["hypoesthesia", "sensory loss", "stocking-glove", "decreased pinprick"],
+    "weakness":                ["motor weakness", "decreased strength", "distal weakness"],
+    "decreased reflexes":      ["hyporeflexia", "DTR diminished", "areflexia"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "PRECONDITION",
+        "criterion": "Peripheral neuropathy diagnosis (clinical exam, EMG/NCS, or nerve biopsy)",
+        "keywords": ["peripheral neuropathy", "polyneuropathy", "diabetic neuropathy", "CIPN", "CIDP", "EMG", "NCS", "stocking-glove distribution"]
+      },
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Motor disorganization OR marked limitation pattern",
+        "children": [
+          {"path": "A", "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities, despite ≥3 months prescribed treatment",
+           "keywords": ["motor weakness", "two extremity weakness", "extreme limitation", "despite treatment"],
+           "duration_months_required": 3},
+          {
+            "logic": "AND",
+            "path": "B",
+            "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+            "children": [
+              {"path": "B.1", "criterion": "Marked limitation in physical functioning",
+               "keywords": ["marked physical limitation"]},
+              {"path": "B.2", "criterion": "Marked limitation in one mental functioning area",
+               "keywords": ["marked cognitive limitation"]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

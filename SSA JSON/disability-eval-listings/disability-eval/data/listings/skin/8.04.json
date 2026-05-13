@@ -1,0 +1,25 @@
+{
+  "code": "8.04",
+  "title": "Chronic infections of the skin or mucous membranes",
+  "body_system": "skin",
+  "version": 1,
+  "summary": "Chronic infection of skin or mucous membranes with extensive fungating or extensive ulcerating lesions, persisting at least 3 months despite continuing treatment.",
+  "synonyms": {
+    "chronic skin infection":  ["chronic mucocutaneous infection", "chronic dermatologic infection"],
+    "fungating lesions":       ["fungating wounds", "fungating tumors"],
+    "ulcerating lesions":      ["ulceration", "non-healing ulcers", "skin ulcers"],
+    "wound culture":           ["culture and sensitivity", "wound C&S"],
+    "biopsy":                  ["skin biopsy", "punch biopsy"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Chronic infection of skin or mucous membranes with extensive fungating or extensive ulcerating lesions",
+       "keywords": ["chronic skin infection", "fungating lesions", "ulcerating lesions", "non-healing ulcers", "extensive lesions", "wound culture"]},
+      {"path": "B", "criterion": "Persistent for at least 3 months despite continuing treatment",
+       "keywords": ["3 months", "persistent", "despite treatment"],
+       "duration_months_required": 3}
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "code": "13.04",
+  "title": "Soft tissue sarcoma",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Soft tissue sarcoma with regional or distant metastases, OR persistent/recurrent disease after initial anticancer therapy.",
+  "synonyms": {
+    "soft tissue sarcoma":     ["sarcoma", "STS", "leiomyosarcoma", "liposarcoma", "rhabdomyosarcoma", "synovial sarcoma", "MFH", "malignant fibrous histiocytoma", "MPNST", "GIST", "gastrointestinal stromal tumor"],
+    "metastasis":              ["metastases", "regional lymph node metastases", "distant metastases"],
+    "biopsy":                  ["core biopsy", "incisional biopsy", "excisional biopsy"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "PRECONDITION", "criterion": "Pathology-confirmed soft tissue sarcoma",
+       "keywords": ["soft tissue sarcoma", "leiomyosarcoma", "liposarcoma", "rhabdomyosarcoma", "synovial sarcoma", "GIST", "biopsy"]},
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Lymph node metastases, distant metastases, or persistent/recurrent disease",
+        "children": [
+          {"path": "A", "criterion": "Regional or distant metastases",
+           "keywords": ["regional lymph node metastases", "distant metastases", "M1 disease", "metastatic sarcoma"]},
+          {"path": "B", "criterion": "Persistent or recurrent disease following initial anticancer therapy",
+           "keywords": ["persistent sarcoma", "recurrent sarcoma", "treatment failure"]}
+        ]
+      }
+    ]
+  }
+}

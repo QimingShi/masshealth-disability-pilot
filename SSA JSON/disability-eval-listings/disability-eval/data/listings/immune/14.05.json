@@ -1,0 +1,47 @@
+{
+  "code": "14.05",
+  "title": "Polymyositis and dermatomyositis",
+  "body_system": "immune",
+  "version": 1,
+  "summary": "Polymyositis or dermatomyositis with proximal muscle weakness and one of: dysphagia, dysarthria, severe weakness affecting ADLs, OR repeated manifestations with constitutional symptoms and marked functional limitation.",
+  "synonyms": {
+    "polymyositis":            ["PM", "inflammatory myopathy", "myositis"],
+    "dermatomyositis":         ["DM", "dermatomyositis with skin findings"],
+    "inclusion body myositis": ["IBM", "sporadic IBM"],
+    "muscle biopsy":           ["biopsy of muscle"],
+    "EMG":                     ["electromyography", "myopathic EMG"],
+    "CK":                      ["creatine kinase", "elevated CK", "CPK"],
+    "aldolase":                ["elevated aldolase"],
+    "Gottron's papules":       ["Gottron papules", "Gottron's sign"],
+    "heliotrope rash":         ["heliotrope eruption"],
+    "dysphagia":               ["swallowing difficulty"],
+    "proximal weakness":       ["proximal muscle weakness", "shoulder weakness", "hip girdle weakness"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Proximal muscle weakness affecting ability to perform ADLs",
+       "keywords": ["proximal muscle weakness", "shoulder weakness", "hip weakness", "PM", "DM", "elevated CK", "myopathic EMG", "muscle biopsy"]},
+      {"path": "B", "criterion": "Impaired swallowing (dysphagia) with aspiration from oropharyngeal dysphagia",
+       "keywords": ["dysphagia", "aspiration", "swallowing difficulty", "oropharyngeal dysphagia"]},
+      {"path": "C", "criterion": "Impaired respiration with reduced FEV1 or FVC due to respiratory muscle weakness",
+       "keywords": ["respiratory muscle weakness", "FEV1 reduced", "FVC reduced", "ILD", "interstitial lung disease"]},
+      {"path": "D", "criterion": "Diffuse calcinosis with limitation of joint mobility or intestinal motility",
+       "keywords": ["calcinosis", "calcinosis cutis", "joint contractures"]},
+      {
+        "logic": "AND",
+        "path": "E",
+        "criterion": "Repeated manifestations with constitutional symptoms AND marked limitation in one functional area",
+        "children": [
+          {"path": "E.1", "criterion": "Repeated manifestations of polymyositis/dermatomyositis",
+           "keywords": ["repeated manifestations", "active myositis"]},
+          {"path": "E.2", "criterion": "Two constitutional symptoms",
+           "keywords": ["fatigue", "fever", "malaise", "weight loss"]},
+          {"path": "E.3", "criterion": "Marked limitation in ADLs, social functioning, or completing tasks",
+           "keywords": ["ADLs", "social functioning", "concentration"]}
+        ]
+      }
+    ]
+  }
+}

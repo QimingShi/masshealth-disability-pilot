@@ -1,0 +1,35 @@
+{
+  "code": "13.03",
+  "title": "Skin cancer (other than melanoma)",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Skin cancer (basal cell carcinoma, squamous cell carcinoma, or other non-melanoma skin cancer) with sarcoma, carcinoma involving regional/distant lymph nodes, OR metastases.",
+  "synonyms": {
+    "basal cell carcinoma":    ["BCC", "basal cell"],
+    "squamous cell carcinoma": ["SCC", "squamous cell of skin", "cutaneous SCC"],
+    "Merkel cell carcinoma":   ["Merkel cell", "neuroendocrine carcinoma of skin"],
+    "metastasis":              ["metastases", "distant metastases", "regional lymph node metastases"],
+    "biopsy":                  ["pathology", "skin biopsy", "Mohs"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "PRECONDITION", "criterion": "Pathology-confirmed skin cancer (non-melanoma)",
+       "keywords": ["basal cell carcinoma", "squamous cell carcinoma", "Merkel cell carcinoma", "skin cancer", "biopsy"]},
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Sarcoma, lymph node involvement, or distant metastases",
+        "children": [
+          {"path": "A", "criterion": "Sarcoma of skin",
+           "keywords": ["dermatofibrosarcoma", "angiosarcoma of skin", "Kaposi sarcoma", "skin sarcoma"]},
+          {"path": "B", "criterion": "Carcinoma with metastases to or beyond the regional lymph nodes",
+           "keywords": ["regional lymph node metastases", "lymph node spread", "nodal disease"]},
+          {"path": "C", "criterion": "Distant metastases",
+           "keywords": ["distant metastases", "M1 disease", "lung metastases", "bone metastases", "liver metastases"]}
+        ]
+      }
+    ]
+  }
+}

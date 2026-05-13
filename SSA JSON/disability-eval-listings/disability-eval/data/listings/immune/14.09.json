@@ -1,0 +1,85 @@
+{
+  "code": "14.09",
+  "title": "Inflammatory arthritis",
+  "body_system": "immune",
+  "version": 1,
+  "summary": "Inflammatory arthritis (rheumatoid arthritis, psoriatic arthritis, ankylosing spondylitis, etc.) with persistent inflammation/deformity affecting major peripheral joints causing inability to ambulate effectively or perform fine/gross movements, OR ankylosis of dorsolumbar/cervical spine, OR repeated manifestations with marked functional limitation.",
+  "synonyms": {
+    "rheumatoid arthritis":    ["RA", "rheumatoid", "seropositive RA", "seronegative RA"],
+    "psoriatic arthritis":     ["PsA", "psoriatic"],
+    "ankylosing spondylitis":  ["AS", "ankylosing spondylosis", "axial spondyloarthritis", "axSpA"],
+    "reactive arthritis":      ["ReA", "Reiter's syndrome"],
+    "inflammatory arthritis":  ["spondyloarthritis", "spondyloarthropathy", "SpA"],
+    "RF":                      ["rheumatoid factor", "elevated RF"],
+    "anti-CCP":                ["anti-cyclic citrullinated peptide", "CCP antibody"],
+    "ESR":                     ["erythrocyte sedimentation rate", "elevated ESR", "sed rate"],
+    "CRP":                     ["C-reactive protein", "elevated CRP"],
+    "synovitis":               ["joint inflammation", "synovitis on exam", "warm joints", "swollen joints"],
+    "ankylosis":               ["fusion", "joint fusion", "spine fusion"],
+    "DMARD":                   ["disease-modifying antirheumatic drug", "methotrexate", "MTX", "leflunomide", "Plaquenil", "hydroxychloroquine", "sulfasalazine", "biologic", "Humira", "adalimumab", "Enbrel", "etanercept", "Remicade", "infliximab", "Rituxan", "rituximab"],
+    "joint deformity":         ["swan neck", "boutonniere", "ulnar deviation", "joint destruction"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "AND",
+        "path": "A",
+        "criterion": "Persistent inflammation or deformity in major peripheral weight-bearing joints with inability to ambulate effectively, OR in major peripheral joints in each upper extremity with inability to perform fine and gross movements",
+        "children": [
+          {"path": "A.1", "criterion": "Persistent inflammation or deformity in major weight-bearing joints OR major upper extremity joints",
+           "keywords": ["synovitis", "joint deformity", "RA", "PsA", "swelling", "tenderness", "joint destruction"]},
+          {
+            "logic": "OR",
+            "path": "A.2",
+            "criterion": "Inability to ambulate effectively OR inability to perform fine/gross movements",
+            "children": [
+              {"path": "A.2.a", "criterion": "Inability to ambulate effectively (extreme limitation in walking) due to weight-bearing joint involvement",
+               "keywords": ["ambulation impaired", "cannot walk effectively", "two-handed assistive device", "walker", "bilateral canes"]},
+              {"path": "A.2.b", "criterion": "Inability to perform fine and gross movements effectively in upper extremities",
+               "keywords": ["cannot manipulate", "fine and gross movements", "loss of manual dexterity", "hand deformities"]}
+            ]
+          }
+        ]
+      },
+      {
+        "logic": "AND",
+        "path": "B",
+        "criterion": "Inflammation or deformity in major joint(s) plus involvement of two or more organs/body systems with one at moderate severity and constitutional symptoms",
+        "children": [
+          {"path": "B.1", "criterion": "Inflammation or deformity of major joints",
+           "keywords": ["synovitis", "joint deformity", "active arthritis"]},
+          {"path": "B.2", "criterion": "Involvement of two or more organs/body systems with at least one at moderate severity",
+           "keywords": ["organ involvement", "extra-articular manifestations", "ILD", "vasculitis", "pericarditis"]},
+          {"path": "B.3", "criterion": "Two constitutional symptoms (severe fatigue, fever, malaise, weight loss)",
+           "keywords": ["fatigue", "fever", "malaise", "weight loss"]}
+        ]
+      },
+      {
+        "logic": "OR",
+        "path": "C",
+        "criterion": "Ankylosing spondylitis with fixation of dorsolumbar or cervical spine OR fixation at angle producing functional limitation",
+        "children": [
+          {"path": "C.1", "criterion": "Ankylosing spondylitis with fixation of dorsolumbar or cervical spine at 45° or more of flexion measured from vertical position",
+           "keywords": ["ankylosing spondylitis", "AS", "spine fixation", "kyphosis", "fused spine"]},
+          {"path": "C.2", "criterion": "Fixation of dorsolumbar or cervical spine at 30° or more (but less than 45°) of flexion AND involvement of two or more organs/body systems with one at moderate severity",
+           "keywords": ["AS", "spine fixation", "extra-articular involvement", "uveitis", "IBD"]}
+        ]
+      },
+      {
+        "logic": "AND",
+        "path": "D",
+        "criterion": "Repeated manifestations with constitutional symptoms AND marked limitation",
+        "children": [
+          {"path": "D.1", "criterion": "Repeated manifestations of inflammatory arthritis",
+           "keywords": ["repeated flares", "active arthritis", "uncontrolled disease"]},
+          {"path": "D.2", "criterion": "Two constitutional symptoms",
+           "keywords": ["fatigue", "fever", "malaise", "weight loss"]},
+          {"path": "D.3", "criterion": "Marked limitation in ADLs, social functioning, or completing tasks in timely manner",
+           "keywords": ["ADLs", "social functioning", "concentration", "persistence", "pace"]}
+        ]
+      }
+    ]
+  }
+}

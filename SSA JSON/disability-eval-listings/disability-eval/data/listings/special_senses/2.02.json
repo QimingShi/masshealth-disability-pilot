@@ -1,0 +1,18 @@
+{
+  "code": "2.02",
+  "title": "Loss of central visual acuity",
+  "body_system": "special_senses",
+  "version": 1,
+  "summary": "Best-corrected central visual acuity in the better eye of 20/200 or worse.",
+  "synonyms": {
+    "visual acuity":           ["VA", "BCVA", "best-corrected visual acuity", "Snellen acuity"],
+    "20/200":                  ["legally blind", "legal blindness", "20/200 vision"],
+    "blind":                   ["blindness", "visual impairment"],
+    "ophthalmologist":         ["eye doctor", "OD", "optometrist", "MD eye", "vision specialist"]
+  },
+  "rule_json": {
+    "path": "ROOT",
+    "criterion": "Best-corrected central visual acuity in the better eye of 20/200 or worse, measured by ophthalmologist or optometrist",
+    "keywords": ["visual acuity 20/200", "BCVA", "best-corrected visual acuity", "legal blindness", "Snellen", "ophthalmology exam", "better eye"]
+  }
+}

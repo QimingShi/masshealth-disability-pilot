@@ -1,0 +1,40 @@
+{
+  "code": "13.20",
+  "title": "Pancreas — carcinoma or sarcoma (excluding islet cell carcinoma)",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Carcinoma or sarcoma of the pancreas (excluding islet cell carcinoma) — disabled per se. Islet cell carcinoma qualifies if inoperable, unresectable, recurrent, or metastatic.",
+  "synonyms": {
+    "pancreatic cancer":       ["pancreatic adenocarcinoma", "pancreatic ductal adenocarcinoma", "PDAC", "pancreas cancer"],
+    "islet cell carcinoma":    ["pancreatic neuroendocrine tumor", "PNET", "pancreatic NET"],
+    "Whipple":                 ["Whipple procedure", "pancreaticoduodenectomy"],
+    "CA 19-9":                 ["CA19-9", "elevated CA 19-9"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Carcinoma (other than islet cell carcinoma) or sarcoma of the pancreas",
+       "keywords": ["pancreatic adenocarcinoma", "PDAC", "pancreatic cancer", "pancreas cancer", "pancreatic sarcoma"]},
+      {
+        "logic": "AND",
+        "path": "B",
+        "criterion": "Islet cell carcinoma that is inoperable, unresectable, recurrent, OR metastatic",
+        "children": [
+          {"path": "B.1", "criterion": "Islet cell carcinoma (pancreatic neuroendocrine tumor) by pathology",
+           "keywords": ["islet cell carcinoma", "pancreatic neuroendocrine tumor", "PNET", "biopsy"]},
+          {
+            "logic": "OR",
+            "path": "B.2",
+            "criterion": "Inoperable, recurrent, or metastatic",
+            "children": [
+              {"path": "B.2.a", "criterion": "Inoperable or unresectable", "keywords": ["inoperable", "unresectable"]},
+              {"path": "B.2.b", "criterion": "Recurrent following initial therapy", "keywords": ["recurrent disease", "treatment failure"]},
+              {"path": "B.2.c", "criterion": "Distant metastases", "keywords": ["distant metastases", "liver metastases", "M1 disease"]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

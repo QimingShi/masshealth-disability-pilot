@@ -1,0 +1,48 @@
+{
+  "code": "11.11",
+  "title": "Post-polio syndrome",
+  "body_system": "neurological",
+  "version": 1,
+  "summary": "Post-polio syndrome with disorganization of motor function in two extremities, OR bulbar/neuromuscular dysfunction, OR significant respiratory motor function impairment, OR marked physical AND mental limitation.",
+  "synonyms": {
+    "post-polio syndrome":     ["PPS", "late effects of polio", "poliomyelitis sequelae"],
+    "poliomyelitis":           ["polio", "infantile paralysis"],
+    "bulbar dysfunction":      ["dysphagia", "dysarthria", "swallowing difficulty"],
+    "respiratory weakness":    ["respiratory muscle weakness", "diaphragm weakness", "ventilatory failure"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "PRECONDITION",
+        "criterion": "Documented history of poliomyelitis with subsequent post-polio syndrome",
+        "keywords": ["post-polio syndrome", "PPS", "polio history", "poliomyelitis"]
+      },
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Motor/bulbar/respiratory dysfunction OR marked limitation pattern",
+        "children": [
+          {"path": "A", "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities",
+           "keywords": ["motor weakness", "two extremity weakness", "extreme limitation"]},
+          {"path": "B", "criterion": "Bulbar and neuromuscular dysfunction with significant difficulty swallowing, breathing, or speaking",
+           "keywords": ["dysphagia", "dysarthria", "bulbar dysfunction", "swallowing difficulty"]},
+          {"path": "C", "criterion": "Significant respiratory motor function impairment requiring respiratory support",
+           "keywords": ["respiratory weakness", "ventilatory failure", "BiPAP", "ventilator", "respiratory support"]},
+          {
+            "logic": "AND",
+            "path": "D",
+            "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+            "children": [
+              {"path": "D.1", "criterion": "Marked limitation in physical functioning",
+               "keywords": ["marked physical limitation"]},
+              {"path": "D.2", "criterion": "Marked limitation in one mental functioning area",
+               "keywords": ["marked cognitive limitation"]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

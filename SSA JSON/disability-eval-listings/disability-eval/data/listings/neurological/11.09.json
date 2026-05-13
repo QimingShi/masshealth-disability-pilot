@@ -1,0 +1,63 @@
+{
+  "code": "11.09",
+  "title": "Multiple sclerosis",
+  "body_system": "neurological",
+  "version": 1,
+  "summary": "Multiple sclerosis with disorganization of motor function in two extremities, OR visual or mental impairment with marked physical functioning limitation, OR significant fatigue with limited functioning.",
+  "synonyms": {
+    "multiple sclerosis":      ["MS", "demyelinating disease", "RRMS", "relapsing-remitting MS", "SPMS", "secondary-progressive MS", "PPMS", "primary-progressive MS"],
+    "MRI brain":               ["MRI of brain", "brain MRI"],
+    "MRI spine":               ["spinal MRI", "MRI of spine"],
+    "demyelinating lesions":   ["white matter lesions", "T2 lesions", "FLAIR hyperintensities", "plaques", "Dawson's fingers"],
+    "fatigue":                 ["MS fatigue", "exhaustion", "tiredness"],
+    "spasticity":              ["spastic", "increased tone", "hypertonia"],
+    "ataxia":                  ["incoordination", "cerebellar signs"],
+    "DMT":                     ["disease-modifying therapy", "interferon", "Copaxone", "glatiramer", "Tysabri", "natalizumab", "Ocrevus", "ocrelizumab", "Tecfidera"],
+    "marked limitation":       ["marked", "moderately severe"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "PRECONDITION",
+        "criterion": "Documented diagnosis of multiple sclerosis (clinical history + MRI consistent with demyelination)",
+        "keywords": ["multiple sclerosis", "MS", "RRMS", "SPMS", "PPMS", "demyelinating lesions", "MRI brain", "MRI spine"]
+      },
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Motor disorganization OR functional limitation pattern OR fatigue-based limitation",
+        "children": [
+          {
+            "path": "A",
+            "criterion": "Disorganization of motor function in two extremities resulting in extreme limitation in standing, balancing, or using upper extremities",
+            "keywords": ["motor weakness", "spasticity", "ataxia", "two extremity weakness", "extreme limitation"]
+          },
+          {
+            "logic": "AND",
+            "path": "B",
+            "criterion": "Visual or mental impairment AND marked physical functioning limitation",
+            "children": [
+              {"path": "B.1", "criterion": "Visual impairment per 2.00, OR marked limitation in one mental functioning area",
+               "keywords": ["optic neuritis", "visual impairment", "cognitive impairment", "MS dementia", "executive dysfunction"]},
+              {"path": "B.2", "criterion": "Marked limitation in physical functioning",
+               "keywords": ["marked physical limitation", "decreased mobility", "MS fatigue"]}
+            ]
+          },
+          {
+            "logic": "AND",
+            "path": "C",
+            "criterion": "Significant, reproducible fatigue of motor function AND marked limitation in physical functioning",
+            "children": [
+              {"path": "C.1", "criterion": "Significant, reproducible fatigue of motor function with substantial muscle weakness on repetitive activity",
+               "keywords": ["MS fatigue", "motor fatigue", "weakness with repetition", "fatigability"]},
+              {"path": "C.2", "criterion": "Marked limitation in physical functioning",
+               "keywords": ["marked physical limitation", "decreased mobility"]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

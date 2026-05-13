@@ -1,0 +1,35 @@
+{
+  "code": "13.29",
+  "title": "Malignant melanoma",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Malignant melanoma with metastases as described (recurrent palpable nodal disease, bones, skin/subcutaneous tissue beyond regional, OR metastases to viscera).",
+  "synonyms": {
+    "melanoma":                ["malignant melanoma", "cutaneous melanoma", "ocular melanoma", "uveal melanoma", "mucosal melanoma"],
+    "Breslow thickness":       ["Breslow depth"],
+    "Clark level":             ["Clark's level"],
+    "sentinel lymph node":     ["SLN", "sentinel node biopsy", "SLNB"],
+    "metastasis":              ["distant metastases", "regional metastases", "M1 disease", "in-transit metastases", "satellite lesions"],
+    "BRAF":                    ["BRAF mutation", "BRAF V600E"],
+    "biopsy":                  ["punch biopsy", "excisional biopsy", "wide local excision"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "PRECONDITION", "criterion": "Pathology-confirmed malignant melanoma",
+       "keywords": ["malignant melanoma", "melanoma", "biopsy", "Breslow thickness", "Clark level"]},
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Recurrent nodal, distant skin/subcutaneous, bones, or visceral metastases",
+        "children": [
+          {"path": "A", "criterion": "Recurrent (≥2 episodes) palpable nodal disease (regional lymph node involvement after prior treatment)",
+           "keywords": ["recurrent nodal disease", "palpable lymph nodes", "regional recurrence", "in-transit metastases", "satellite lesions"]},
+          {"path": "B", "criterion": "Metastases to or beyond the regional lymph nodes (distant skin/subcutaneous tissue, lung, liver, bone, brain)",
+           "keywords": ["distant metastases", "M1 disease", "metastatic melanoma", "lung metastases", "bone metastases", "brain metastases", "liver metastases", "subcutaneous metastases"]}
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,78 @@
+# =============================================================================
+# PHI and patient-derived data — NEVER commit
+# =============================================================================
+# Anything inside _phi/ is real patient data. Stays local-only.
+_phi/
+
+# Any PDF file in the project root is assumed to be a patient packet.
+# If you have a non-PHI PDF (e.g., the public Matched_Listing form template),
+# add an exception below.
+/*.pdf
+
+# Per-case output forms contain verbatim chart quotes — PHI-derived.
+output/
+
+# Preview / rendered images of source PDFs (may contain PHI even if redacted)
+_preview/
+
+# Common locations for stray PHI text dumps
+medical_records.txt
+chunks_real.json
+
+# Keep the public Matched_Listing form template if it's checked in (not currently)
+# !Matched_Listing form.pdf
+
+# =============================================================================
+# Python
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual envs
+.venv/
+venv/
+env/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Local secrets
+.env
+.envrc
+*.key
+*.pem
+
+# Claude Code local project config
+.claude/
+
+# Office / Word temp lockfiles
+~$*
+.~lock.*
+
+# Memory / session files
+memory/

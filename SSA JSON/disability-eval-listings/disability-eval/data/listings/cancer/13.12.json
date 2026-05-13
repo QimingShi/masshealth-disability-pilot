@@ -1,0 +1,33 @@
+{
+  "code": "13.12",
+  "title": "Maxilla, orbit, or temporal fossa cancer",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Sarcoma or carcinoma of maxilla, orbit, or temporal fossa with one of: inoperable/unresectable, recurrent disease, regional/distant metastases.",
+  "synonyms": {
+    "maxillary cancer":        ["maxilla cancer", "maxillary sinus cancer"],
+    "orbital cancer":          ["orbit cancer"],
+    "temporal fossa":          ["temporal fossa tumor"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "PRECONDITION", "criterion": "Pathology-confirmed cancer of maxilla, orbit, or temporal fossa",
+       "keywords": ["maxillary cancer", "orbital cancer", "temporal fossa tumor", "biopsy"]},
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Inoperable, recurrent, or metastatic disease",
+        "children": [
+          {"path": "A", "criterion": "Sarcoma OR inoperable/unresectable carcinoma",
+           "keywords": ["sarcoma", "inoperable", "unresectable"]},
+          {"path": "B", "criterion": "Recurrent cancer following initial therapy",
+           "keywords": ["recurrent disease", "treatment failure"]},
+          {"path": "C", "criterion": "Regional or distant metastases",
+           "keywords": ["regional metastases", "distant metastases", "M1 disease"]}
+        ]
+      }
+    ]
+  }
+}

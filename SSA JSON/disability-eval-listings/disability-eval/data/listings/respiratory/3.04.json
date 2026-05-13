@@ -1,0 +1,77 @@
+{
+  "code": "3.04",
+  "title": "Cystic fibrosis",
+  "body_system": "respiratory",
+  "version": 1,
+  "summary": "Cystic fibrosis (genetic/sweat test confirmed) meeting one of: low FEV1, exacerbations requiring hospitalization, low SpO2, hemoptysis, pulmonary hypertension, weight loss, or respiratory failure.",
+  "synonyms": {
+    "cystic fibrosis":         ["CF", "mucoviscidosis"],
+    "sweat test":               ["sweat chloride test", "pilocarpine iontophoresis"],
+    "CFTR":                    ["CFTR gene", "CFTR mutation", "F508del", "delta-F508"],
+    "FEV1":                    ["forced expiratory volume", "FEV-1"],
+    "spirometry":              ["pulmonary function test", "PFT"],
+    "exacerbation":            ["pulmonary exacerbation", "CF exacerbation", "lung exacerbation"],
+    "IV antibiotics":          ["intravenous antibiotics", "IV abx"],
+    "hemoptysis":              ["coughing up blood", "blood-tinged sputum"],
+    "weight loss":             ["unintentional weight loss", "BMI low", "underweight", "wasting"],
+    "pulmonary hypertension":  ["pulmonary HTN", "PH", "elevated PA pressure", "RVSP"],
+    "respiratory failure":     ["acute respiratory failure", "type I respiratory failure", "type II respiratory failure"],
+    "hospitalization":         ["hospital admission", "inpatient"],
+    "12 months":               ["1 year", "one year", "12-month period"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Diagnosis of cystic fibrosis by sweat chloride test or genetic testing for CFTR mutations",
+        "keywords": ["cystic fibrosis", "CF diagnosis", "sweat chloride", "CFTR mutation", "F508del", "genetic testing"]
+      },
+      {
+        "logic": "OR",
+        "path": "B",
+        "criterion": "One of: low FEV1, exacerbations, low oxygenation, hemoptysis, pulmonary HTN, weight loss, or respiratory failure",
+        "children": [
+          {
+            "path": "B.1",
+            "criterion": "FEV1 ≤ value in SSA Table VII-A or VII-B for age, sex, and height",
+            "keywords": ["FEV1", "spirometry", "Table VII", "low FEV1"]
+          },
+          {
+            "path": "B.2",
+            "criterion": "Two or more pulmonary exacerbations in 12 months requiring IV antibiotics, IV chest physiotherapy, or hospitalization",
+            "keywords": ["pulmonary exacerbation", "IV antibiotics", "hospitalization", "two or more exacerbations"],
+            "duration_months_required": 12
+          },
+          {
+            "path": "B.3",
+            "criterion": "SpO2 ≤ value in Table VIII on pulse oximetry while breathing room air at rest, or after 6-minute walk",
+            "keywords": ["SpO2", "pulse oximetry", "oxygen saturation", "Table VIII", "6-minute walk", "6MWT"]
+          },
+          {
+            "path": "B.4",
+            "criterion": "Hemoptysis (other than blood-streaked sputum) requiring vascular embolization to control bleeding",
+            "keywords": ["hemoptysis", "embolization", "bronchial artery embolization", "massive hemoptysis"]
+          },
+          {
+            "path": "B.5",
+            "criterion": "Pulmonary hypertension confirmed by mean pulmonary artery pressure ≥25 mm Hg on right heart catheterization",
+            "keywords": ["pulmonary hypertension", "right heart catheterization", "mPAP", "elevated PA pressure"]
+          },
+          {
+            "path": "B.6",
+            "criterion": "Respiratory failure requiring invasive mechanical ventilation, noninvasive ventilation with BiPAP, or a combination of both for ≥48 consecutive hours, occurring twice within 12 months",
+            "keywords": ["respiratory failure", "mechanical ventilation", "BiPAP", "intubation", "ICU"],
+            "duration_months_required": 12
+          },
+          {
+            "path": "B.7",
+            "criterion": "Weight loss with low BMI: BMI ≤18 (adults) or weight loss with documented poor nutritional status",
+            "keywords": ["weight loss", "BMI low", "underweight", "wasting", "malnutrition", "poor nutritional status"]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "code": "7.18",
+  "title": "Repeated complications of hematological disorders",
+  "body_system": "hematological",
+  "version": 1,
+  "summary": "Hematological disorder with repeated complications resulting in significant interference with ADLs, social functioning, or completing tasks in timely manner due to deficiencies in concentration/persistence/pace.",
+  "synonyms": {
+    "hematological disorder":  ["blood disorder", "bleeding disorder", "thrombotic disorder", "cytopenia"],
+    "constitutional symptoms": ["fatigue", "fever", "weight loss"],
+    "marked limitation":       ["marked", "moderately severe"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Documented hematological disorder with repeated complications (despite continuing treatment)",
+       "keywords": ["hematological disorder", "repeated complications", "recurrent flares", "active disease"]},
+      {"path": "B", "criterion": "At least two constitutional symptoms (severe fatigue, fever, malaise, weight loss)",
+       "keywords": ["fatigue", "fever", "malaise", "weight loss"]},
+      {
+        "logic": "OR",
+        "path": "C",
+        "criterion": "Marked limitation in ADLs, social functioning, or completing tasks in timely manner",
+        "children": [
+          {"path": "C.1", "criterion": "Marked limitation in activities of daily living", "keywords": ["ADLs", "self-care"]},
+          {"path": "C.2", "criterion": "Marked limitation in social functioning", "keywords": ["social functioning", "interpersonal"]},
+          {"path": "C.3", "criterion": "Marked limitation in completing tasks in timely manner due to concentration, persistence, or pace deficiencies",
+           "keywords": ["concentration", "persistence", "pace", "off task"]}
+        ]
+      }
+    ]
+  }
+}

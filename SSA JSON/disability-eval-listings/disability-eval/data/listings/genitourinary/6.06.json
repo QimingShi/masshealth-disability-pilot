@@ -1,0 +1,26 @@
+{
+  "code": "6.06",
+  "title": "Complications of chronic kidney disease",
+  "body_system": "genitourinary",
+  "version": 1,
+  "summary": "Chronic kidney disease (not requiring dialysis) with three hospitalizations in 12 months for complications such as anemia, osteodystrophy, neuropathy, fluid overload, or atherosclerotic renovascular disease, with each hospitalization ≥48 hours and 30 days apart.",
+  "synonyms": {
+    "chronic kidney disease":  ["CKD", "kidney disease"],
+    "renal anemia":            ["anemia of chronic kidney disease", "EPO deficiency"],
+    "renal osteodystrophy":    ["secondary hyperparathyroidism", "PTH elevated", "CKD-MBD"],
+    "uremic neuropathy":       ["uremic neuropathy", "peripheral neuropathy"],
+    "fluid overload":          ["volume overload", "edema", "pulmonary edema"],
+    "atherosclerotic renovascular disease": ["renovascular disease", "renal artery stenosis", "ischemic nephropathy"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Chronic kidney disease (not requiring chronic dialysis)",
+       "keywords": ["chronic kidney disease", "CKD", "stage 4 CKD", "stage 5 CKD"]},
+      {"path": "B", "criterion": "Three hospitalizations within 12 months for CKD complications, each lasting ≥48 hours, with at least 30 days between hospitalizations",
+       "keywords": ["three hospitalizations", "CKD complications", "fluid overload", "uremic encephalopathy", "hyperkalemia", "metabolic acidosis", "48 hours", "30 days apart"],
+       "duration_months_required": 12}
+    ]
+  }
+}

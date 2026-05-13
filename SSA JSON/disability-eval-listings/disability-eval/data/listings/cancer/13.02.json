@@ -1,0 +1,46 @@
+{
+  "code": "13.02",
+  "title": "Soft tissue cancers of the head and neck (other than salivary glands and thyroid)",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Head and neck cancer (other than salivary glands and thyroid) with one of: inoperable, unresectable, or recurrent disease (after initial therapy); regional lymph node metastases beyond the regional lymph nodes; distant metastases; small cell carcinoma; or persistence/recurrence after radiation therapy.",
+  "synonyms": {
+    "head and neck cancer":    ["HNC", "head and neck squamous cell carcinoma", "HNSCC", "oropharyngeal cancer", "laryngeal cancer", "hypopharyngeal cancer", "nasopharyngeal cancer", "oral cavity cancer", "tongue cancer"],
+    "small cell carcinoma":    ["small cell", "SCC head and neck"],
+    "metastasis":              ["metastases", "mets", "spread", "distant disease"],
+    "inoperable":              ["unresectable", "non-surgical", "cannot be removed"],
+    "recurrent":               ["recurrence", "tumor recurrence", "disease recurrence"],
+    "biopsy":                  ["pathology", "tissue biopsy", "fine-needle aspiration", "FNA", "core needle biopsy"],
+    "imaging":                 ["CT", "MRI", "PET", "PET/CT", "PET-CT"],
+    "lymph node":              ["LN", "lymph nodes", "regional nodes", "cervical lymphadenopathy"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "PRECONDITION",
+        "criterion": "Pathology-confirmed head and neck cancer (other than salivary glands and thyroid)",
+        "keywords": ["head and neck cancer", "HNSCC", "biopsy", "pathology", "squamous cell carcinoma"]
+      },
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "One of the listed alternatives qualifies",
+        "children": [
+          {"path": "A", "criterion": "Inoperable or unresectable disease",
+           "keywords": ["inoperable", "unresectable", "not amenable to surgery"]},
+          {"path": "B", "criterion": "Persistent or recurrent disease following initial anticancer therapy",
+           "keywords": ["persistent disease", "recurrent disease", "recurrence after treatment", "treatment failure"]},
+          {"path": "C", "criterion": "Metastases beyond the regional lymph nodes",
+           "keywords": ["distant metastases", "lung metastases", "bone metastases", "liver metastases", "M1 disease"]},
+          {"path": "D", "criterion": "Small cell (oat cell) carcinoma at any anatomic site",
+           "keywords": ["small cell carcinoma", "small cell", "oat cell"]},
+          {"path": "E", "criterion": "Soft tissue cancer originating in the head and neck treated with multimodal anticancer therapy (chemoradiation), considered disabled for 18 months from initiation",
+           "keywords": ["chemoradiation", "concurrent chemoradiation", "multimodal therapy", "combined modality therapy"],
+           "duration_months_required": 18}
+        ]
+      }
+    ]
+  }
+}

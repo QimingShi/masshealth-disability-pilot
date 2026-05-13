@@ -1,0 +1,38 @@
+{
+  "code": "13.18",
+  "title": "Large intestine — carcinoma or sarcoma (colon or rectum)",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Colorectal cancer with adenocarcinoma metastatic to/beyond regional lymph nodes, recurrent disease after resection, OR inoperable/unresectable cancer.",
+  "synonyms": {
+    "colorectal cancer":       ["CRC", "colon cancer", "rectal cancer", "colorectal adenocarcinoma"],
+    "colon cancer":            ["colonic adenocarcinoma", "cecal cancer", "ascending colon cancer", "transverse colon cancer", "descending colon cancer", "sigmoid cancer"],
+    "rectal cancer":           ["rectal adenocarcinoma"],
+    "metastasis":              ["distant metastases", "M1 disease", "liver metastases", "lung metastases"],
+    "biopsy":                  ["colonoscopy with biopsy", "endoscopic biopsy"],
+    "lymph node":              ["regional lymph nodes", "mesenteric lymph nodes"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "PRECONDITION", "criterion": "Pathology-confirmed cancer of the colon or rectum",
+       "keywords": ["colorectal cancer", "colon cancer", "rectal cancer", "adenocarcinoma", "biopsy", "colonoscopy"]},
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Adenocarcinoma metastatic, sarcoma, recurrent, or inoperable",
+        "children": [
+          {"path": "A", "criterion": "Adenocarcinoma metastatic to or beyond the regional lymph nodes",
+           "keywords": ["regional lymph node metastases", "distant metastases", "stage IV", "M1 disease", "liver metastases", "lung metastases"]},
+          {"path": "B", "criterion": "Recurrent cancer following total mesorectal excision OR low anterior resection (except local recurrence that remits with anticancer therapy)",
+           "keywords": ["recurrent CRC", "tumor recurrence", "treatment failure", "anastomotic recurrence"]},
+          {"path": "C", "criterion": "Squamous cell carcinoma of the anus, recurrent after surgery",
+           "keywords": ["squamous cell carcinoma of anus", "anal cancer", "recurrent anal cancer"]},
+          {"path": "D", "criterion": "Inoperable or unresectable disease",
+           "keywords": ["inoperable", "unresectable", "locally advanced"]}
+        ]
+      }
+    ]
+  }
+}

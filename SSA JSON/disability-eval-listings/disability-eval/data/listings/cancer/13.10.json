@@ -1,0 +1,29 @@
+{
+  "code": "13.10",
+  "title": "Breast cancer",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Breast cancer that is locally advanced (inoperable, inflammatory, or with extensive nodal involvement), with distant metastases, recurrent after radical mastectomy, OR small cell carcinoma.",
+  "synonyms": {
+    "breast cancer":           ["breast carcinoma", "invasive ductal carcinoma", "IDC", "invasive lobular carcinoma", "ILC", "DCIS", "ductal carcinoma in situ"],
+    "inflammatory breast cancer": ["IBC", "inflammatory carcinoma", "T4d"],
+    "metastasis":              ["distant metastases", "M1 disease", "metastatic breast cancer", "MBC", "stage IV"],
+    "lymph node":              ["axillary nodes", "supraclavicular nodes", "internal mammary nodes"],
+    "biopsy":                  ["core biopsy", "needle biopsy"],
+    "ER/PR/HER2":              ["estrogen receptor", "progesterone receptor", "HER2", "triple-negative"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Locally advanced cancer (inflammatory carcinoma; cancer of chest wall; or with metastases to the supraclavicular or infraclavicular nodes, or to 10+ axillary nodes, or to internal mammary nodes)",
+       "keywords": ["inflammatory breast cancer", "IBC", "T4 breast cancer", "chest wall invasion", "supraclavicular nodes", "10 axillary nodes", "internal mammary nodes", "locally advanced"]},
+      {"path": "B", "criterion": "Carcinoma with distant metastases (stage IV)",
+       "keywords": ["metastatic breast cancer", "stage IV", "MBC", "distant metastases", "lung metastases", "bone metastases", "liver metastases", "brain metastases"]},
+      {"path": "C", "criterion": "Recurrent carcinoma (except local recurrence that remits with anticancer therapy)",
+       "keywords": ["recurrent breast cancer", "tumor recurrence", "distant recurrence", "regional recurrence"]},
+      {"path": "D", "criterion": "Small cell (oat cell) carcinoma of the breast",
+       "keywords": ["small cell carcinoma", "small cell of breast", "oat cell"]}
+    ]
+  }
+}

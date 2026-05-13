@@ -1,0 +1,64 @@
+{
+  "code": "14.02",
+  "title": "Systemic lupus erythematosus",
+  "body_system": "immune",
+  "version": 1,
+  "summary": "Systemic lupus erythematosus (SLE) with involvement of two or more organs/body systems, severe constitutional symptoms, OR repeated manifestations with marked limitation in one area of functioning.",
+  "synonyms": {
+    "lupus":                   ["systemic lupus erythematosus", "SLE", "lupus erythematosus"],
+    "ANA":                     ["antinuclear antibody", "antinuclear antibodies", "positive ANA"],
+    "anti-dsDNA":              ["anti-double-stranded DNA", "double-stranded DNA antibody"],
+    "anti-Smith":              ["anti-Sm", "Smith antibody"],
+    "antiphospholipid":        ["aPL", "antiphospholipid antibodies", "lupus anticoagulant", "anticardiolipin"],
+    "complement":              ["low C3", "low C4", "hypocomplementemia"],
+    "lupus nephritis":         ["renal lupus", "kidney involvement", "proteinuria"],
+    "malar rash":              ["butterfly rash", "facial rash"],
+    "discoid lupus":           ["DLE", "cutaneous lupus"],
+    "serositis":               ["pleuritis", "pericarditis", "pleural effusion"],
+    "constitutional symptoms": ["fatigue", "fever", "malaise", "weight loss"],
+    "marked limitation":       ["marked", "moderately severe"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "AND",
+        "path": "A",
+        "criterion": "Involvement of two or more organs/body systems with at least one moderate severity AND at least two constitutional symptoms",
+        "children": [
+          {"path": "A.1", "criterion": "Lupus diagnosis with involvement of two or more organs/body systems (renal, skin, joint, cardiac, pulmonary, hematologic, neurologic)",
+           "keywords": ["SLE", "lupus", "lupus nephritis", "malar rash", "joint involvement", "serositis", "pleuritis", "pericarditis", "lupus cytopenia", "neurolupus"]},
+          {"path": "A.2", "criterion": "At least one of the involved organ/body systems is at moderate level of severity",
+           "keywords": ["moderate severity", "organ involvement", "active lupus"]},
+          {"path": "A.3", "criterion": "At least two constitutional symptoms or signs (severe fatigue, fever, malaise, involuntary weight loss)",
+           "keywords": ["fatigue", "fever", "malaise", "weight loss", "constitutional symptoms"]}
+        ]
+      },
+      {
+        "logic": "AND",
+        "path": "B",
+        "criterion": "Repeated manifestations of SLE with at least two constitutional symptoms AND marked limitation in one functional area",
+        "children": [
+          {"path": "B.1", "criterion": "Repeated manifestations of SLE",
+           "keywords": ["lupus flares", "repeated manifestations", "active lupus", "recurrent lupus activity"]},
+          {"path": "B.2", "criterion": "At least two constitutional symptoms (severe fatigue, fever, malaise, weight loss)",
+           "keywords": ["fatigue", "fever", "malaise", "weight loss", "constitutional symptoms"]},
+          {
+            "logic": "OR",
+            "path": "B.3",
+            "criterion": "Marked limitation in activities of daily living, social functioning, or completing tasks in a timely manner",
+            "children": [
+              {"path": "B.3.a", "criterion": "Marked limitation in activities of daily living",
+               "keywords": ["ADLs", "self-care", "marked limitation ADLs"]},
+              {"path": "B.3.b", "criterion": "Marked limitation in maintaining social functioning",
+               "keywords": ["social functioning", "social interaction"]},
+              {"path": "B.3.c", "criterion": "Marked limitation in completing tasks in a timely manner due to deficiencies in concentration, persistence, or pace",
+               "keywords": ["concentration", "persistence", "pace", "lupus fog", "cognitive limitation"]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

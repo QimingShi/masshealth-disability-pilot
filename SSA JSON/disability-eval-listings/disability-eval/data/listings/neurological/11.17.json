@@ -1,0 +1,46 @@
+{
+  "code": "11.17",
+  "title": "Neurodegenerative disorders of the central nervous system",
+  "body_system": "neurological",
+  "version": 1,
+  "summary": "Neurodegenerative disorders such as Huntington's disease, Friedreich's ataxia, or spinocerebellar degeneration with disorganization of motor function in two extremities, OR marked physical AND mental limitation.",
+  "synonyms": {
+    "Huntington's disease":    ["HD", "Huntington disease", "Huntington's chorea"],
+    "Friedreich's ataxia":     ["FA", "FRDA", "Friedreich ataxia"],
+    "spinocerebellar":         ["SCA", "spinocerebellar ataxia", "spinocerebellar degeneration"],
+    "ataxia":                  ["incoordination", "cerebellar ataxia", "gait ataxia"],
+    "chorea":                  ["choreiform movements", "involuntary movements"],
+    "MRI brain":               ["MRI of brain", "brain MRI"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "PRECONDITION",
+        "criterion": "Documented neurodegenerative CNS disorder (Huntington's, Friedreich's ataxia, spinocerebellar degeneration, etc.)",
+        "keywords": ["Huntington's disease", "HD", "Friedreich's ataxia", "FRDA", "spinocerebellar ataxia", "SCA", "neurodegenerative disorder", "genetic testing"]
+      },
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Motor disorganization OR marked limitation pattern",
+        "children": [
+          {"path": "A", "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities",
+           "keywords": ["ataxia", "chorea", "motor weakness", "two extremity weakness", "extreme limitation"]},
+          {
+            "logic": "AND",
+            "path": "B",
+            "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+            "children": [
+              {"path": "B.1", "criterion": "Marked limitation in physical functioning",
+               "keywords": ["marked physical limitation"]},
+              {"path": "B.2", "criterion": "Marked limitation in one mental functioning area",
+               "keywords": ["cognitive impairment", "Huntington's dementia", "executive dysfunction", "depression"]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

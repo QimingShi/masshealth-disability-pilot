@@ -1,0 +1,53 @@
+{
+  "code": "5.06",
+  "title": "Inflammatory bowel disease (IBD)",
+  "body_system": "digestive",
+  "version": 1,
+  "summary": "Inflammatory bowel disease (Crohn's or ulcerative colitis) with obstruction requiring hospitalization, OR two of the following within 6 months: anemia, low albumin, tender abdominal mass, perineal disease, weight loss, or dependence on supplemental daily nutrition.",
+  "synonyms": {
+    "IBD":                     ["inflammatory bowel disease"],
+    "Crohn's disease":         ["Crohn disease", "CD", "regional enteritis"],
+    "ulcerative colitis":      ["UC", "chronic ulcerative colitis"],
+    "colonoscopy":             ["colonoscopy with biopsies", "lower endoscopy"],
+    "CT enterography":         ["CTE", "CT enterography", "MR enterography", "MRE"],
+    "biopsy":                  ["mucosal biopsy", "intestinal biopsy"],
+    "obstruction":             ["bowel obstruction", "intestinal obstruction", "SBO", "small bowel obstruction"],
+    "perianal disease":        ["perianal fistula", "perianal abscess", "perianal Crohn's"],
+    "weight loss":             ["unintentional weight loss", "BMI low"],
+    "anemia":                  ["low hemoglobin", "Hgb low", "iron-deficiency anemia"],
+    "albumin":                 ["serum albumin", "hypoalbuminemia"],
+    "TPN":                     ["total parenteral nutrition", "parenteral nutrition", "PN"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Obstruction of stenotic areas (not adhesions) in small intestine or colon with proximal dilation, confirmed by imaging or in surgery, requiring hospitalization for intestinal decompression or surgery on two occasions within consecutive 6-month period",
+       "keywords": ["bowel obstruction", "stricture", "stenosis", "proximal dilation", "intestinal obstruction", "decompression", "hospitalization", "surgery"],
+       "duration_months_required": 6},
+      {
+        "logic": "AND",
+        "path": "B",
+        "criterion": "Two of the following despite continuing treatment, present on at least two evaluations at least 60 days apart within a 6-month period",
+        "children": [
+          {
+            "logic": "OR",
+            "path": "B.symptoms",
+            "criterion": "At least two of the listed symptoms",
+            "children": [
+              {"path": "B.1", "criterion": "Anemia with hemoglobin <10.0 g/dL", "keywords": ["anemia", "hemoglobin", "Hgb 10", "iron-deficiency"]},
+              {"path": "B.2", "criterion": "Serum albumin ≤3.0 g/dL", "keywords": ["albumin", "hypoalbuminemia", "serum albumin 3.0"]},
+              {"path": "B.3", "criterion": "Clinically documented tender abdominal mass with abdominal pain or cramping not controlled by prescribed narcotic medication", "keywords": ["tender abdominal mass", "abdominal pain", "cramping", "narcotic"]},
+              {"path": "B.4", "criterion": "Perineal disease with draining abscess or fistula with pain", "keywords": ["perianal fistula", "perianal abscess", "draining fistula", "perineal disease"]},
+              {"path": "B.5", "criterion": "Involuntary weight loss of at least 10% from baseline", "keywords": ["weight loss", "10%", "involuntary weight loss"]},
+              {"path": "B.6", "criterion": "Need for supplemental daily enteral nutrition via gastrostomy or daily parenteral nutrition via central venous catheter", "keywords": ["TPN", "total parenteral nutrition", "G-tube", "gastrostomy", "central venous catheter"]}
+            ]
+          },
+          {"path": "B.duration", "criterion": "On at least two evaluations 60 days apart in 6-month period",
+           "keywords": ["6 months", "60 days apart"],
+           "duration_months_required": 6}
+        ]
+      }
+    ]
+  }
+}

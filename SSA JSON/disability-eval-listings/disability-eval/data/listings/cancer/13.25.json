@@ -1,0 +1,25 @@
+{
+  "code": "13.25",
+  "title": "Testicles — carcinoma",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Testicular cancer with progressive or recurrent non-seminomatous germ cell tumor that fails initial chemotherapy.",
+  "synonyms": {
+    "testicular cancer":       ["testis cancer", "germ cell tumor", "GCT"],
+    "non-seminomatous germ cell tumor": ["NSGCT", "non-seminoma", "embryonal carcinoma", "yolk sac tumor", "teratocarcinoma", "choriocarcinoma"],
+    "seminoma":                ["pure seminoma", "classic seminoma"],
+    "AFP":                     ["alpha-fetoprotein", "elevated AFP"],
+    "beta-hCG":                ["beta human chorionic gonadotropin", "elevated beta-hCG", "hCG"],
+    "LDH":                     ["lactate dehydrogenase", "elevated LDH"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "PRECONDITION", "criterion": "Pathology-confirmed testicular cancer",
+       "keywords": ["testicular cancer", "germ cell tumor", "GCT", "non-seminomatous", "seminoma", "biopsy", "orchiectomy"]},
+      {"path": "A", "criterion": "Progressive or recurrent non-seminomatous germ cell tumor that fails initial chemotherapy",
+       "keywords": ["NSGCT", "non-seminomatous germ cell tumor", "progressive disease", "recurrent disease", "chemotherapy failure", "salvage chemotherapy"]}
+    ]
+  }
+}

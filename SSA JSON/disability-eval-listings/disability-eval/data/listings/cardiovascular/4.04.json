@@ -1,0 +1,52 @@
+{
+  "code": "4.04",
+  "title": "Ischemic heart disease",
+  "body_system": "cardiovascular",
+  "version": 1,
+  "summary": "Ischemic heart disease with chest discomfort due to myocardial ischemia, plus one of: positive exercise tolerance test at low workload, three ischemic episodes within 12 months requiring revascularization, or coronary angiography showing significant disease.",
+  "synonyms": {
+    "ischemic heart disease":  ["IHD", "coronary artery disease", "CAD", "coronary heart disease", "CHD"],
+    "myocardial ischemia":     ["myocardial infarction", "MI", "heart attack", "STEMI", "NSTEMI", "ACS", "acute coronary syndrome"],
+    "angina":                  ["chest pain", "chest discomfort", "anginal pain", "angina pectoris", "stable angina", "unstable angina"],
+    "exercise tolerance test": ["ETT", "stress test", "treadmill test", "exercise stress echo", "nuclear stress test", "myocardial perfusion imaging"],
+    "ECG changes":             ["ST depression", "ST elevation", "T wave inversion", "ischemic changes"],
+    "revascularization":       ["PCI", "percutaneous coronary intervention", "coronary stent", "CABG", "coronary artery bypass", "angioplasty", "balloon angioplasty"],
+    "coronary angiography":    ["cardiac catheterization", "cath", "coronary angiogram", "left heart cath"],
+    "MET":                     ["metabolic equivalents", "METs", "5 METs"],
+    "12 months":               ["1 year", "one year", "12-month period"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "PRECONDITION",
+        "criterion": "Symptoms due to myocardial ischemia (typical angina, atypical angina, or anginal equivalent) while on prescribed treatment",
+        "keywords": ["angina", "chest pain", "chest discomfort", "DOE", "anginal equivalent", "exertional symptoms"]
+      },
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "One of: ETT findings, three ischemic episodes, or significant coronary disease on angiography",
+        "children": [
+          {
+            "path": "A",
+            "criterion": "Sign- or symptom-limited exercise tolerance test demonstrating ischemic findings (ST depression ≥1 mm in non-leads, decrease in BP, abnormal radionuclide uptake) at workload equivalent to ≤5 METs",
+            "keywords": ["exercise tolerance test", "ETT", "ST depression", "5 METs", "stress test", "ischemic ECG", "abnormal stress test", "reversible perfusion defect"]
+          },
+          {
+            "path": "B",
+            "criterion": "Three separate ischemic episodes requiring revascularization or unsuccessful revascularization within 12 months",
+            "keywords": ["three ischemic episodes", "PCI", "stent placement", "CABG", "revascularization", "MI", "ACS"],
+            "duration_months_required": 12
+          },
+          {
+            "path": "C",
+            "criterion": "Coronary angiography showing 50% or greater stenosis of left main coronary artery, or 70% or greater stenosis of another non-bypassed coronary artery, or 50% or greater stenosis of a bypass graft, with very serious limitation of ADLs",
+            "keywords": ["coronary angiography", "coronary stenosis", "left main 50%", "70% stenosis", "bypass graft stenosis", "very serious limitation"]
+          }
+        ]
+      }
+    ]
+  }
+}

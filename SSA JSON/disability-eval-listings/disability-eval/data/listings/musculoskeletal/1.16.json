@@ -1,0 +1,89 @@
+{
+  "code": "1.16",
+  "title": "Lumbar spinal stenosis resulting in compromise of the cauda equina",
+  "body_system": "musculoskeletal",
+  "version": 1,
+  "summary": "Lumbar spinal stenosis with neurogenic claudication or sensorimotor signs, imaging-confirmed cauda equina compromise, and ≥12-month limitation requiring two-handed assistive device.",
+  "synonyms": {
+    "lumbar spinal stenosis":  ["LSS", "lumbar canal stenosis", "central canal stenosis", "spinal canal narrowing"],
+    "cauda equina":            ["cauda equina compromise", "cauda equina syndrome", "CES"],
+    "neurogenic claudication": ["pseudoclaudication", "claudication", "leg pain with walking", "buttock pain with walking"],
+    "nonradicular pain":       ["bilateral leg pain", "buttock pain", "thigh pain", "back pain"],
+    "weakness":                ["lower extremity weakness", "leg weakness", "muscle weakness", "motor deficit"],
+    "sensory loss":            ["decreased sensation", "hypoesthesia", "numbness", "decreased pinprick"],
+    "areflexia":               ["absent reflexes", "no reflexes", "decreased reflexes", "hyporeflexia"],
+    "MRI":                     ["magnetic resonance imaging", "MR imaging", "MR scan"],
+    "myelogram":               ["CT myelogram", "myelography"],
+    "12 months":               ["1 year", "one year", "longstanding", "chronic", "for over a year"],
+    "walker":                  ["rollator", "rolling walker", "wheeled walker"],
+    "bilateral canes":         ["two canes", "double cane"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Symptoms of neurogenic claudication, including nonradicular pain in lower back/buttocks/thighs and/or nonradicular sensory loss",
+        "keywords": ["neurogenic claudication", "pseudoclaudication", "buttock pain", "thigh pain", "leg pain with walking", "back pain with standing"]
+      },
+      {
+        "logic": "AND",
+        "path": "B",
+        "criterion": "Nonradicular neurological signs on examination",
+        "children": [
+          {
+            "path": "B.1",
+            "criterion": "Muscle weakness on physical examination of lower extremities",
+            "keywords": ["muscle weakness", "lower extremity weakness", "motor deficit", "5/5", "4/5"]
+          },
+          {
+            "logic": "OR",
+            "path": "B.2_OR_B.3",
+            "criterion": "Sensory changes OR decreased deep tendon reflexes",
+            "children": [
+              {
+                "path": "B.2.a",
+                "criterion": "Decreased sensation in lower extremities on physical exam",
+                "keywords": ["decreased sensation", "hypoesthesia", "sensory loss", "decreased pinprick"]
+              },
+              {
+                "path": "B.2.b",
+                "criterion": "Abnormal sensory nerve latency on electrodiagnostic testing",
+                "keywords": ["EMG", "nerve conduction study", "NCS", "abnormal latency"]
+              },
+              {
+                "path": "B.3",
+                "criterion": "Areflexia or hyporeflexia of lower extremities",
+                "keywords": ["areflexia", "absent reflexes", "decreased reflexes", "hyporeflexia", "DTR"]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "C",
+        "criterion": "Findings on imaging or operative report consistent with compromise of cauda equina with lumbar spinal stenosis",
+        "keywords": ["MRI lumbar", "CT myelogram", "lumbar canal stenosis", "central canal stenosis", "cauda equina compromise", "operative findings"]
+      },
+      {
+        "logic": "AND",
+        "path": "D",
+        "criterion": "Physical limitation lasting ≥12 months with documented assistive device need",
+        "children": [
+          {
+            "path": "D.duration",
+            "criterion": "Impairment-related physical limitation lasting or expected to last ≥12 continuous months",
+            "keywords": ["chronic", "12 months", "1 year", "longstanding", "ongoing"],
+            "duration_months_required": 12
+          },
+          {
+            "path": "D.mobility",
+            "criterion": "Documented medical need for walker, bilateral canes, bilateral crutches, or two-handed wheeled mobility device",
+            "keywords": ["walker", "rollator", "bilateral canes", "bilateral crutches", "wheelchair", "two-handed device"]
+          }
+        ]
+      }
+    ]
+  }
+}

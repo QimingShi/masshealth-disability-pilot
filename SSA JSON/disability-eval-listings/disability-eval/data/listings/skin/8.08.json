@@ -1,0 +1,24 @@
+{
+  "code": "8.08",
+  "title": "Burns",
+  "body_system": "skin",
+  "version": 1,
+  "summary": "Burns with extensive skin lesions persisting ≥3 months despite continuing treatment. Burns under continuing surgical management are evaluated under 1.21.",
+  "synonyms": {
+    "burn":                    ["burn injury", "thermal burn", "chemical burn", "electrical burn", "scald"],
+    "extensive skin lesions":  ["extensive burn surface area", "TBSA", "total body surface area"],
+    "skin grafting":           ["graft", "split-thickness skin graft", "STSG", "full-thickness skin graft", "FTSG"],
+    "contracture":             ["burn contracture", "scar contracture"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Burns with extensive skin lesions involving multiple body sites or critical areas (face, neck, hands, feet, perineum)",
+       "keywords": ["burn", "burn injury", "thermal burn", "extensive burn", "TBSA", "burn surface area", "skin grafting", "burn contracture"]},
+      {"path": "B", "criterion": "Persistent for at least 3 months despite continuing treatment (use 1.21 if under continuing surgical management)",
+       "keywords": ["3 months", "persistent burn", "despite treatment", "wound care"],
+       "duration_months_required": 3}
+    ]
+  }
+}

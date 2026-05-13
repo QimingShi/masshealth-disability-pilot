@@ -1,0 +1,58 @@
+{
+  "code": "14.11",
+  "title": "HIV infection",
+  "body_system": "immune",
+  "version": 1,
+  "summary": "HIV infection documented by appropriate testing, with one of: multicentric Castleman disease, primary effusion lymphoma, primary CNS lymphoma, progressive multifocal leukoencephalopathy, pulmonary Kaposi sarcoma, opportunistic infections, OR repeated manifestations with constitutional symptoms and marked functional limitation.",
+  "synonyms": {
+    "HIV":                     ["human immunodeficiency virus", "HIV-1", "HIV-2", "AIDS", "acquired immunodeficiency syndrome"],
+    "HIV testing":             ["HIV antibody", "HIV PCR", "HIV viral load", "Western blot", "ELISA"],
+    "CD4":                     ["CD4 count", "CD4 cell count", "T-cell count", "absolute CD4"],
+    "ART":                     ["antiretroviral therapy", "HAART", "HIV medications", "antiretrovirals"],
+    "opportunistic infection": ["OI", "PCP", "Pneumocystis pneumonia", "PJP", "PJP pneumonia", "MAC", "Mycobacterium avium complex", "CMV", "cytomegalovirus", "toxoplasmosis", "cryptococcosis", "candidiasis"],
+    "Kaposi sarcoma":          ["KS", "Kaposi's sarcoma"],
+    "PML":                     ["progressive multifocal leukoencephalopathy"],
+    "Castleman disease":       ["multicentric Castleman disease", "MCD"],
+    "primary effusion lymphoma": ["PEL", "body cavity-based lymphoma"],
+    "wasting":                 ["HIV wasting syndrome", "weight loss"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "PRECONDITION",
+        "criterion": "HIV infection documented by appropriate laboratory testing (HIV antibody, HIV PCR, HIV viral load)",
+        "keywords": ["HIV", "HIV-1", "HIV-2", "HIV antibody", "HIV PCR", "viral load", "CD4 count"]
+      },
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "AIDS-defining conditions OR opportunistic infections OR repeated manifestations with marked limitation",
+        "children": [
+          {"path": "A", "criterion": "Multicentric Castleman disease, primary effusion lymphoma, primary CNS lymphoma, or progressive multifocal leukoencephalopathy",
+           "keywords": ["multicentric Castleman disease", "MCD", "primary effusion lymphoma", "PEL", "primary CNS lymphoma", "PCNSL", "progressive multifocal leukoencephalopathy", "PML"]},
+          {"path": "B", "criterion": "Pulmonary Kaposi sarcoma, OR Kaposi sarcoma at any extracutaneous site",
+           "keywords": ["Kaposi sarcoma", "KS", "pulmonary KS", "visceral KS"]},
+          {"path": "C", "criterion": "Absolute CD4 count of 50 cells/mm³ or less",
+           "keywords": ["CD4", "CD4 count 50", "low CD4", "severe immunosuppression"]},
+          {"path": "D", "criterion": "Absolute CD4 count <200 cells/mm³ or CD4 percent <14% AND at least one specific complication (BMI<18.5, hemoglobin <8.0, opportunistic infection)",
+           "keywords": ["CD4 200", "CD4 percentage 14", "wasting", "BMI 18.5", "hemoglobin 8.0", "opportunistic infection"]},
+          {
+            "logic": "AND",
+            "path": "E",
+            "criterion": "Repeated manifestations of HIV with constitutional symptoms AND marked limitation",
+            "children": [
+              {"path": "E.1", "criterion": "Repeated manifestations of HIV infection",
+               "keywords": ["recurrent HIV-related illness", "AIDS-defining conditions", "OI"]},
+              {"path": "E.2", "criterion": "At least two constitutional symptoms",
+               "keywords": ["fatigue", "fever", "malaise", "weight loss"]},
+              {"path": "E.3", "criterion": "Marked limitation in ADLs, social functioning, or completing tasks",
+               "keywords": ["ADLs", "social functioning", "concentration", "HIV-associated neurocognitive disorder"]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

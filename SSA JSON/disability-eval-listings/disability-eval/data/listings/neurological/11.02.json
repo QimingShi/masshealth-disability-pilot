@@ -1,0 +1,79 @@
+{
+  "code": "11.02",
+  "title": "Epilepsy",
+  "body_system": "neurological",
+  "version": 1,
+  "summary": "Epilepsy with generalized tonic-clonic OR dyscognitive seizures occurring at specified frequency despite adherence to prescribed treatment for ≥3 consecutive months, with optional functional impairment criterion.",
+  "synonyms": {
+    "epilepsy":                ["seizure disorder", "convulsive disorder"],
+    "generalized tonic-clonic": ["GTC", "grand mal", "convulsion", "tonic-clonic seizure"],
+    "dyscognitive seizure":    ["complex partial seizure", "focal impaired awareness seizure", "focal seizure with impaired awareness"],
+    "absence seizure":         ["petit mal", "staring spell"],
+    "myoclonic":               ["myoclonic seizure", "myoclonus"],
+    "atonic":                  ["atonic seizure", "drop attack"],
+    "EEG":                     ["electroencephalogram", "ambulatory EEG", "video EEG", "vEEG"],
+    "MRI":                     ["MRI brain", "magnetic resonance imaging"],
+    "AED":                     ["antiepileptic drug", "anticonvulsant", "Keppra", "levetiracetam", "Dilantin", "phenytoin", "Tegretol", "carbamazepine", "Depakote", "valproic acid", "lamotrigine", "Lamictal"],
+    "seizure log":             ["seizure diary", "seizure calendar", "seizure record"],
+    "drug levels":             ["serum drug level", "trough level", "antiepileptic levels"],
+    "3 months":                ["three months", "3-month period", "12 weeks"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "AND",
+        "path": "A",
+        "criterion": "Generalized tonic-clonic seizures occurring at least once a month for at least 3 consecutive months despite adherence to prescribed treatment",
+        "children": [
+          {"path": "A.1", "criterion": "Generalized tonic-clonic seizures (grand mal, convulsions)",
+           "keywords": ["generalized tonic-clonic seizure", "GTC", "grand mal", "convulsion", "tonic-clonic"]},
+          {"path": "A.2", "criterion": "Frequency at least once a month for at least 3 consecutive months",
+           "keywords": ["monthly seizures", "once a month", "3 consecutive months", "seizure log", "seizure diary"],
+           "duration_months_required": 3},
+          {"path": "A.3", "criterion": "Despite adherence to prescribed treatment (3 consecutive months)",
+           "keywords": ["AED", "antiepileptic", "drug levels", "compliant", "adherent", "despite treatment"]}
+        ]
+      },
+      {
+        "logic": "AND",
+        "path": "B",
+        "criterion": "Dyscognitive seizures occurring at least once a week for at least 3 consecutive months despite adherence to treatment",
+        "children": [
+          {"path": "B.1", "criterion": "Dyscognitive seizures (complex partial, focal impaired awareness)",
+           "keywords": ["dyscognitive seizure", "complex partial seizure", "focal impaired awareness", "altered awareness"]},
+          {"path": "B.2", "criterion": "Frequency at least once a week for at least 3 consecutive months",
+           "keywords": ["weekly seizures", "once a week", "3 consecutive months", "seizure log"],
+           "duration_months_required": 3},
+          {"path": "B.3", "criterion": "Despite adherence to prescribed treatment",
+           "keywords": ["AED", "compliant", "despite treatment", "drug levels therapeutic"]}
+        ]
+      },
+      {
+        "logic": "AND",
+        "path": "C",
+        "criterion": "Generalized tonic-clonic seizures at least once every 2 months for ≥4 consecutive months despite treatment, with marked limitation",
+        "children": [
+          {"path": "C.1", "criterion": "Generalized tonic-clonic seizures at least once every 2 months for ≥4 consecutive months despite treatment",
+           "keywords": ["GTC", "every 2 months", "4 consecutive months", "despite treatment"],
+           "duration_months_required": 4},
+          {"path": "C.2", "criterion": "Marked limitation in physical functioning, understanding, social functioning, concentration, or adapting/managing oneself",
+           "keywords": ["marked limitation", "physical functioning", "social functioning", "concentration", "ADLs"]}
+        ]
+      },
+      {
+        "logic": "AND",
+        "path": "D",
+        "criterion": "Dyscognitive seizures at least once every 2 weeks for ≥3 consecutive months despite treatment, with marked limitation",
+        "children": [
+          {"path": "D.1", "criterion": "Dyscognitive seizures at least once every 2 weeks for ≥3 consecutive months despite treatment",
+           "keywords": ["dyscognitive seizure", "every 2 weeks", "3 consecutive months", "despite treatment"],
+           "duration_months_required": 3},
+          {"path": "D.2", "criterion": "Marked limitation in physical functioning, understanding, social functioning, concentration, or adapting/managing oneself",
+           "keywords": ["marked limitation", "physical functioning", "concentration", "ADLs"]}
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "code": "10.06",
+  "title": "Non-mosaic Down syndrome",
+  "body_system": "congenital_multisystem",
+  "version": 1,
+  "summary": "Non-mosaic Down syndrome documented by chromosomal analysis OR by clinical findings consistent with non-mosaic Down syndrome.",
+  "synonyms": {
+    "Down syndrome":           ["DS", "trisomy 21", "Down's syndrome"],
+    "non-mosaic":              ["non-mosaic", "complete trisomy 21"],
+    "karyotype":               ["chromosomal analysis", "chromosome study", "cytogenetic analysis", "FISH"],
+    "clinical features":       ["facial features", "phenotypic features", "hypotonia"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Non-mosaic Down syndrome documented by chromosomal analysis (47,XX,+21 or 47,XY,+21 karyotype)",
+       "keywords": ["Down syndrome", "trisomy 21", "non-mosaic", "karyotype", "47 XX +21", "47 XY +21", "chromosomal analysis", "FISH"]},
+      {"path": "B", "criterion": "Non-mosaic Down syndrome documented by clinical findings consistent with the diagnosis (without genetic confirmation), made by an acceptable medical source",
+       "keywords": ["Down syndrome", "phenotypic features", "physician documentation", "clinical diagnosis"]}
+    ]
+  }
+}

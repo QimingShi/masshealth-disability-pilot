@@ -1,0 +1,205 @@
+{
+  "code": "12.06",
+  "title": "Anxiety and obsessive-compulsive disorders",
+  "body_system": "mental",
+  "version": 1,
+  "summary": "Anxiety disorder, panic disorder, agoraphobia, OR OCD meeting paragraph A symptom criteria, AND either paragraph B (functional limitations) OR paragraph C (serious and persistent ≥2 years).",
+  "synonyms": {
+    "anxiety":                 ["anxiety disorder", "GAD", "generalized anxiety disorder", "anxious"],
+    "panic disorder":          ["panic", "panic attacks", "anxiety attacks"],
+    "agoraphobia":             ["fear of leaving home", "homebound", "afraid to go out"],
+    "social anxiety":          ["social anxiety disorder", "social phobia"],
+    "OCD":                     ["obsessive-compulsive disorder", "obsessions", "compulsions"],
+    "obsessions":              ["intrusive thoughts", "obsessive thoughts", "unwanted thoughts"],
+    "compulsions":             ["compulsive behaviors", "rituals", "repetitive behaviors", "checking", "counting", "hand washing"],
+    "restlessness":            ["restless", "fidgety", "keyed up", "on edge"],
+    "irritability":            ["irritable", "easily annoyed", "short-tempered"],
+    "muscle tension":          ["tense", "muscle aches", "tight muscles"],
+    "sleep disturbance":       ["insomnia", "trouble sleeping", "early waking", "fragmented sleep"],
+    "panic attack":            ["panic episode", "panic", "anxiety attack", "racing heart", "diaphoresis", "trembling"],
+    "avoidance":               ["avoidant behavior", "avoidance", "won't go out", "social avoidance"],
+    "psychiatrist":            ["psych", "behavioral health"],
+    "therapist":               ["therapy", "counselor", "LCSW", "psychologist", "CBT"],
+    "medication":              ["SSRI", "SNRI", "benzodiazepine", "buspirone", "Ativan", "Xanax", "Klonopin", "Lexapro", "Zoloft"],
+    "marked limitation":       ["marked", "moderately severe", "significant limitation"],
+    "extreme limitation":      ["extreme", "severe limitation"],
+    "2 years":                 ["two years", "24 months", "longstanding", "chronic"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "OR",
+        "path": "A",
+        "criterion": "Medical documentation of anxiety disorder, panic disorder, or OCD",
+        "children": [
+          {
+            "logic": "AND",
+            "path": "A.anxiety",
+            "criterion": "Anxiety disorder with three or more symptoms",
+            "children": [
+              {
+                "path": "A.anxiety.required",
+                "criterion": "Anxiety disorder diagnosis (GAD, social anxiety, etc.)",
+                "keywords": ["GAD", "generalized anxiety disorder", "anxiety disorder", "social anxiety disorder", "anxiety diagnosis"]
+              },
+              {
+                "logic": "OR",
+                "path": "A.anxiety.symptoms",
+                "criterion": "Three or more of the following anxiety symptoms",
+                "children": [
+                  {
+                    "path": "A.anxiety.symptoms.restlessness",
+                    "criterion": "Restlessness",
+                    "keywords": ["restlessness", "restless", "keyed up", "on edge"]
+                  },
+                  {
+                    "path": "A.anxiety.symptoms.fatigue",
+                    "criterion": "Easily fatigued",
+                    "keywords": ["easily fatigued", "fatigue", "tired", "low energy"]
+                  },
+                  {
+                    "path": "A.anxiety.symptoms.concentration",
+                    "criterion": "Difficulty concentrating",
+                    "keywords": ["difficulty concentrating", "poor concentration", "mind going blank"]
+                  },
+                  {
+                    "path": "A.anxiety.symptoms.irritability",
+                    "criterion": "Irritability",
+                    "keywords": ["irritability", "irritable", "easily annoyed"]
+                  },
+                  {
+                    "path": "A.anxiety.symptoms.muscle_tension",
+                    "criterion": "Muscle tension",
+                    "keywords": ["muscle tension", "tense", "muscle aches", "tight muscles"]
+                  },
+                  {
+                    "path": "A.anxiety.symptoms.sleep",
+                    "criterion": "Sleep disturbance",
+                    "keywords": ["insomnia", "trouble sleeping", "early waking", "sleep disturbance"]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "logic": "AND",
+            "path": "A.panic",
+            "criterion": "Panic disorder or agoraphobia with one or both",
+            "children": [
+              {
+                "path": "A.panic.diagnosis",
+                "criterion": "Panic disorder or agoraphobia diagnosis",
+                "keywords": ["panic disorder", "agoraphobia", "panic attacks", "panic episodes"]
+              },
+              {
+                "logic": "OR",
+                "path": "A.panic.criteria",
+                "criterion": "Panic attacks with worry, OR disproportionate fear about places/situations",
+                "children": [
+                  {
+                    "path": "A.panic.attacks",
+                    "criterion": "Panic attacks followed by persistent concern about additional attacks or significant maladaptive change in behavior",
+                    "keywords": ["panic attack", "panic episode", "fear of panic", "anticipatory anxiety"]
+                  },
+                  {
+                    "path": "A.panic.agoraphobia",
+                    "criterion": "Disproportionate fear or anxiety about at least two different situations (e.g., public transportation, open spaces, crowds, leaving home)",
+                    "keywords": ["agoraphobia", "fear of leaving home", "fear of crowds", "homebound", "avoidance behavior"]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "logic": "AND",
+            "path": "A.ocd",
+            "criterion": "OCD with one or both: obsessions or compulsions",
+            "children": [
+              {
+                "path": "A.ocd.diagnosis",
+                "criterion": "OCD diagnosis present",
+                "keywords": ["OCD", "obsessive-compulsive disorder", "OCD diagnosis"]
+              },
+              {
+                "logic": "OR",
+                "path": "A.ocd.symptoms",
+                "criterion": "Obsessions or compulsions",
+                "children": [
+                  {
+                    "path": "A.ocd.obsessions",
+                    "criterion": "Involuntary, time-consuming preoccupation with intrusive, unwanted thoughts",
+                    "keywords": ["obsessions", "intrusive thoughts", "unwanted thoughts", "time-consuming"]
+                  },
+                  {
+                    "path": "A.ocd.compulsions",
+                    "criterion": "Repetitive behaviors aimed at reducing anxiety",
+                    "keywords": ["compulsions", "rituals", "repetitive behaviors", "checking", "counting", "hand washing"]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "logic": "OR",
+        "path": "B_OR_C",
+        "criterion": "Paragraph B (functional limitations) OR Paragraph C (serious and persistent)",
+        "children": [
+          {
+            "logic": "OR",
+            "path": "B",
+            "criterion": "Extreme limitation of one, OR marked limitation of two, of the four areas",
+            "children": [
+              {
+                "path": "B.1",
+                "criterion": "Marked or extreme limitation in understanding, remembering, or applying information",
+                "keywords": ["memory deficit", "cognitive limitation", "MMSE", "MoCA", "neuropsych testing"]
+              },
+              {
+                "path": "B.2",
+                "criterion": "Marked or extreme limitation in interacting with others",
+                "keywords": ["social interaction", "social withdrawal", "interpersonal difficulties", "social avoidance"]
+              },
+              {
+                "path": "B.3",
+                "criterion": "Marked or extreme limitation in concentrating, persisting, or maintaining pace",
+                "keywords": ["concentration", "persistence", "pace", "off task", "cannot complete tasks"]
+              },
+              {
+                "path": "B.4",
+                "criterion": "Marked or extreme limitation in adapting or managing oneself",
+                "keywords": ["self-care", "ADLs", "managing finances", "personal hygiene", "self-management"]
+              }
+            ]
+          },
+          {
+            "logic": "AND",
+            "path": "C",
+            "criterion": "Serious and persistent ≥2 years with ongoing treatment AND minimal capacity to adapt",
+            "children": [
+              {
+                "path": "C.duration",
+                "criterion": "Medically documented history of mental disorder over period of at least 2 years",
+                "keywords": ["2 years", "24 months", "longstanding", "chronic anxiety", "chronic OCD"],
+                "duration_months_required": 24
+              },
+              {
+                "path": "C.1",
+                "criterion": "Reliance on medical treatment, therapy, psychosocial supports, or highly structured setting on ongoing basis",
+                "keywords": ["psychiatric medication", "CBT", "ERP therapy", "case manager", "ongoing treatment"]
+              },
+              {
+                "path": "C.2",
+                "criterion": "Minimal capacity to adapt to changes in environment or demands not already part of daily life",
+                "keywords": ["minimal adaptation", "cannot adapt", "decompensation with stress", "rigid"]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

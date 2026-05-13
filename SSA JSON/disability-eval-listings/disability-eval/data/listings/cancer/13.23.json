@@ -1,0 +1,43 @@
+{
+  "code": "13.23",
+  "title": "Female genital tract — carcinoma or sarcoma (uterus, ovaries, fallopian tubes, vagina, vulva)",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Cancer of the female genital tract — vulva/vagina with regional/distant metastases or recurrence; uterus extending beyond uterine corpus or recurrent; fallopian tubes extending beyond fallopian tubes or recurrent; ovaries with persistent/progressive/recurrent disease, distant metastases, OR small cell carcinoma.",
+  "synonyms": {
+    "ovarian cancer":          ["ovarian carcinoma", "ovarian adenocarcinoma", "epithelial ovarian cancer"],
+    "uterine cancer":          ["endometrial cancer", "endometrial carcinoma", "uterine sarcoma"],
+    "cervical cancer":         ["cervical carcinoma", "cervix cancer", "cervical squamous cell carcinoma"],
+    "vulvar cancer":           ["vulvar carcinoma"],
+    "vaginal cancer":          ["vaginal carcinoma"],
+    "fallopian tube cancer":   ["tubal carcinoma"],
+    "CA-125":                  ["CA 125", "elevated CA-125"],
+    "BRCA":                    ["BRCA1", "BRCA2", "BRCA mutation"],
+    "metastasis":              ["distant metastases", "regional metastases", "M1 disease", "peritoneal carcinomatosis"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Carcinoma or sarcoma of vulva or vagina with regional or distant metastases, OR recurrent disease following initial anticancer therapy",
+       "keywords": ["vulvar cancer", "vaginal cancer", "vulvar carcinoma", "vaginal carcinoma", "regional metastases", "distant metastases", "recurrent disease"]},
+      {"path": "B", "criterion": "Carcinoma of uterus extending to surrounding organs OR involving 1+ regional lymph nodes, OR recurrent disease after initial anticancer therapy",
+       "keywords": ["uterine cancer", "endometrial cancer", "uterine sarcoma", "extension to surrounding organs", "regional lymph node involvement", "recurrent uterine cancer"]},
+      {"path": "C", "criterion": "Carcinoma of fallopian tubes extending to serosa or beyond, OR recurrent disease after initial anticancer therapy",
+       "keywords": ["fallopian tube cancer", "tubal carcinoma", "serosal extension", "recurrent fallopian tube cancer"]},
+      {
+        "logic": "OR",
+        "path": "D",
+        "criterion": "Ovarian cancer: persistent/progressive/recurrent disease following anticancer therapy, OR distant metastases, OR small cell carcinoma",
+        "children": [
+          {"path": "D.1", "criterion": "Carcinoma of ovaries with persistent or progressive disease following initial anticancer therapy, OR with recurrent disease",
+           "keywords": ["ovarian cancer", "ovarian carcinoma", "epithelial ovarian cancer", "persistent disease", "progressive disease", "recurrent ovarian cancer", "platinum-resistant"]},
+          {"path": "D.2", "criterion": "Distant metastases of ovarian cancer (beyond pelvic peritoneum)",
+           "keywords": ["distant metastases", "extra-pelvic disease", "liver metastases"]},
+          {"path": "D.3", "criterion": "Small cell (oat cell) carcinoma of ovary",
+           "keywords": ["small cell carcinoma of ovary", "small cell ovarian cancer"]}
+        ]
+      }
+    ]
+  }
+}

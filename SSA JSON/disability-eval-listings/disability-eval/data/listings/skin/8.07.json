@@ -1,0 +1,31 @@
+{
+  "code": "8.07",
+  "title": "Genetic photosensitivity disorders",
+  "body_system": "skin",
+  "version": 1,
+  "summary": "Genetic photosensitivity disorder (xeroderma pigmentosum or other genetic photosensitivity) with documented diagnosis; xeroderma pigmentosum considered disabled per se.",
+  "synonyms": {
+    "xeroderma pigmentosum":   ["XP", "DNA repair defect"],
+    "genetic photosensitivity": ["porphyria", "erythropoietic protoporphyria", "EPP", "Cockayne syndrome"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Xeroderma pigmentosum (XP) by genetic confirmation or clinical diagnosis",
+       "keywords": ["xeroderma pigmentosum", "XP", "DNA repair defect", "genetic testing"]},
+      {
+        "logic": "AND",
+        "path": "B",
+        "criterion": "Other genetic photosensitivity disorder with extensive skin lesions or substantial limitation in functioning, persisting ≥3 months despite continuing treatment",
+        "children": [
+          {"path": "B.1", "criterion": "Genetic photosensitivity disorder (porphyria, EPP, Cockayne syndrome, etc.)",
+           "keywords": ["porphyria", "erythropoietic protoporphyria", "EPP", "Cockayne syndrome", "genetic photosensitivity"]},
+          {"path": "B.2", "criterion": "Extensive skin lesions OR inability to function outside a highly protective environment for at least 3 months",
+           "keywords": ["extensive skin lesions", "protective environment", "3 months", "persistent"],
+           "duration_months_required": 3}
+        ]
+      }
+    ]
+  }
+}

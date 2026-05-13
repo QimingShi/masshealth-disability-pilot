@@ -1,0 +1,37 @@
+{
+  "code": "6.05",
+  "title": "Chronic kidney disease with impaired kidney function",
+  "body_system": "genitourinary",
+  "version": 1,
+  "summary": "CKD with reduced glomerular filtration rate or low serum albumin/elevated proteinuria, plus one of: severe anemia, atherosclerotic renovascular disease, hyperparathyroidism, peripheral neuropathy, or fluid overload, persisting ≥90 days within 12-month period.",
+  "synonyms": {
+    "chronic kidney disease":  ["CKD", "kidney disease", "chronic renal insufficiency", "CRI", "renal insufficiency"],
+    "GFR":                     ["glomerular filtration rate", "eGFR", "estimated GFR"],
+    "creatinine":              ["serum creatinine", "Cr", "elevated creatinine"],
+    "creatinine clearance":    ["CrCl", "creatinine clearance", "24-hour urine"],
+    "proteinuria":             ["protein in urine", "urine protein", "albumin/creatinine ratio", "ACR", "UPCR", "urine protein-creatinine ratio", "nephrotic-range proteinuria"],
+    "albumin":                 ["serum albumin", "low albumin", "hypoalbuminemia"],
+    "anemia":                  ["renal anemia", "anemia of CKD"],
+    "fluid overload":          ["volume overload", "edema", "fluid retention"],
+    "neuropathy":              ["uremic neuropathy", "peripheral neuropathy"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "OR",
+        "path": "A",
+        "criterion": "Reduced kidney function: low GFR/CrCl/serum creatinine, OR low serum albumin with proteinuria",
+        "children": [
+          {"path": "A.1", "criterion": "Serum creatinine ≥4 mg/dL, OR creatinine clearance ≤20 mL/min, OR estimated GFR ≤20 mL/min/1.73m², on at least two evaluations at least 90 days apart within 12-month period",
+           "keywords": ["serum creatinine 4", "GFR 20", "eGFR 20", "creatinine clearance 20", "CrCl"],
+           "duration_months_required": 12},
+          {"path": "A.2", "criterion": "Serum albumin ≤3.0 g/dL with proteinuria of 3.5 g/24 hrs (or ACR 3500 mg/g), on at least two evaluations 90 days apart in 12-month period",
+           "keywords": ["serum albumin 3.0", "hypoalbuminemia", "proteinuria 3.5", "nephrotic syndrome", "ACR 3500"],
+           "duration_months_required": 12}
+        ]
+      }
+    ]
+  }
+}

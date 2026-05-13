@@ -1,0 +1,49 @@
+{
+  "code": "11.22",
+  "title": "Motor neuron disorders other than ALS",
+  "body_system": "neurological",
+  "version": 1,
+  "summary": "Motor neuron disorders (other than ALS) including spinal muscular atrophy, primary lateral sclerosis, progressive muscular atrophy, with motor disorganization OR bulbar dysfunction OR respiratory dysfunction OR marked limitation pattern.",
+  "synonyms": {
+    "motor neuron disorder":   ["MND", "spinal muscular atrophy", "SMA", "primary lateral sclerosis", "PLS", "progressive muscular atrophy", "PMA", "Kennedy disease", "spinobulbar muscular atrophy", "SBMA"],
+    "EMG":                     ["electromyography", "needle EMG"],
+    "NCS":                     ["nerve conduction study"],
+    "fasciculations":          ["muscle twitching"],
+    "atrophy":                 ["muscle wasting"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "PRECONDITION",
+        "criterion": "Motor neuron disorder other than ALS, documented by clinical findings, EMG, and/or genetic testing",
+        "keywords": ["motor neuron disease", "spinal muscular atrophy", "SMA", "primary lateral sclerosis", "PLS", "Kennedy disease", "EMG", "genetic testing"]
+      },
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Motor disorganization OR bulbar/respiratory dysfunction OR marked limitation pattern",
+        "children": [
+          {"path": "A", "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities",
+           "keywords": ["motor weakness", "atrophy", "fasciculations", "two extremity weakness", "extreme limitation"]},
+          {"path": "B", "criterion": "Bulbar and neuromuscular dysfunction with significant difficulty swallowing, breathing, or speaking",
+           "keywords": ["dysphagia", "dysarthria", "bulbar dysfunction"]},
+          {"path": "C", "criterion": "Significant respiratory motor function impairment requiring respiratory support",
+           "keywords": ["respiratory weakness", "BiPAP", "ventilator"]},
+          {
+            "logic": "AND",
+            "path": "D",
+            "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+            "children": [
+              {"path": "D.1", "criterion": "Marked limitation in physical functioning",
+               "keywords": ["marked physical limitation"]},
+              {"path": "D.2", "criterion": "Marked limitation in one mental functioning area",
+               "keywords": ["marked cognitive limitation"]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "code": "13.06",
+  "title": "Leukemia",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Leukemia: acute leukemia (considered disabled until ≥24 months from diagnosis or relapse), chronic myelogenous leukemia in accelerated/blast phase, chronic lymphocytic leukemia in advanced stage, OR stem cell transplantation.",
+  "synonyms": {
+    "acute lymphoblastic leukemia": ["ALL"],
+    "acute myelogenous leukemia": ["AML", "acute myeloid leukemia"],
+    "chronic myelogenous leukemia": ["CML", "chronic myeloid leukemia", "Philadelphia chromosome", "Ph+", "BCR-ABL"],
+    "chronic lymphocytic leukemia": ["CLL", "small lymphocytic lymphoma", "SLL"],
+    "blast phase":             ["blast crisis", "blastic phase"],
+    "accelerated phase":       ["accelerated CML"],
+    "stem cell transplant":    ["BMT", "bone marrow transplant", "HSCT"],
+    "induction chemotherapy":  ["induction chemo", "consolidation chemotherapy"],
+    "Rai staging":             ["Rai stage III", "Rai stage IV"],
+    "Binet staging":           ["Binet stage C"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Acute leukemia (AML or ALL); considered disabled until at least 24 months from date of diagnosis or relapse, or 12 months from date of bone marrow/stem cell transplantation, whichever is later",
+       "keywords": ["acute lymphoblastic leukemia", "ALL", "acute myeloid leukemia", "AML", "acute leukemia", "induction chemotherapy", "24 months from diagnosis"],
+       "duration_months_required": 24},
+      {"path": "B", "criterion": "Chronic myelogenous leukemia (CML) in accelerated phase or blast phase",
+       "keywords": ["chronic myelogenous leukemia", "CML", "accelerated phase", "blast phase", "blast crisis", "Philadelphia chromosome"]},
+      {"path": "C", "criterion": "Chronic lymphocytic leukemia (CLL) in Rai stage III/IV or Binet stage C, OR with significant constitutional symptoms",
+       "keywords": ["chronic lymphocytic leukemia", "CLL", "Rai stage III", "Rai stage IV", "Binet stage C", "advanced CLL"]},
+      {"path": "D", "criterion": "Bone marrow or stem cell transplantation; considered disabled for 12 months from date of transplantation",
+       "keywords": ["stem cell transplant", "HSCT", "BMT", "bone marrow transplant"],
+       "duration_months_required": 12}
+    ]
+  }
+}

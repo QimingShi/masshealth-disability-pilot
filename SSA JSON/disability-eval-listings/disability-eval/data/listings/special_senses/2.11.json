@@ -1,0 +1,24 @@
+{
+  "code": "2.11",
+  "title": "Hearing loss treated with cochlear implantation",
+  "body_system": "special_senses",
+  "version": 1,
+  "summary": "Hearing loss treated with cochlear implantation; considered disabled for 1 year following implantation, after which evaluation is based on word recognition score on HINT (≤60% qualifies).",
+  "synonyms": {
+    "cochlear implant":        ["cochlear implantation", "CI", "auditory implant"],
+    "HINT":                    ["Hearing in Noise Test", "speech-in-noise test"],
+    "audiogram":               ["audiometry"],
+    "audiologist":             ["audiology evaluation"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Within 1 year of cochlear implantation surgery (claimant considered disabled for 1 year)",
+       "keywords": ["cochlear implant", "cochlear implantation", "CI surgery", "1 year post-implant"],
+       "duration_months_required": 12},
+      {"path": "B", "criterion": "After 1 year, word recognition score of 60% or less determined by HINT (Hearing in Noise Test)",
+       "keywords": ["HINT", "Hearing in Noise Test", "word recognition score", "60%", "cochlear implant"]}
+    ]
+  }
+}

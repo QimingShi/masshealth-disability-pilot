@@ -1,0 +1,35 @@
+{
+  "code": "3.03",
+  "title": "Asthma",
+  "body_system": "respiratory",
+  "version": 1,
+  "summary": "Asthma with low FEV1 at baseline AND three asthma exacerbations within a 12-month period requiring hospitalization for ≥48 hours, despite prescribed treatment.",
+  "synonyms": {
+    "asthma":                  ["reactive airway disease", "RAD", "bronchial asthma"],
+    "asthma exacerbation":     ["asthma attack", "acute asthma", "asthma flare", "status asthmaticus"],
+    "FEV1":                    ["forced expiratory volume", "FEV-1", "1-second forced expiratory volume"],
+    "spirometry":              ["pulmonary function test", "PFT", "PFTs"],
+    "wheezing":                ["wheeze", "expiratory wheezes", "bronchospasm"],
+    "albuterol":               ["bronchodilator", "rescue inhaler", "ProAir", "Ventolin", "salbutamol"],
+    "inhaled corticosteroid":  ["ICS", "Flovent", "fluticasone", "Pulmicort", "budesonide", "controller"],
+    "hospitalization":         ["hospital admission", "inpatient", "hospitalized"],
+    "12 months":               ["1 year", "one year", "12-month period", "consecutive 12 months"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Baseline FEV1 less than or equal to the value in SSA Table VI-A or VI-B for age, sex, and height, measured while medically stable, within the same 12-month period as required hospitalizations",
+        "keywords": ["FEV1", "spirometry", "PFT", "Table VI", "post-bronchodilator", "baseline", "stable"]
+      },
+      {
+        "path": "B",
+        "criterion": "Three asthma exacerbations within a consecutive 12-month period requiring hospitalization for at least 48 hours each, with at least 30 days between consecutive hospitalizations, despite adherence to prescribed treatment",
+        "keywords": ["three hospitalizations", "asthma exacerbation", "status asthmaticus", "inpatient", "48 hours", "30 days apart", "despite treatment", "controller medication"],
+        "duration_months_required": 12
+      }
+    ]
+  }
+}

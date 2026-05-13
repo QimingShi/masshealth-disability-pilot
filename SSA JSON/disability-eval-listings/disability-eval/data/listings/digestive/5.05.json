@@ -1,0 +1,43 @@
+{
+  "code": "5.05",
+  "title": "Chronic liver disease",
+  "body_system": "digestive",
+  "version": 1,
+  "summary": "Chronic liver disease meeting one of: hemorrhaging from varices/portal hypertensive gastropathy, ascites/hydrothorax, hepatorenal syndrome, hepatopulmonary syndrome, hepatic encephalopathy, or end-stage liver disease (high MELD).",
+  "synonyms": {
+    "chronic liver disease":   ["cirrhosis", "end-stage liver disease", "ESLD", "decompensated cirrhosis"],
+    "viral hepatitis":         ["hepatitis B", "HBV", "hepatitis C", "HCV"],
+    "alcoholic liver disease": ["alcoholic cirrhosis", "alcohol-related liver disease", "ARLD"],
+    "NAFLD":                   ["nonalcoholic fatty liver disease", "NASH", "nonalcoholic steatohepatitis"],
+    "varices":                 ["esophageal varices", "gastric varices", "variceal bleed"],
+    "ascites":                 ["abdominal fluid", "abdominal distension"],
+    "hepatic encephalopathy":  ["HE", "liver encephalopathy", "ammonia high", "altered mental status"],
+    "hepatorenal syndrome":    ["HRS"],
+    "hepatopulmonary syndrome": ["HPS"],
+    "MELD":                    ["Model for End-stage Liver Disease", "MELD score", "MELD-Na"],
+    "INR":                     ["international normalized ratio", "elevated INR", "coagulopathy"],
+    "albumin":                 ["serum albumin", "low albumin", "hypoalbuminemia"],
+    "bilirubin":               ["total bilirubin", "elevated bilirubin", "jaundice"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Hemorrhaging from esophageal, gastric, or ectopic varices or portal hypertensive gastropathy with hemodynamic instability requiring transfusion of at least 2 units of blood",
+       "keywords": ["variceal bleed", "esophageal varices", "gastric varices", "portal hypertensive gastropathy", "transfusion", "hemodynamic instability"]},
+      {"path": "B", "criterion": "Ascites or hydrothorax not attributable to other causes, present despite continuing treatment",
+       "keywords": ["ascites", "hydrothorax", "abdominal fluid", "paracentesis", "thoracentesis", "diuretic-resistant"]},
+      {"path": "C", "criterion": "Spontaneous bacterial peritonitis (SBP) with peritoneal fluid containing absolute neutrophil count of at least 250 cells/mm³",
+       "keywords": ["spontaneous bacterial peritonitis", "SBP", "peritoneal fluid neutrophils", "ascitic fluid"]},
+      {"path": "D", "criterion": "Hepatorenal syndrome documented by elevated serum creatinine, oliguria, and absence of other causes of renal failure",
+       "keywords": ["hepatorenal syndrome", "HRS", "elevated creatinine", "oliguria", "hepatorenal"]},
+      {"path": "E", "criterion": "Hepatopulmonary syndrome documented by arterial hypoxemia and intrapulmonary vascular dilatations",
+       "keywords": ["hepatopulmonary syndrome", "HPS", "hypoxemia", "intrapulmonary shunt", "bubble study"]},
+      {"path": "F", "criterion": "Hepatic encephalopathy documented by altered mental status with elevated ammonia or asterixis",
+       "keywords": ["hepatic encephalopathy", "HE", "altered mental status", "elevated ammonia", "asterixis", "lactulose"]},
+      {"path": "G", "criterion": "End-stage liver disease with MELD score of 22 or greater on at least 2 evaluations within a 6-month period",
+       "keywords": ["MELD", "MELD score", "22 or greater", "end-stage liver disease", "ESLD"],
+       "duration_months_required": 6}
+    ]
+  }
+}

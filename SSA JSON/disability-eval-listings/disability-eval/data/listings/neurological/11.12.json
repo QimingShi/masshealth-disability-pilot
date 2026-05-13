@@ -1,0 +1,57 @@
+{
+  "code": "11.12",
+  "title": "Myasthenia gravis",
+  "body_system": "neurological",
+  "version": 1,
+  "summary": "Myasthenia gravis despite ≥3 months of prescribed treatment, with disorganization of motor function in two extremities, OR bulbar/neuromuscular dysfunction, OR marked physical AND mental limitation.",
+  "synonyms": {
+    "myasthenia gravis":       ["MG", "ocular myasthenia"],
+    "anti-AChR":               ["acetylcholine receptor antibody", "AChR antibody", "AChR-Ab"],
+    "anti-MuSK":               ["MuSK antibody"],
+    "EMG":                     ["repetitive nerve stimulation", "RNS", "single-fiber EMG", "SFEMG"],
+    "edrophonium test":        ["Tensilon test"],
+    "ptosis":                  ["eyelid drooping", "drooping eyelids"],
+    "diplopia":                ["double vision"],
+    "dysphagia":               ["swallowing difficulty"],
+    "dysarthria":              ["slurred speech"],
+    "fatigability":            ["fatigability with use", "muscle weakness with activity"],
+    "pyridostigmine":          ["Mestinon"],
+    "3 months":                ["three months", "12 weeks"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "PRECONDITION",
+        "criterion": "Myasthenia gravis diagnosis with persistent symptoms despite ≥3 consecutive months of prescribed treatment",
+        "keywords": ["myasthenia gravis", "MG", "AChR antibody", "MuSK antibody", "RNS", "single-fiber EMG", "Mestinon", "pyridostigmine", "despite treatment"],
+        "duration_months_required": 3
+      },
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Motor disorganization OR bulbar dysfunction OR respiratory dysfunction OR marked limitation pattern",
+        "children": [
+          {"path": "A", "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities",
+           "keywords": ["fatigability", "muscle weakness", "two extremity weakness", "extreme limitation"]},
+          {"path": "B", "criterion": "Bulbar and neuromuscular dysfunction with difficulty swallowing, breathing, or speaking",
+           "keywords": ["dysphagia", "dysarthria", "bulbar dysfunction", "ptosis", "diplopia"]},
+          {"path": "C", "criterion": "Significant respiratory motor impairment requiring respiratory support (myasthenic crisis history)",
+           "keywords": ["myasthenic crisis", "respiratory failure", "intubation", "BiPAP", "ventilator"]},
+          {
+            "logic": "AND",
+            "path": "D",
+            "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+            "children": [
+              {"path": "D.1", "criterion": "Marked limitation in physical functioning",
+               "keywords": ["marked physical limitation"]},
+              {"path": "D.2", "criterion": "Marked limitation in one mental functioning area",
+               "keywords": ["marked cognitive limitation"]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

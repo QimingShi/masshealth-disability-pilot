@@ -1,0 +1,25 @@
+{
+  "code": "13.09",
+  "title": "Thyroid gland cancer",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Thyroid cancer that is anaplastic carcinoma; OR other thyroid carcinoma with metastases beyond regional lymph nodes that does not respond to radioactive iodine.",
+  "synonyms": {
+    "thyroid cancer":          ["thyroid carcinoma", "papillary thyroid cancer", "PTC", "follicular thyroid cancer", "FTC", "medullary thyroid cancer", "MTC", "anaplastic thyroid cancer", "ATC"],
+    "anaplastic carcinoma":    ["anaplastic thyroid carcinoma", "ATC", "undifferentiated thyroid cancer"],
+    "radioactive iodine":      ["RAI", "I-131", "radioiodine"],
+    "metastasis":              ["distant metastases", "RAI-refractory"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Anaplastic (undifferentiated) thyroid carcinoma",
+       "keywords": ["anaplastic thyroid carcinoma", "anaplastic carcinoma", "ATC", "undifferentiated thyroid cancer"]},
+      {"path": "B", "criterion": "Carcinoma with distant metastases (beyond regional lymph nodes) that is not responsive to radioactive iodine therapy",
+       "keywords": ["thyroid cancer with metastases", "distant metastases", "RAI-refractory", "RAI-resistant", "iodine-refractory"]},
+      {"path": "C", "criterion": "Medullary thyroid carcinoma with distant metastases",
+       "keywords": ["medullary thyroid cancer", "MTC", "calcitonin elevated", "distant metastases"]}
+    ]
+  }
+}

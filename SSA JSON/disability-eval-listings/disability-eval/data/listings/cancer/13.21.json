@@ -1,0 +1,35 @@
+{
+  "code": "13.21",
+  "title": "Kidneys, adrenal glands, or ureters — carcinoma or sarcoma",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Cancer of kidneys, adrenal glands, or ureters that is inoperable, unresectable, recurrent, OR with metastases beyond regional lymph nodes.",
+  "synonyms": {
+    "renal cell carcinoma":    ["RCC", "kidney cancer", "renal cancer", "clear cell carcinoma of kidney"],
+    "Wilms tumor":             ["nephroblastoma"],
+    "adrenal cancer":          ["adrenocortical carcinoma", "ACC", "pheochromocytoma malignant"],
+    "ureteral cancer":         ["transitional cell carcinoma of ureter", "urothelial carcinoma of ureter"],
+    "metastasis":              ["distant metastases", "M1 disease"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "PRECONDITION", "criterion": "Pathology-confirmed cancer of kidneys, adrenal glands, or ureters",
+       "keywords": ["renal cell carcinoma", "RCC", "kidney cancer", "Wilms tumor", "adrenocortical carcinoma", "ureteral cancer", "biopsy"]},
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Inoperable, recurrent, or metastatic disease",
+        "children": [
+          {"path": "A", "criterion": "Inoperable or unresectable disease",
+           "keywords": ["inoperable", "unresectable"]},
+          {"path": "B", "criterion": "Recurrent disease following initial anticancer therapy",
+           "keywords": ["recurrent disease", "tumor recurrence"]},
+          {"path": "C", "criterion": "Metastases beyond regional lymph nodes",
+           "keywords": ["distant metastases", "M1 disease", "lung metastases", "bone metastases"]}
+        ]
+      }
+    ]
+  }
+}

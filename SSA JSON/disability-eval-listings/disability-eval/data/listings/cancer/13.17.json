@@ -1,0 +1,36 @@
+{
+  "code": "13.17",
+  "title": "Small intestine — carcinoma, sarcoma, or carcinoid",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Small intestine cancer (adenocarcinoma, sarcoma, carcinoid, GIST) that is inoperable, unresectable, recurrent, OR with regional/distant metastases.",
+  "synonyms": {
+    "small intestine cancer":  ["small bowel cancer", "duodenal cancer", "jejunal cancer", "ileal cancer"],
+    "carcinoid":               ["carcinoid tumor", "neuroendocrine tumor", "NET", "well-differentiated neuroendocrine tumor"],
+    "GIST":                    ["gastrointestinal stromal tumor"],
+    "adenocarcinoma":          ["small bowel adenocarcinoma"],
+    "metastasis":              ["distant metastases", "regional metastases", "M1 disease"],
+    "biopsy":                  ["endoscopic biopsy", "core biopsy"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "PRECONDITION", "criterion": "Pathology-confirmed cancer of the small intestine",
+       "keywords": ["small intestine cancer", "small bowel cancer", "duodenal cancer", "jejunal cancer", "ileal cancer", "carcinoid", "GIST", "biopsy"]},
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Inoperable, recurrent, or metastatic disease",
+        "children": [
+          {"path": "A", "criterion": "Inoperable or unresectable disease",
+           "keywords": ["inoperable", "unresectable"]},
+          {"path": "B", "criterion": "Recurrent disease following initial anticancer therapy",
+           "keywords": ["recurrent disease", "tumor recurrence", "treatment failure"]},
+          {"path": "C", "criterion": "Regional or distant metastases",
+           "keywords": ["regional metastases", "distant metastases", "M1 disease", "liver metastases", "carcinomatosis"]}
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "code": "13.22",
+  "title": "Urinary bladder — carcinoma",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Bladder cancer with infiltration beyond bladder wall, recurrence after total cystectomy, inoperable/unresectable disease, OR metastases to or beyond regional lymph nodes.",
+  "synonyms": {
+    "bladder cancer":          ["urothelial carcinoma", "transitional cell carcinoma", "TCC", "urothelial carcinoma of bladder"],
+    "muscle-invasive":         ["muscle-invasive bladder cancer", "MIBC", "T2 bladder cancer", "T3", "T4"],
+    "cystectomy":              ["radical cystectomy", "total cystectomy", "bladder removal"],
+    "metastasis":              ["distant metastases", "regional metastases", "M1 disease"],
+    "biopsy":                  ["TURBT", "transurethral resection of bladder tumor", "cystoscopy with biopsy"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "PRECONDITION", "criterion": "Pathology-confirmed bladder cancer (carcinoma)",
+       "keywords": ["bladder cancer", "urothelial carcinoma", "transitional cell carcinoma", "TCC", "biopsy", "TURBT", "cystoscopy"]},
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Wall infiltration, recurrence, inoperable, or metastases",
+        "children": [
+          {"path": "A", "criterion": "Tumor with infiltration beyond bladder wall (T3 or T4 disease)",
+           "keywords": ["muscle-invasive", "T3 bladder cancer", "T4 bladder cancer", "tumor infiltration", "perivesical fat"]},
+          {"path": "B", "criterion": "Recurrent disease following total cystectomy",
+           "keywords": ["recurrent bladder cancer", "post-cystectomy recurrence", "treatment failure"]},
+          {"path": "C", "criterion": "Inoperable or unresectable disease",
+           "keywords": ["inoperable", "unresectable"]},
+          {"path": "D", "criterion": "Metastases to or beyond regional lymph nodes",
+           "keywords": ["regional lymph node metastases", "distant metastases", "M1 disease"]}
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "code": "11.06",
+  "title": "Parkinsonian syndrome",
+  "body_system": "neurological",
+  "version": 1,
+  "summary": "Parkinsonian syndrome despite ≥3 months of prescribed treatment, with disorganization of motor function in two extremities OR marked limitation in physical functioning AND one mental functioning area.",
+  "synonyms": {
+    "Parkinsonian syndrome":   ["Parkinson's disease", "Parkinsonism", "PD", "atypical parkinsonism", "MSA", "multiple system atrophy", "PSP", "progressive supranuclear palsy"],
+    "tremor":                  ["resting tremor", "pill-rolling tremor"],
+    "bradykinesia":            ["slow movement", "slowness", "hypokinesia"],
+    "rigidity":                ["cogwheel rigidity", "muscle rigidity"],
+    "postural instability":    ["balance impairment", "falls", "imbalance"],
+    "shuffling gait":          ["festination", "Parkinsonian gait"],
+    "dopaminergic":            ["levodopa", "carbidopa", "Sinemet", "Madopar", "L-DOPA", "dopamine agonist", "Mirapex", "ropinirole"],
+    "DBS":                     ["deep brain stimulation"],
+    "3 months":                ["three months", "12 weeks"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "PRECONDITION",
+        "criterion": "Parkinsonian syndrome diagnosis with limitations persisting despite ≥3 consecutive months of prescribed treatment",
+        "keywords": ["Parkinson's disease", "Parkinsonism", "tremor", "bradykinesia", "rigidity", "despite treatment", "levodopa", "dopaminergic medication"],
+        "duration_months_required": 3
+      },
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Motor disorganization OR marked limitation pattern",
+        "children": [
+          {
+            "path": "A",
+            "criterion": "Disorganization of motor function in two extremities resulting in extreme limitation in standing, balancing, or use of upper extremities",
+            "keywords": ["bradykinesia", "rigidity", "tremor", "postural instability", "loss of balance", "shuffling gait", "extreme limitation"]
+          },
+          {
+            "logic": "AND",
+            "path": "B",
+            "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+            "children": [
+              {"path": "B.1", "criterion": "Marked limitation in physical functioning",
+               "keywords": ["marked physical limitation", "decreased mobility", "Parkinson's disability"]},
+              {"path": "B.2", "criterion": "Marked limitation in one mental functioning area",
+               "keywords": ["cognitive impairment", "Parkinson's dementia", "executive dysfunction", "depression"]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

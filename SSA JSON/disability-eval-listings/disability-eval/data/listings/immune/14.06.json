@@ -1,0 +1,47 @@
+{
+  "code": "14.06",
+  "title": "Undifferentiated and mixed connective tissue disease",
+  "body_system": "immune",
+  "version": 1,
+  "summary": "Undifferentiated or mixed connective tissue disease meeting criteria similar to other autoimmune listings, with multi-organ involvement OR repeated manifestations with marked functional limitation.",
+  "synonyms": {
+    "MCTD":                    ["mixed connective tissue disease"],
+    "UCTD":                    ["undifferentiated connective tissue disease"],
+    "anti-RNP":                ["anti-U1 RNP", "ribonucleoprotein antibody"],
+    "ANA":                     ["antinuclear antibody"],
+    "Raynaud":                 ["Raynaud's phenomenon"],
+    "constitutional symptoms": ["fatigue", "fever", "malaise", "weight loss"],
+    "marked limitation":       ["marked", "moderately severe"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "AND",
+        "path": "A",
+        "criterion": "Involvement of two or more organs/body systems with at least one at moderate severity AND two constitutional symptoms",
+        "children": [
+          {"path": "A.1", "criterion": "MCTD/UCTD diagnosis with involvement of two or more organs/body systems",
+           "keywords": ["MCTD", "UCTD", "mixed connective tissue disease", "anti-RNP", "Raynaud's", "synovitis", "pulmonary involvement", "renal involvement"]},
+          {"path": "A.2", "criterion": "At least one organ/body system at moderate severity",
+           "keywords": ["moderate severity"]},
+          {"path": "A.3", "criterion": "At least two constitutional symptoms",
+           "keywords": ["fatigue", "fever", "malaise", "weight loss"]}
+        ]
+      },
+      {
+        "logic": "AND",
+        "path": "B",
+        "criterion": "Repeated manifestations with constitutional symptoms AND marked functional limitation",
+        "children": [
+          {"path": "B.1", "criterion": "Repeated manifestations of MCTD/UCTD",
+           "keywords": ["repeated manifestations", "disease flares"]},
+          {"path": "B.2", "criterion": "Two constitutional symptoms", "keywords": ["fatigue", "fever", "malaise", "weight loss"]},
+          {"path": "B.3", "criterion": "Marked limitation in ADLs, social functioning, or completing tasks",
+           "keywords": ["ADLs", "social functioning", "concentration"]}
+        ]
+      }
+    ]
+  }
+}

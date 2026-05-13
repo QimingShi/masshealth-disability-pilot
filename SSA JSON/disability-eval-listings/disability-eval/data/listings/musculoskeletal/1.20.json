@@ -1,0 +1,75 @@
+{
+  "code": "1.20",
+  "title": "Amputation due to any cause",
+  "body_system": "musculoskeletal",
+  "version": 1,
+  "summary": "Amputation that meets one of four scenarios: both upper extremities, hemipelvectomy/hip disarticulation, lower extremity at/above ankle precluding effective ambulation, or one hand and one lower extremity precluding effective ambulation.",
+  "synonyms": {
+    "amputation":              ["amputated", "limb loss", "AKA", "BKA", "AEA", "BEA", "above-knee amputation", "below-knee amputation"],
+    "hemipelvectomy":          ["hindquarter amputation", "pelvis disarticulation"],
+    "hip disarticulation":     ["hip amputation", "disarticulation at hip"],
+    "stump":                   ["residual limb", "amputation site"],
+    "prosthesis":              ["prosthetic", "prosthetic limb", "artificial limb"],
+    "wound":                   ["non-healing wound", "stump wound", "ulcer"],
+    "12 months":               ["1 year", "one year", "longstanding", "chronic"],
+    "walker":                  ["rollator", "rolling walker", "wheeled walker"],
+    "ambulation":              ["walking", "gait", "mobility"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Amputation of both upper extremities at or above the wrist",
+        "keywords": ["bilateral upper extremity amputation", "both hands amputated", "wrist disarticulation", "transradial", "transhumeral"]
+      },
+      {
+        "path": "B",
+        "criterion": "Hemipelvectomy or hip disarticulation",
+        "keywords": ["hemipelvectomy", "hip disarticulation", "hindquarter amputation"]
+      },
+      {
+        "logic": "AND",
+        "path": "C",
+        "criterion": "Amputation of one or both lower extremities at or above the ankle, with stump complications precluding effective prosthetic use, lasting ≥12 months",
+        "children": [
+          {
+            "path": "C.1",
+            "criterion": "Amputation of one or both lower extremities at or above the ankle",
+            "keywords": ["BKA", "AKA", "below-knee amputation", "above-knee amputation", "transtibial", "transfemoral", "Syme"]
+          },
+          {
+            "path": "C.2",
+            "criterion": "Stump complications (non-healing wounds, ulceration, instability) preventing or precluding effective prosthetic use",
+            "keywords": ["stump complications", "non-healing", "stump wound", "stump ulcer", "prosthetic intolerance"],
+            "duration_months_required": 12
+          },
+          {
+            "path": "C.3",
+            "criterion": "Documented medical need for walker, bilateral canes, bilateral crutches, or two-handed wheeled mobility device",
+            "keywords": ["walker", "bilateral canes", "bilateral crutches", "wheelchair"]
+          }
+        ]
+      },
+      {
+        "logic": "AND",
+        "path": "D",
+        "criterion": "Amputation of one hand AND one lower extremity at or above the ankle, with two-handed assistive device need lasting ≥12 months",
+        "children": [
+          {
+            "path": "D.1",
+            "criterion": "Amputation of one upper extremity at or above the wrist AND one lower extremity at or above the ankle",
+            "keywords": ["upper and lower extremity amputation", "hand amputation", "BKA", "AKA"]
+          },
+          {
+            "path": "D.2",
+            "criterion": "Documented medical need for walker, bilateral canes, bilateral crutches, or two-handed wheeled mobility device, lasting ≥12 months",
+            "keywords": ["walker", "bilateral canes", "wheelchair", "12 months"],
+            "duration_months_required": 12
+          }
+        ]
+      }
+    ]
+  }
+}

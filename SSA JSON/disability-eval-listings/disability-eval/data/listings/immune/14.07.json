@@ -1,0 +1,48 @@
+{
+  "code": "14.07",
+  "title": "Immune deficiency disorders, excluding HIV",
+  "body_system": "immune",
+  "version": 1,
+  "summary": "Immune deficiency disorder (excluding HIV) with one of: documented hospital admissions for infection, repeated infections requiring intervention, OR repeated manifestations with constitutional symptoms and marked functional limitation.",
+  "synonyms": {
+    "immunodeficiency":        ["immune deficiency", "primary immunodeficiency", "PID", "common variable immunodeficiency", "CVID", "agammaglobulinemia", "X-linked agammaglobulinemia", "XLA", "severe combined immunodeficiency", "SCID", "DiGeorge syndrome"],
+    "IVIG":                    ["intravenous immunoglobulin", "immunoglobulin replacement"],
+    "SCIG":                    ["subcutaneous immunoglobulin"],
+    "low immunoglobulins":     ["low IgG", "low IgA", "low IgM", "hypogammaglobulinemia"],
+    "recurrent infection":     ["recurrent sinopulmonary infection", "recurrent bacterial infection", "opportunistic infection"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "AND",
+        "path": "A",
+        "criterion": "Three documented infections requiring hospitalization for ≥48 hours each, occurring within a 12-month period",
+        "children": [
+          {"path": "A.1", "criterion": "Three documented infections requiring hospitalization within 12 months",
+           "keywords": ["recurrent infections", "hospitalized infections", "sepsis", "pneumonia", "opportunistic infection"]},
+          {"path": "A.2", "criterion": "Each hospitalization lasting at least 48 hours",
+           "keywords": ["48 hours", "inpatient", "hospital admission"],
+           "duration_months_required": 12}
+        ]
+      },
+      {"path": "B", "criterion": "Stem cell transplantation (claimant disabled for at least 12 months from date of transplantation)",
+       "keywords": ["stem cell transplant", "bone marrow transplant", "BMT", "HSCT", "hematopoietic stem cell transplantation"],
+       "duration_months_required": 12},
+      {
+        "logic": "AND",
+        "path": "C",
+        "criterion": "Repeated manifestations with constitutional symptoms AND marked limitation",
+        "children": [
+          {"path": "C.1", "criterion": "Repeated manifestations of immune deficiency disorder",
+           "keywords": ["recurrent infections", "repeated manifestations", "PID flares"]},
+          {"path": "C.2", "criterion": "Two constitutional symptoms",
+           "keywords": ["fatigue", "fever", "malaise", "weight loss"]},
+          {"path": "C.3", "criterion": "Marked limitation in ADLs, social functioning, or concentration/persistence/pace",
+           "keywords": ["ADLs", "social functioning", "concentration"]}
+        ]
+      }
+    ]
+  }
+}

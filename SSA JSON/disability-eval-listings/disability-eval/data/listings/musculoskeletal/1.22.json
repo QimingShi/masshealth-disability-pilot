@@ -1,0 +1,55 @@
+{
+  "code": "1.22",
+  "title": "Non-healing or complex fracture of the femur, tibia, pelvis, or one or more of the tarsal bones",
+  "body_system": "musculoskeletal",
+  "version": 1,
+  "summary": "Non-healing (nonunion) or complex fracture of femur, tibia, pelvis, or tarsal bones, imaging-confirmed, with limitation lasting ≥12 months and need for two-handed assistive device.",
+  "synonyms": {
+    "nonunion":                ["non-union", "non-healing fracture", "failure to unite", "delayed union", "no callus"],
+    "complex fracture":        ["comminuted fracture", "compound fracture", "open fracture", "multiple fragments"],
+    "femur":                   ["thigh bone", "femoral fracture", "femur fracture"],
+    "tibia":                   ["shin bone", "tibial fracture", "tib-fib fracture"],
+    "pelvis":                  ["pelvic fracture", "pelvic ring", "acetabulum"],
+    "tarsal bones":            ["tarsals", "calcaneus", "talus", "navicular", "cuboid", "cuneiform"],
+    "X-ray":                   ["x-ray", "radiograph", "XR", "plain film"],
+    "CT":                      ["CT scan", "computed tomography", "CAT scan"],
+    "MRI":                     ["magnetic resonance imaging", "MR scan"],
+    "12 months":               ["1 year", "one year", "longstanding", "chronic"],
+    "walker":                  ["rollator", "rolling walker", "wheeled walker"],
+    "bilateral canes":         ["two canes", "double cane"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Non-healing (nonunion) or complex fracture of femur, tibia, pelvis, or one or more tarsal bones",
+        "keywords": ["nonunion", "non-healing fracture", "complex fracture", "comminuted", "femur fracture", "tibia fracture", "pelvic fracture", "calcaneus", "talus"]
+      },
+      {
+        "path": "B",
+        "criterion": "Imaging documenting the non-healing or complex nature of the fracture",
+        "keywords": ["X-ray", "CT scan", "MRI", "imaging", "no callus formation", "no progressive healing"]
+      },
+      {
+        "logic": "AND",
+        "path": "C",
+        "criterion": "≥12-month physical limitation with documented two-handed assistive device need",
+        "children": [
+          {
+            "path": "C.1",
+            "criterion": "Impairment-related physical limitation lasting or expected to last ≥12 continuous months",
+            "keywords": ["chronic", "12 months", "1 year", "longstanding", "ongoing"],
+            "duration_months_required": 12
+          },
+          {
+            "path": "C.2",
+            "criterion": "Documented medical need for walker, bilateral canes, bilateral crutches, or two-handed wheeled mobility device",
+            "keywords": ["walker", "rollator", "bilateral canes", "bilateral crutches", "wheelchair"]
+          }
+        ]
+      }
+    ]
+  }
+}

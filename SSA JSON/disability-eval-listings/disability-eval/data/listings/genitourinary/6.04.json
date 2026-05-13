@@ -1,0 +1,24 @@
+{
+  "code": "6.04",
+  "title": "Chronic kidney disease with chronic peritoneal dialysis",
+  "body_system": "genitourinary",
+  "version": 1,
+  "summary": "Chronic kidney disease with chronic peritoneal dialysis lasting or expected to last for 12 continuous months.",
+  "synonyms": {
+    "peritoneal dialysis":     ["PD", "CAPD", "continuous ambulatory peritoneal dialysis", "CCPD", "continuous cycler peritoneal dialysis", "APD"],
+    "ESRD":                    ["end-stage renal disease", "ESKD", "kidney failure"],
+    "PD catheter":             ["peritoneal dialysis catheter", "Tenckhoff catheter"],
+    "12 months":               ["1 year", "one year", "ongoing", "chronic"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Chronic kidney disease requiring chronic peritoneal dialysis",
+       "keywords": ["peritoneal dialysis", "PD", "CAPD", "CCPD", "Tenckhoff catheter", "ESRD"]},
+      {"path": "B", "criterion": "Peritoneal dialysis lasting or expected to last 12 continuous months",
+       "keywords": ["12 months", "1 year", "chronic", "ongoing"],
+       "duration_months_required": 12}
+    ]
+  }
+}

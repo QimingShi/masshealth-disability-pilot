@@ -1,0 +1,25 @@
+{
+  "code": "6.03",
+  "title": "Chronic kidney disease with chronic hemodialysis",
+  "body_system": "genitourinary",
+  "version": 1,
+  "summary": "Chronic kidney disease with chronic hemodialysis or peritoneal dialysis lasting or expected to last for 12 continuous months.",
+  "synonyms": {
+    "hemodialysis":            ["HD", "dialysis", "in-center hemodialysis", "home hemodialysis"],
+    "ESRD":                    ["end-stage renal disease", "end-stage kidney disease", "ESKD", "kidney failure"],
+    "AV fistula":              ["arteriovenous fistula", "dialysis access", "AVF"],
+    "AV graft":                ["arteriovenous graft", "AVG"],
+    "12 months":               ["1 year", "one year", "ongoing", "chronic"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Chronic kidney disease requiring chronic hemodialysis",
+       "keywords": ["hemodialysis", "HD", "ESRD", "end-stage renal disease", "kidney failure", "AV fistula", "AV graft", "dialysis catheter"]},
+      {"path": "B", "criterion": "Hemodialysis lasting or expected to last 12 continuous months",
+       "keywords": ["12 months", "1 year", "chronic", "ongoing dialysis"],
+       "duration_months_required": 12}
+    ]
+  }
+}

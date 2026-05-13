@@ -1,0 +1,86 @@
+{
+  "code": "12.15",
+  "title": "Trauma- and stressor-related disorders",
+  "body_system": "mental",
+  "version": 1,
+  "summary": "PTSD or other trauma/stressor-related disorder with exposure to actual or threatened death/serious injury/violence, re-experiencing, avoidance, mood/behavior disturbance, and increased arousal, AND paragraph B functional limitations OR paragraph C (serious and persistent ≥2 years).",
+  "synonyms": {
+    "PTSD":                    ["post-traumatic stress disorder", "post traumatic stress", "trauma", "trauma disorder", "combat PTSD", "complex PTSD", "C-PTSD"],
+    "acute stress disorder":   ["ASD", "acute trauma response"],
+    "adjustment disorder":     ["adjustment reaction"],
+    "trauma exposure":          ["traumatic event", "exposure to violence", "combat exposure", "sexual assault", "MVA", "motor vehicle accident", "childhood abuse"],
+    "intrusive memories":      ["flashbacks", "intrusive thoughts", "intrusive recollections"],
+    "nightmares":              ["bad dreams", "trauma nightmares", "night terrors"],
+    "flashbacks":              ["dissociative flashbacks", "reliving the trauma"],
+    "avoidance":               ["avoidant behavior", "avoidance of triggers", "avoiding reminders"],
+    "hypervigilance":          ["hyperarousal", "always on guard", "constantly alert", "scanning environment"],
+    "exaggerated startle":     ["easily startled", "exaggerated startle response", "jumpy"],
+    "irritability":            ["anger outbursts", "easily angered", "rage"],
+    "negative mood":           ["persistent sadness", "guilt", "shame", "detachment"],
+    "PCL":                     ["PCL-5", "PTSD checklist", "PTSD screening"],
+    "psychiatrist":            ["psych", "behavioral health"],
+    "therapist":               ["EMDR", "trauma-focused therapy", "CPT", "PE therapy"],
+    "marked limitation":       ["marked", "moderately severe"],
+    "extreme limitation":      ["extreme", "severe limitation"],
+    "2 years":                 ["two years", "24 months", "longstanding", "chronic"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "AND",
+        "path": "A",
+        "criterion": "All five required elements: trauma exposure, re-experiencing, avoidance, mood/behavior disturbance, and increased arousal/reactivity",
+        "children": [
+          {"path": "A.1", "criterion": "Exposure to actual or threatened death, serious injury, or violence",
+           "keywords": ["traumatic event", "trauma exposure", "combat", "sexual assault", "MVA", "motor vehicle accident", "physical assault", "childhood abuse", "witness to violence"]},
+          {"path": "A.2", "criterion": "Subsequent involuntary re-experiencing of the traumatic event (intrusive memories, dreams, flashbacks)",
+           "keywords": ["flashbacks", "intrusive memories", "nightmares", "intrusive thoughts", "reliving trauma", "trauma dreams"]},
+          {"path": "A.3", "criterion": "Avoidance of external reminders of the event",
+           "keywords": ["avoidance", "avoiding triggers", "avoiding reminders", "won't talk about it", "won't go to that place"]},
+          {"path": "A.4", "criterion": "Disturbance in mood and behavior",
+           "keywords": ["negative mood", "depression", "guilt", "shame", "detachment", "anhedonia", "irritability"]},
+          {"path": "A.5", "criterion": "Increases in arousal and reactivity (hypervigilance, exaggerated startle, sleep disturbance)",
+           "keywords": ["hypervigilance", "exaggerated startle", "easily startled", "sleep disturbance", "irritability", "anger outbursts"]}
+        ]
+      },
+      {
+        "logic": "OR",
+        "path": "B_OR_C",
+        "criterion": "Paragraph B (functional limitations) OR Paragraph C (serious and persistent)",
+        "children": [
+          {
+            "logic": "OR",
+            "path": "B",
+            "criterion": "Extreme limitation of one, OR marked limitation of two, of the four areas",
+            "children": [
+              {"path": "B.1", "criterion": "Marked/extreme limitation: understand, remember, apply information",
+               "keywords": ["memory deficit", "concentration", "cognitive impairment from trauma"]},
+              {"path": "B.2", "criterion": "Marked/extreme limitation: interact with others",
+               "keywords": ["social withdrawal", "isolation", "interpersonal difficulties", "detachment"]},
+              {"path": "B.3", "criterion": "Marked/extreme limitation: concentrate, persist, maintain pace",
+               "keywords": ["concentration", "easily distracted", "off task", "intrusive thoughts interfere"]},
+              {"path": "B.4", "criterion": "Marked/extreme limitation: adapt, manage oneself",
+               "keywords": ["self-management", "emotional regulation", "decompensation with stress"]}
+            ]
+          },
+          {
+            "logic": "AND",
+            "path": "C",
+            "criterion": "Serious and persistent ≥2 years with ongoing treatment AND minimal capacity to adapt",
+            "children": [
+              {"path": "C.duration", "criterion": "Medically documented PTSD/trauma disorder over period of ≥2 years",
+               "keywords": ["2 years", "24 months", "longstanding", "chronic PTSD", "complex PTSD"],
+               "duration_months_required": 24},
+              {"path": "C.1", "criterion": "Reliance on ongoing medical treatment, therapy, psychosocial supports, or highly structured setting",
+               "keywords": ["psychiatric medication", "EMDR", "CPT", "PE therapy", "trauma-focused therapy", "case manager"]},
+              {"path": "C.2", "criterion": "Minimal capacity to adapt to changes in environment",
+               "keywords": ["minimal adaptation", "decompensation", "trigger avoidance", "rigid routine"]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

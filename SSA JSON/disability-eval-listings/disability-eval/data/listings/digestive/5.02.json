@@ -1,0 +1,27 @@
+{
+  "code": "5.02",
+  "title": "Gastrointestinal hemorrhaging from any cause",
+  "body_system": "digestive",
+  "version": 1,
+  "summary": "Gastrointestinal hemorrhaging from any cause requiring blood transfusion of at least 2 units of blood per transfusion on at least three occasions during a consecutive 6-month period, with at least 30 days between hospitalizations.",
+  "synonyms": {
+    "GI bleed":                ["gastrointestinal bleeding", "GIB", "GI hemorrhage", "upper GI bleed", "UGIB", "lower GI bleed", "LGIB"],
+    "hematemesis":             ["vomiting blood", "blood emesis", "coffee-ground emesis"],
+    "melena":                  ["dark stools", "tarry stools"],
+    "hematochezia":            ["bright red blood per rectum", "BRBPR", "rectal bleeding"],
+    "blood transfusion":       ["PRBC", "packed red blood cells", "transfusion", "blood products"],
+    "hemoglobin":              ["Hgb", "Hb", "hematocrit", "Hct"],
+    "endoscopy":               ["EGD", "esophagogastroduodenoscopy", "colonoscopy"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Gastrointestinal hemorrhaging from any cause",
+       "keywords": ["GI bleed", "gastrointestinal hemorrhage", "hematemesis", "melena", "hematochezia", "EGD", "colonoscopy"]},
+      {"path": "B", "criterion": "Required blood transfusion of at least 2 units per transfusion, on at least three occasions during a consecutive 6-month period",
+       "keywords": ["blood transfusion", "2 units", "PRBC", "three transfusions", "6 months", "30 days apart"],
+       "duration_months_required": 6}
+    ]
+  }
+}

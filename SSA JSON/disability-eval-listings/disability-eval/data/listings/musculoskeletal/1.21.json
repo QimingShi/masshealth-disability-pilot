@@ -1,0 +1,38 @@
+{
+  "code": "1.21",
+  "title": "Soft tissue injury or abnormality under continuing surgical management",
+  "body_system": "musculoskeletal",
+  "version": 1,
+  "summary": "Soft tissue injury (including burns) under continuing surgical management directed at saving, reconstructing, or replacing the affected part, with continuing management expected to last ≥12 months and maximum benefit from therapy not yet achieved.",
+  "synonyms": {
+    "soft tissue injury":      ["soft tissue trauma", "wound", "tissue defect"],
+    "burn":                    ["burn injury", "thermal burn", "chemical burn", "electrical burn", "scald"],
+    "continuing surgical management": ["ongoing surgery", "staged surgical reconstruction", "surgical plan", "planned surgeries"],
+    "reconstruction":          ["reconstructive surgery", "flap surgery", "skin graft", "tissue transfer"],
+    "operative report":        ["op report", "surgical report", "OR note"],
+    "MMI":                     ["maximum medical improvement", "maximum benefit", "plateau"],
+    "12 months":               ["1 year", "one year", "longstanding", "chronic"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Soft tissue injury or abnormality of an extremity, trunk, or face/head requiring continuing surgical management",
+        "keywords": ["soft tissue injury", "burn", "wound", "tissue defect", "reconstruction", "extremity injury", "facial trauma"]
+      },
+      {
+        "path": "B",
+        "criterion": "Continuing surgical management directed at saving, reconstructing, or replacing the affected body part",
+        "keywords": ["surgical management", "reconstructive surgery", "flap surgery", "skin graft", "staged reconstruction", "operative reports", "planned surgeries"]
+      },
+      {
+        "path": "C",
+        "criterion": "Continuing surgical management expected to last, or has lasted, ≥12 months from initial event, with maximum benefit from therapy not yet achieved",
+        "keywords": ["12 months", "1 year", "ongoing surgical management", "maximum benefit not achieved", "MMI not reached", "ongoing reconstruction"],
+        "duration_months_required": 12
+      }
+    ]
+  }
+}

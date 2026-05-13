@@ -1,0 +1,50 @@
+{
+  "code": "11.05",
+  "title": "Benign brain tumors",
+  "body_system": "neurological",
+  "version": 1,
+  "summary": "Benign brain tumor with disorganization of motor function in two extremities, OR marked limitation in physical functioning AND in one mental functioning area.",
+  "synonyms": {
+    "benign brain tumor":      ["brain tumor", "intracranial mass", "intracranial neoplasm", "meningioma", "pituitary adenoma", "schwannoma", "acoustic neuroma", "vestibular schwannoma"],
+    "MRI brain":               ["MRI of brain", "brain MRI", "MRI with contrast"],
+    "CT head":                 ["head CT", "CT scan of head"],
+    "hemiparesis":             ["hemiplegia", "weakness on one side"],
+    "ataxia":                  ["incoordination", "unsteady gait", "cerebellar signs"],
+    "marked limitation":       ["marked", "moderately severe"],
+    "extreme limitation":      ["extreme", "severe limitation"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "PRECONDITION",
+        "criterion": "Documented benign (non-malignant) brain tumor by imaging, biopsy, or operative report",
+        "keywords": ["meningioma", "benign brain tumor", "pituitary adenoma", "vestibular schwannoma", "MRI brain", "biopsy", "operative pathology"]
+      },
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Disorganization of motor function in two extremities OR marked limitation pattern",
+        "children": [
+          {
+            "path": "A",
+            "criterion": "Disorganization of motor function in two extremities resulting in extreme limitation in standing, balancing, or use of upper extremities",
+            "keywords": ["motor weakness", "hemiparesis", "ataxia", "cerebellar", "extreme limitation", "loss of balance"]
+          },
+          {
+            "logic": "AND",
+            "path": "B",
+            "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+            "children": [
+              {"path": "B.1", "criterion": "Marked limitation in physical functioning",
+               "keywords": ["marked physical limitation", "decreased mobility"]},
+              {"path": "B.2", "criterion": "Marked limitation in one mental functioning area",
+               "keywords": ["marked cognitive limitation", "executive dysfunction", "memory deficit", "personality change"]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

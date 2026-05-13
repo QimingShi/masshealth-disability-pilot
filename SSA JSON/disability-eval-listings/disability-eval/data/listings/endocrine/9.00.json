@@ -1,0 +1,39 @@
+{
+  "code": "9.00",
+  "title": "Endocrine disorders (narrative; evaluated under affected body system)",
+  "body_system": "endocrine",
+  "version": 1,
+  "summary": "Endocrine disorders do not have specific listings under 9.00. SSA evaluates them under the body system affected by the resulting impairment (cardiovascular, neurological, special senses, etc.). This file documents that mapping so retrieval and consolidation surface the right candidate listings.",
+  "synonyms": {
+    "diabetes mellitus":       ["DM", "diabetes", "type 1 diabetes", "type 2 diabetes", "T1DM", "T2DM", "insulin-dependent diabetes", "IDDM", "non-insulin dependent diabetes"],
+    "diabetic neuropathy":     ["DPN", "peripheral neuropathy", "diabetic peripheral neuropathy"],
+    "diabetic retinopathy":    ["DR", "proliferative diabetic retinopathy", "PDR", "non-proliferative diabetic retinopathy", "NPDR"],
+    "diabetic nephropathy":    ["DN", "diabetic kidney disease", "DKD"],
+    "thyroid disorder":        ["hypothyroidism", "hyperthyroidism", "Hashimoto's thyroiditis", "Graves' disease"],
+    "adrenal":                 ["adrenal insufficiency", "Addison's disease", "Cushing's syndrome", "Cushing's disease", "pheochromocytoma"],
+    "pituitary":               ["pituitary adenoma", "panhypopituitarism", "diabetes insipidus", "DI", "SIADH"],
+    "parathyroid":             ["hyperparathyroidism", "hypoparathyroidism", "primary hyperparathyroidism"],
+    "obesity":                 ["BMI elevated", "morbid obesity", "obesity-related comorbidities"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "criterion": "Endocrine disorders evaluate under the affected body system; this listing maps complications to candidate target listings",
+    "children": [
+      {"path": "A.diabetes_to_neurological", "criterion": "Diabetic peripheral neuropathy → evaluated under 11.14 Peripheral neuropathy",
+       "keywords": ["diabetic neuropathy", "DPN", "diabetes complications", "stocking-glove neuropathy"]},
+      {"path": "A.diabetes_to_visual", "criterion": "Diabetic retinopathy with vision loss → evaluated under 2.02, 2.03, or 2.04",
+       "keywords": ["diabetic retinopathy", "PDR", "vision loss", "blindness from diabetes"]},
+      {"path": "A.diabetes_to_renal", "criterion": "Diabetic nephropathy/kidney disease → evaluated under 6.05 or 6.03/6.04 if dialysis",
+       "keywords": ["diabetic nephropathy", "diabetic kidney disease", "DKD", "ESRD from diabetes"]},
+      {"path": "A.diabetes_to_cardiac", "criterion": "Diabetic cardiomyopathy / coronary artery disease → evaluated under 4.02, 4.04, etc.",
+       "keywords": ["diabetic cardiomyopathy", "CAD with diabetes", "ischemic heart disease"]},
+      {"path": "B.thyroid_to_cardiac", "criterion": "Thyroid-related arrhythmia or heart failure → evaluated under 4.05 or 4.02",
+       "keywords": ["thyroid heart disease", "thyrotoxic cardiomyopathy", "atrial fibrillation"]},
+      {"path": "C.adrenal_complications", "criterion": "Adrenal insufficiency with cardiovascular instability → evaluated under 4.05 or 4.02; Cushing's complications → cardiovascular, mental, or musculoskeletal listings",
+       "keywords": ["adrenal insufficiency", "Cushing's syndrome", "cardiovascular complications"]},
+      {"path": "D.pituitary_complications", "criterion": "Pituitary disorders → evaluated under affected system (electrolyte → renal, hormone deficiencies → relevant system)",
+       "keywords": ["pituitary adenoma", "panhypopituitarism"]}
+    ]
+  }
+}

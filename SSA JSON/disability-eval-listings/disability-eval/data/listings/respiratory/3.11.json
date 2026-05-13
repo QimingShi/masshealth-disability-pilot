@@ -1,0 +1,28 @@
+{
+  "code": "3.11",
+  "title": "Lung transplantation",
+  "body_system": "respiratory",
+  "version": 1,
+  "summary": "Lung transplantation (single or bilateral); claimant considered disabled for 3 years post-transplant.",
+  "synonyms": {
+    "lung transplant":         ["pulmonary transplant", "LT", "single lung transplant", "bilateral lung transplant", "double lung transplant"],
+    "operative report":        ["op report", "surgical report", "OR note"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Lung transplantation (single or bilateral) documented by operative report or transplant center records",
+        "keywords": ["lung transplant", "transplantation", "single lung transplant", "bilateral lung transplant", "operative report"]
+      },
+      {
+        "path": "B",
+        "criterion": "Within 3 years of transplant date (claimant considered disabled for 3 years post-transplant)",
+        "keywords": ["transplant date", "post-transplant", "3 years"],
+        "duration_months_required": 36
+      }
+    ]
+  }
+}

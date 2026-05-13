@@ -1,0 +1,24 @@
+{
+  "code": "5.08",
+  "title": "Weight loss due to any digestive disorder",
+  "body_system": "digestive",
+  "version": 1,
+  "summary": "Documented weight loss due to any digestive disorder, with BMI ≤17.50 calculated on at least two evaluations at least 60 days apart within a consecutive 6-month period, despite continuing treatment.",
+  "synonyms": {
+    "weight loss":             ["unintentional weight loss", "involuntary weight loss"],
+    "BMI":                     ["body mass index"],
+    "malnutrition":            ["protein-calorie malnutrition", "malabsorption"],
+    "wasting":                 ["cachexia", "underweight"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Documented digestive disorder causing weight loss",
+       "keywords": ["digestive disorder", "Crohn's disease", "celiac disease", "chronic pancreatitis", "malabsorption", "IBD"]},
+      {"path": "B", "criterion": "BMI ≤17.50 on at least two evaluations at least 60 days apart within a consecutive 6-month period, despite continuing treatment",
+       "keywords": ["BMI 17.50", "BMI 17.5", "underweight", "two evaluations", "60 days apart", "6 months", "despite treatment"],
+       "duration_months_required": 6}
+    ]
+  }
+}

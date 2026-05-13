@@ -1,0 +1,28 @@
+{
+  "code": "13.13",
+  "title": "Nervous system cancer",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Cancer originating in the nervous system (CNS) such as glioblastoma, primary CNS lymphoma, or other malignant brain/spinal cord tumor: highly malignant tumor (glioblastoma, anaplastic astrocytoma, etc.), OR progressive/recurrent malignant CNS tumor.",
+  "synonyms": {
+    "glioblastoma":            ["glioblastoma multiforme", "GBM", "high-grade glioma"],
+    "anaplastic astrocytoma":  ["AA", "grade III glioma"],
+    "medulloblastoma":         ["medulloblastoma"],
+    "ependymoma":              ["malignant ependymoma"],
+    "CNS lymphoma":            ["primary CNS lymphoma", "PCNSL"],
+    "MRI brain":               ["brain MRI", "MRI of brain", "MRI with contrast"],
+    "biopsy":                  ["brain biopsy", "stereotactic biopsy"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Highly malignant tumor of CNS (glioblastoma, glioblastoma multiforme, ependymoblastoma, medulloblastoma, anaplastic astrocytoma, CNS lymphoma)",
+       "keywords": ["glioblastoma", "GBM", "glioblastoma multiforme", "ependymoblastoma", "medulloblastoma", "anaplastic astrocytoma", "primary CNS lymphoma", "PCNSL"]},
+      {"path": "B", "criterion": "Progressive or recurrent CNS cancer",
+       "keywords": ["progressive disease", "recurrent CNS cancer", "tumor progression", "recurrent glioma"]},
+      {"path": "C", "criterion": "Metastatic spread of CNS cancer",
+       "keywords": ["leptomeningeal disease", "drop metastases", "spinal metastases"]}
+    ]
+  }
+}

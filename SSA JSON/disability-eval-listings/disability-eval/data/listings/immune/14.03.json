@@ -1,0 +1,54 @@
+{
+  "code": "14.03",
+  "title": "Systemic vasculitis",
+  "body_system": "immune",
+  "version": 1,
+  "summary": "Systemic vasculitis with involvement of two or more organs/body systems and constitutional symptoms, OR repeated manifestations with marked limitation in one functional area.",
+  "synonyms": {
+    "vasculitis":              ["systemic vasculitis", "ANCA-associated vasculitis", "AAV", "granulomatosis with polyangiitis", "GPA", "Wegener's granulomatosis", "microscopic polyangiitis", "MPA", "eosinophilic granulomatosis with polyangiitis", "EGPA", "Churg-Strauss", "polyarteritis nodosa", "PAN", "giant cell arteritis", "GCA", "temporal arteritis", "Takayasu arteritis", "Behcet's", "IgA vasculitis", "HSP", "Henoch-Schonlein purpura"],
+    "ANCA":                    ["antineutrophil cytoplasmic antibody", "p-ANCA", "c-ANCA", "MPO-ANCA", "PR3-ANCA"],
+    "biopsy":                  ["tissue biopsy", "vascular biopsy", "renal biopsy"],
+    "constitutional symptoms": ["fatigue", "fever", "malaise", "weight loss", "night sweats"],
+    "marked limitation":       ["marked", "moderately severe"]
+  },
+  "rule_json": {
+    "logic": "OR",
+    "path": "ROOT",
+    "children": [
+      {
+        "logic": "AND",
+        "path": "A",
+        "criterion": "Involvement of two or more organs/body systems with at least one at moderate severity AND two constitutional symptoms",
+        "children": [
+          {"path": "A.1", "criterion": "Vasculitis diagnosis with involvement of two or more organs/body systems",
+           "keywords": ["vasculitis", "ANCA-associated vasculitis", "GPA", "MPA", "EGPA", "PAN", "renal involvement", "pulmonary involvement", "skin involvement", "neuropathy"]},
+          {"path": "A.2", "criterion": "At least one organ/body system at moderate severity",
+           "keywords": ["moderate severity", "active vasculitis"]},
+          {"path": "A.3", "criterion": "At least two constitutional symptoms",
+           "keywords": ["fatigue", "fever", "malaise", "weight loss", "night sweats"]}
+        ]
+      },
+      {
+        "logic": "AND",
+        "path": "B",
+        "criterion": "Repeated manifestations with two constitutional symptoms AND marked limitation in one functional area",
+        "children": [
+          {"path": "B.1", "criterion": "Repeated manifestations of vasculitis",
+           "keywords": ["repeated manifestations", "vasculitis flares", "recurrent disease activity"]},
+          {"path": "B.2", "criterion": "At least two constitutional symptoms",
+           "keywords": ["fatigue", "fever", "malaise", "weight loss"]},
+          {
+            "logic": "OR",
+            "path": "B.3",
+            "criterion": "Marked limitation in ADLs, social functioning, OR concentration/persistence/pace",
+            "children": [
+              {"path": "B.3.a", "criterion": "Marked limitation in ADLs", "keywords": ["ADLs", "self-care"]},
+              {"path": "B.3.b", "criterion": "Marked limitation in social functioning", "keywords": ["social functioning"]},
+              {"path": "B.3.c", "criterion": "Marked limitation in completing tasks in timely manner", "keywords": ["concentration", "persistence", "pace"]}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

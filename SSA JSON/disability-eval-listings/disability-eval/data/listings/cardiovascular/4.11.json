@@ -1,0 +1,33 @@
+{
+  "code": "4.11",
+  "title": "Chronic venous insufficiency",
+  "body_system": "cardiovascular",
+  "version": 1,
+  "summary": "Chronic venous insufficiency of a lower extremity with extensive brawny edema or superficial varicosities, stasis dermatitis, and recurrent or persistent ulceration not healing after 3 months of prescribed treatment.",
+  "synonyms": {
+    "chronic venous insufficiency": ["CVI", "venous insufficiency", "venous reflux"],
+    "brawny edema":            ["chronic edema", "non-pitting edema", "induration", "lipodermatosclerosis"],
+    "varicosities":            ["varicose veins", "superficial varices", "spider veins"],
+    "stasis dermatitis":       ["venous stasis", "venous dermatitis", "stasis changes", "hemosiderin deposition"],
+    "venous ulcer":            ["stasis ulcer", "venous stasis ulcer", "leg ulcer", "non-healing ulcer", "chronic wound"],
+    "Doppler":                 ["venous Doppler", "duplex ultrasound", "venous duplex"],
+    "compression":             ["compression stockings", "compression therapy", "Unna boot", "TED hose"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Chronic venous insufficiency of a lower extremity with deep venous thrombosis, valvular incompetence, or post-thrombotic syndrome",
+        "keywords": ["CVI", "chronic venous insufficiency", "DVT", "valvular incompetence", "post-thrombotic syndrome", "venous duplex"]
+      },
+      {
+        "path": "B",
+        "criterion": "Extensive brawny edema involving at least two-thirds of the leg between ankle and knee, OR superficial varicosities, stasis dermatitis, AND recurrent or persistent ulceration that has not healed after at least 3 months of prescribed treatment",
+        "keywords": ["brawny edema", "varicosities", "stasis dermatitis", "venous ulcer", "non-healing ulcer", "stasis ulcer", "3 months", "compression therapy"],
+        "duration_months_required": 3
+      }
+    ]
+  }
+}

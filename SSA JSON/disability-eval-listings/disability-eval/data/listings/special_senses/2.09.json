@@ -1,0 +1,19 @@
+{
+  "code": "2.09",
+  "title": "Loss of speech",
+  "body_system": "special_senses",
+  "version": 1,
+  "summary": "Loss of speech due to any cause, with inability to produce by any means speech that can be heard, understood, or sustained.",
+  "synonyms": {
+    "loss of speech":          ["aphonia", "anarthria", "speech loss", "mute"],
+    "tracheostomy":            ["trach", "tracheotomy", "trach tube"],
+    "laryngectomy":            ["voice box removal"],
+    "dysarthria":              ["slurred speech", "speech difficulty"],
+    "speech-language pathologist": ["SLP", "speech therapist", "speech pathologist"]
+  },
+  "rule_json": {
+    "path": "ROOT",
+    "criterion": "Loss of speech due to any cause, with inability to produce — by any means — speech that can be heard, understood, or sustained",
+    "keywords": ["loss of speech", "aphonia", "anarthria", "ineffective speech", "laryngectomy", "tracheostomy", "speech-language pathologist evaluation"]
+  }
+}

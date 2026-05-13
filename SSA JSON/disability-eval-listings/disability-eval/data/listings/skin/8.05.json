@@ -1,0 +1,27 @@
+{
+  "code": "8.05",
+  "title": "Dermatitis",
+  "body_system": "skin",
+  "version": 1,
+  "summary": "Dermatitis (psoriasis, atopic dermatitis, exfoliative dermatitis, allergic contact dermatitis) with extensive skin lesions persisting at least 3 months despite continuing treatment.",
+  "synonyms": {
+    "dermatitis":              ["eczema", "skin inflammation"],
+    "psoriasis":               ["psoriatic plaques", "plaque psoriasis", "psoriasis vulgaris"],
+    "atopic dermatitis":       ["AD", "atopic eczema"],
+    "exfoliative dermatitis":  ["erythroderma"],
+    "contact dermatitis":      ["allergic contact dermatitis"],
+    "phototherapy":            ["UV therapy", "narrow-band UVB", "PUVA"],
+    "biologic":                ["Humira", "adalimumab", "Stelara", "ustekinumab", "Cosentyx", "secukinumab", "Dupixent", "dupilumab", "Otezla", "apremilast"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "A", "criterion": "Dermatitis with extensive skin lesions involving multiple body sites",
+       "keywords": ["dermatitis", "psoriasis", "atopic dermatitis", "exfoliative dermatitis", "extensive skin lesions", "extensive plaques", "erythroderma"]},
+      {"path": "B", "criterion": "Persistent for at least 3 months despite continuing treatment",
+       "keywords": ["3 months", "persistent", "despite treatment", "biologic", "phototherapy", "topical steroids"],
+       "duration_months_required": 3}
+    ]
+  }
+}

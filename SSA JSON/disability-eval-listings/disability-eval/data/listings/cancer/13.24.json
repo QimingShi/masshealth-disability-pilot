@@ -1,0 +1,37 @@
+{
+  "code": "13.24",
+  "title": "Prostate gland — carcinoma",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Prostate cancer with progression of disease despite hormonal/anti-androgen therapy, OR with visceral metastases, OR small cell carcinoma.",
+  "synonyms": {
+    "prostate cancer":         ["prostate adenocarcinoma", "prostatic carcinoma", "PCa"],
+    "PSA":                     ["prostate-specific antigen", "elevated PSA"],
+    "Gleason score":           ["Gleason grade", "Gleason 8", "Gleason 9", "Gleason 10"],
+    "androgen deprivation":    ["ADT", "androgen deprivation therapy", "Lupron", "leuprolide", "Eligard", "Zoladex", "goserelin", "casodex", "bicalutamide"],
+    "castration-resistant":    ["CRPC", "castrate-resistant prostate cancer", "hormone-refractory"],
+    "metastasis":              ["bone metastases", "visceral metastases", "M1 disease"],
+    "biopsy":                  ["prostate biopsy", "TRUS biopsy", "MRI fusion biopsy"]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {"path": "PRECONDITION", "criterion": "Pathology-confirmed prostate cancer",
+       "keywords": ["prostate cancer", "prostate adenocarcinoma", "biopsy", "Gleason score", "PSA"]},
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Progression on hormonal therapy, visceral metastases, or small cell",
+        "children": [
+          {"path": "A", "criterion": "Progression of disease (rising PSA, growing nodal disease, new lesions) despite hormonal/anti-androgen therapy",
+           "keywords": ["castration-resistant", "CRPC", "hormone-refractory", "progression on ADT", "rising PSA on ADT", "treatment failure"]},
+          {"path": "B", "criterion": "Visceral metastases (liver, lung, brain — distinct from bone metastases)",
+           "keywords": ["visceral metastases", "liver metastases", "lung metastases", "brain metastases"]},
+          {"path": "C", "criterion": "Small cell (oat cell) carcinoma of the prostate",
+           "keywords": ["small cell carcinoma of prostate", "neuroendocrine prostate cancer"]}
+        ]
+      }
+    ]
+  }
+}

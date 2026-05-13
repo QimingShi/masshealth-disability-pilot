@@ -1,0 +1,19 @@
+{
+  "code": "13.19",
+  "title": "Liver or gallbladder — carcinoma or sarcoma (cancer of liver, gallbladder, or bile ducts)",
+  "body_system": "cancer",
+  "version": 1,
+  "summary": "Cancer of the liver, gallbladder, or bile ducts (intrahepatic or extrahepatic) — disabled per se under SSA Blue Book.",
+  "synonyms": {
+    "liver cancer":            ["hepatocellular carcinoma", "HCC", "hepatoma", "primary liver cancer"],
+    "gallbladder cancer":      ["gallbladder carcinoma"],
+    "bile duct cancer":        ["cholangiocarcinoma", "intrahepatic cholangiocarcinoma", "extrahepatic cholangiocarcinoma", "Klatskin tumor", "perihilar cholangiocarcinoma"],
+    "AFP":                     ["alpha-fetoprotein", "elevated AFP"],
+    "biopsy":                  ["liver biopsy", "core biopsy"]
+  },
+  "rule_json": {
+    "path": "ROOT",
+    "criterion": "Cancer of the liver (hepatocellular carcinoma), gallbladder, or bile ducts (intrahepatic or extrahepatic cholangiocarcinoma) confirmed by pathology or characteristic imaging",
+    "keywords": ["hepatocellular carcinoma", "HCC", "hepatoma", "liver cancer", "gallbladder cancer", "cholangiocarcinoma", "Klatskin tumor", "AFP", "biopsy", "imaging"]
+  }
+}
