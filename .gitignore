@@ -22,6 +22,8 @@ _show_subdocs.py
 _inspect_medical_chunks.py
 _show_redacted.py
 _run_multi_ingest.py
+_inspect_supplement.py
+_show_mepers_allegations.py
 
 # Preview / rendered images of source PDFs (may contain PHI even if redacted)
 _preview/

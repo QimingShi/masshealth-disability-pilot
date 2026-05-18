@@ -394,21 +394,138 @@ def _extract_doc_metadata(
 
 
 # =============================================================================
-# Allegation auto-extraction (best-effort)
+# Allegation auto-extraction (best-effort, rule-based)
 # =============================================================================
-# Pulls a starter set of allegations from chief-complaint and visit-diagnoses
-# chunks. Review and curate manually before relying on it for matching.
+# Pulls a starter set of allegations from chart sections (chief complaint /
+# visit diagnoses / PMH) AND from disability-supplement form patterns (reason
+# for visit, conditions claimed, why I cannot work). All extractions pass a
+# garbage filter that rejects column headers, section labels, timestamps, etc.
+# Review allegations manually before relying on them for matching.
 
 _ICD_RE = re.compile(r"\b[A-TV-Z][0-9][0-9AB](?:\.[0-9A-Z]{1,4})?\b")
 
+# Allegations that are obviously form labels / boilerplate / OCR fragments.
+# Centralized so the same stoplist applies to every extraction path.
+_ALLEGATION_GARBAGE_WORDS = frozenset({
+    # Generic form labels / column headers
+    "date", "diagnosis", "diagnoses", "provider", "providers", "author",
+    "patient", "status", "time", "specimen", "reason", "type", "year",
+    "name", "signature", "description", "address", "phone", "test",
+    "yes", "no", "n/a", "none", "n / a", "not applicable", "n.a.",
+    "history", "results", "result", "value", "ref range", "reference",
+    "encounter", "visit", "service", "department", "facility", "unit",
+    "section", "part", "page", "form", "blank", "tbd", "tba", "see above",
+    "see below", "as needed", "prn", "unknown", "see hpi", "see ros",
+    "n/k", "nkda", "none documented", "no known",
+    # Chart section names (not allegations even if extractor sees them
+    # without their trailing colon)
+    "past medical history", "past surgical history", "surgical history",
+    "family history", "social history", "review of systems",
+    "history of present illness", "present illness", "hpi", "ros",
+    "physical exam", "physical examination", "exam", "assessment",
+    "assessment and plan", "impression", "plan", "vital signs", "vitals",
+    "allergies", "medications", "current medications", "chief complaint",
+    "linked episodes", "medication changes", "visit diagnoses",
+    "orders", "orders placed", "interval history", "problem list",
+    "procedure/surgical history", "initiating author",
+    "health maintenance", "health status",
+})
+
+# Regex patterns that flag garbage entries even if the word stoplist misses them.
+_ALLEGATION_GARBAGE_PATTERNS = [
+    re.compile(r"^received\s+\d", re.IGNORECASE),       # "Received 3/10/2026..."
+    re.compile(r"\bdes[0-9a-f]{8,}", re.IGNORECASE),     # DES tracking codes
+    re.compile(r"^(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\.?\s+\d",
+               re.IGNORECASE),                            # "Mar. 10, 2026..."
+    re.compile(r"^\d+\s*(am|pm|edt|est|cst|pst|utc)\b", re.IGNORECASE),
+    re.compile(r"^no\.?\s*\d{3,}\b", re.IGNORECASE),      # fax form numbers
+    re.compile(r"^p\.\s*\d+\s*/", re.IGNORECASE),          # "P.001/006" fax marks
+    re.compile(r"^\(?fax\)?\b", re.IGNORECASE),
+    re.compile(r"^mads-?\w+_\d", re.IGNORECASE),           # MassHealth form codes
+    re.compile(r"^\W*$"),                                  # punctuation/whitespace only
+    re.compile(r"^\d+(\.\d+)?\s*$"),                       # bare numbers
+]
+
+
+def _is_garbage_allegation(text: str) -> bool:
+    """Reject form labels, column headers, timestamps, OCR noise that the
+    extractor sometimes picks up as 'allegations'. Centralized so every
+    extraction code path uses the same rules."""
+    t = text.strip()
+    if len(t) < 4 or len(t) > 200:
+        return True
+    if t.endswith(":"):
+        return True
+    # Bare label / single-word column header
+    low = t.lower().rstrip(",.;:")
+    if low in _ALLEGATION_GARBAGE_WORDS:
+        return True
+    # Pattern blocklist
+    for pat in _ALLEGATION_GARBAGE_PATTERNS:
+        if pat.search(t):
+            return True
+    # Must contain at least one alphabetic character (filters timestamps, IDs)
+    if not re.search(r"[A-Za-z]{3,}", t):
+        return True
+    # Filter "all caps no vowels" which is usually a header acronym
+    if t.isupper() and not re.search(r"[AEIOUaeiou]", t):
+        return True
+    return False
+
+
+# Supplement-form patterns: where the member states their claimed conditions.
+# Covers MassHealth Adult Disability Supplement, SSA-3368, and similar forms.
+_SUPPLEMENT_REASON_RE = re.compile(
+    r"(?:reason\s+for\s+visit|diagnoses?\s+i\s+am\s+claiming|"
+    r"conditions?\s+i\s+am\s+applying\s+for|conditions?\s+being\s+claimed|"
+    r"why\s+i\s+cannot\s+work|disabling\s+conditions?|"
+    r"please\s+list\s+(?:all\s+)?conditions?|complaints?\s+leading\s+to)"
+    r"\s*[:\-]?\s*([^\n]{4,200})",
+    re.IGNORECASE,
+)
+
+# Generic "condition" hint phrases. Restricted to phrases that strongly imply
+# the member is making a claim about a specific condition. We deliberately
+# DON'T include bare "history of" here — that's a section name far more often
+# than it's an allegation phrase.
+_FOLLOWING_CONDITION_RE = re.compile(
+    r"(?:complications?\s+following\s+(?:a\s+|an\s+)?|"
+    r"status\s+post\s+|recently\s+diagnosed\s+with\s+|"
+    r"currently\s+being\s+treated\s+for\s+|"
+    r"applying\s+(?:for\s+)?(?:disability\s+(?:benefits?\s+)?)?(?:due\s+to|because\s+of)\s+|"
+    r"unable\s+to\s+work\s+(?:due\s+to|because\s+of)\s+)"
+    r"([^.\n]{4,150})",
+    re.IGNORECASE,
+)
+
+
+def _is_supplement_section(section: str, text: str) -> bool:
+    """Does this chunk look like it's part of a disability supplement / SSA-3368?"""
+    s = section.lower()
+    t = text.lower()[:400]
+    return (
+        "supplement" in s
+        or "part 1" in s or "part 2" in s or "part 6" in s
+        or "disability supplement" in t
+        or "ssa-3368" in t
+        or "function report" in s
+    )
+
 
 def auto_extract_allegations(chunks: list[dict]) -> list[dict]:
+    """Best-effort allegation extraction. Combines chart-style patterns
+    (chief complaint, visit diagnoses, PMH) with supplement-form patterns
+    (reason for visit, conditions claimed). All candidate allegations pass
+    through _is_garbage_allegation() before being kept."""
     allegations: list[dict] = []
     seen: set[str] = set()
 
     def add(text: str, source: str, chunk_id: str):
+        text = text.strip().rstrip(",.;")
+        if _is_garbage_allegation(text):
+            return
         key = re.sub(r"\W+", " ", text).strip().lower()
-        if not key or key in seen or len(key) < 3:
+        if not key or key in seen:
             return
         seen.add(key)
         allegations.append({
@@ -422,33 +539,45 @@ def auto_extract_allegations(chunks: list[dict]) -> list[dict]:
         section_lc = section.lower()
         text = c.get("text", "")
 
-        # Chief complaint pattern: "Chief Complaint: ..." or "Diagnosis: ..."
+        # ---- Supplement-form patterns (high precision) ----
+        if _is_supplement_section(section, text):
+            for m in _SUPPLEMENT_REASON_RE.finditer(text):
+                add(m.group(1), "supplement_form", c["chunk_id"])
+
+        # ---- Chief complaint / chart header diagnosis line ----
         if any(k in section_lc for k in ("header", "chief", "complaint", "hpi")):
             for m in re.finditer(
-                r"(?i)(?:chief complaint|diagnosis/chief complaint|diagnosis)[:\s]+([^.\n]{4,150})",
+                r"(?i)(?:chief\s+complaint|diagnosis/chief\s+complaint|diagnosis)\s*[:\-]\s*([^.\n]{4,150})",
                 text,
             ):
-                add(m.group(1).strip().rstrip(",;"), "chief_complaint", c["chunk_id"])
+                add(m.group(1), "chief_complaint", c["chunk_id"])
 
-        # Visit Diagnoses: one allegation per non-trivial line
+        # ---- Visit Diagnoses: one allegation per non-trivial line ----
         if "diagnos" in section_lc:
             for line in text.split("\n"):
-                # Strip "Visit Diagnoses:" and "Primary:" / "Secondary:" prefixes
-                cleaned = re.sub(r"^\s*(visit\s+diagnoses|primary|secondary)\s*:\s*", "",
-                                 line, flags=re.IGNORECASE)
-                # Strip trailing ICD code
-                cleaned = _ICD_RE.sub("", cleaned).strip().rstrip(",.;")
-                if 4 <= len(cleaned) <= 150:
-                    add(cleaned, "visit_diagnoses", c["chunk_id"])
+                cleaned = re.sub(
+                    r"^\s*(visit\s+diagnoses|primary|secondary|active|other)\s*[:\-]?\s*",
+                    "", line, flags=re.IGNORECASE,
+                )
+                # Strip ICD-10 codes
+                cleaned = _ICD_RE.sub("", cleaned).strip().rstrip(",.;:")
+                add(cleaned, "visit_diagnoses", c["chunk_id"])
 
-        # PMH: bulleted past medical history
+        # ---- PMH: bulleted past medical history ----
         if "past medical history" in section_lc or section_lc == "pmh":
-            # Common patterns: "• Diabetes mellitus" or "- COPD" or "Diabetes mellitus."
             for line in re.split(r"[\n•·;]", text):
-                cleaned = re.sub(r"^[-\s*•·]+", "", line).strip().rstrip(",.;")
-                cleaned = re.sub(r"^past medical history:?\s*", "", cleaned, flags=re.IGNORECASE)
-                if 4 <= len(cleaned) <= 150:
-                    add(cleaned, "past_medical_history", c["chunk_id"])
+                cleaned = re.sub(r"^[-\s*•·]+", "", line).strip().rstrip(",.;:")
+                cleaned = re.sub(
+                    r"^past\s+medical\s+history\s*[:\-]?\s*",
+                    "", cleaned, flags=re.IGNORECASE,
+                )
+                add(cleaned, "past_medical_history", c["chunk_id"])
+
+        # ---- Free-text "complications following ...", "history of ...", etc.
+        # These often appear in supplement comment sections or interview narratives.
+        if _is_supplement_section(section, text) or "complaint" in section_lc:
+            for m in _FOLLOWING_CONDITION_RE.finditer(text):
+                add(m.group(1), "narrative_phrase", c["chunk_id"])
 
     return allegations
 
