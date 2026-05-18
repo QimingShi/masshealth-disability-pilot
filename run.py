@@ -30,12 +30,9 @@ HERE = Path(__file__).parent
 DEFAULT_CASE_PATH = HERE / "data" / "chunks.json"
 LISTINGS_DIR = HERE / "SSA JSON" / "disability-eval-listings" / "disability-eval" / "data" / "listings"
 OUTPUT_ROOT = HERE / "output"
-TOP_K_CANDIDATES = 5       # how many listings to fully evaluate
-TOP_K_CHUNKS_PER_LEAF = 12  # how many chunks to feed the LLM per leaf
-                            # (was 5 for hand-transcribed packets ~28 chunks;
-                            #  bumped to 12 for real-Textract packets with
-                            #  ~200-300 chunks, where 5 is too aggressive a
-                            #  cutoff and key evidence gets displaced by noise)
+TOP_K_CANDIDATES = 5  # how many listings to fully evaluate
+# Per-leaf chunk count is adaptive (see pipeline/retrieve.py for the
+# K_FLOOR / RELEVANCE_THRESHOLD / K_CEILING parameters).
 
 
 def main(argv: list[str]) -> int:
@@ -117,8 +114,9 @@ def main(argv: list[str]) -> int:
         print(f"\n  === {listing.code} {listing.title[:60]} ===")
         leaf_results: dict[str, LeafResult] = {}
         for leaf in listing.leaves():
-            retrieved = retrieve_for_leaf(leaf, listing, chunk_index, top_k=TOP_K_CHUNKS_PER_LEAF)
-            print(f"    leaf {leaf.get('path','?'):<20} retrieved={len(retrieved):<2} ", end="", flush=True)
+            # Pass top_k=None to use adaptive selection
+            retrieved = retrieve_for_leaf(leaf, listing, chunk_index)
+            print(f"    leaf {leaf.get('path','?'):<20} retrieved={len(retrieved):<3}", end="", flush=True)
             lr = evaluate_leaf(leaf, listing, retrieved)
             leaf_results[lr.leaf_path] = lr
             print(f"-> {lr.verdict} ({len(lr.evidence)} evidence)")
