@@ -14,6 +14,8 @@ import os
 import sys
 import time
 
+import json
+
 from pipeline.chunks import load_case, load_listings
 from pipeline.embed import build_chunk_index, build_listing_index
 from pipeline.candidates import identify_candidates
@@ -21,14 +23,19 @@ from pipeline.retrieve import retrieve_for_leaf
 from pipeline.evaluate import evaluate_leaf, LeafResult
 from pipeline.consolidate import consolidate, form_verdict
 from pipeline.output import render_form, render_form_html, write_form
+from pipeline.annotate_pdf import annotate_pdf, collect_cited_chunk_ids
 
 
 HERE = Path(__file__).parent
 DEFAULT_CASE_PATH = HERE / "data" / "chunks.json"
 LISTINGS_DIR = HERE / "SSA JSON" / "disability-eval-listings" / "disability-eval" / "data" / "listings"
 OUTPUT_ROOT = HERE / "output"
-TOP_K_CANDIDATES = 5      # how many listings to fully evaluate
-TOP_K_CHUNKS_PER_LEAF = 5  # how many chunks to feed the LLM per leaf
+TOP_K_CANDIDATES = 5       # how many listings to fully evaluate
+TOP_K_CHUNKS_PER_LEAF = 12  # how many chunks to feed the LLM per leaf
+                            # (was 5 for hand-transcribed packets ~28 chunks;
+                            #  bumped to 12 for real-Textract packets with
+                            #  ~200-300 chunks, where 5 is too aggressive a
+                            #  cutoff and key evidence gets displaced by noise)
 
 
 def main(argv: list[str]) -> int:
@@ -54,6 +61,33 @@ def main(argv: list[str]) -> int:
     print(f"      case={case.case_id}  chunks={len(case.chunks)}  "
           f"allegations={len(case.allegations)}  listings={len(listings)}")
 
+    # Resolve source-PDF and bbox-sidecar paths up front so HTML citations can
+    # point at the (eventually-generated) annotated PDF.
+    source_pdf_path = None
+    bbox_sidecar_path = None
+    annotated_pdf_path = None
+    try:
+        case_meta = json.loads(case_path.read_text(encoding="utf-8"))
+        if pdf_name := case_meta.get("source_pdf"):
+            candidate = HERE / pdf_name
+            if candidate.exists():
+                source_pdf_path = candidate
+                # Bbox sidecar lives under _phi/<case_id>/ — produced by the
+                # Textract ingest path. If it exists, we'll generate an
+                # annotated PDF and point HTML citations there.
+                bbox_sidecar_path = HERE / "_phi" / case.case_id / "chunks_with_bbox.json"
+                if bbox_sidecar_path.exists():
+                    annotated_pdf_path = HERE / "_phi" / case.case_id / "source_annotated.pdf"
+    except Exception as e:
+        print(f"      (warning: could not resolve source PDF: {e})")
+    # HTML citations point at the annotated PDF if we'll generate one,
+    # otherwise at the original.
+    html_pdf_target = annotated_pdf_path or source_pdf_path
+    if annotated_pdf_path:
+        print(f"      bbox sidecar found; will produce annotated PDF: {annotated_pdf_path.name}")
+    elif source_pdf_path:
+        print(f"      no bbox sidecar (hand-transcribed case?); citations will be page-level only")
+
     print("[2/6] Building embedding indexes (chunks + listings)...")
     t0 = time.time()
     chunk_index = build_chunk_index(case.chunks)
@@ -75,6 +109,9 @@ def main(argv: list[str]) -> int:
 
     print(f"[4/6] Evaluating leaf criteria for {len(candidates)} candidate(s)...")
     out_dir.mkdir(parents=True, exist_ok=True)
+    # Track every (listing -> leaf_results) so we can build the annotated PDF
+    # after the loop with all cited chunks at once.
+    leaf_results_by_listing: dict[str, dict[str, LeafResult]] = {}
     for cand in candidates:
         listing = cand.listing
         print(f"\n  === {listing.code} {listing.title[:60]} ===")
@@ -115,29 +152,33 @@ def main(argv: list[str]) -> int:
         write_form(out_path, content)
         print(f"      -> {out_path}")
 
-        # Resolve source PDF path for clickable citations in HTML output.
-        source_pdf_path = None
-        import json
-        try:
-            case_meta = json.loads(case_path.read_text(encoding="utf-8"))
-            if pdf_name := case_meta.get("source_pdf"):
-                candidate = HERE / pdf_name
-                if candidate.exists():
-                    source_pdf_path = candidate
-        except Exception:
-            pass
-
         html = render_form_html(
             listing=listing,
             root_verdict=root,
             leaf_results=leaf_results,
             case_id=case.case_id,
             chunks_by_id=chunks_by_id,
-            source_pdf_path=source_pdf_path,
+            source_pdf_path=html_pdf_target,
         )
         html_path = out_dir / f"{file_stem}.html"
         write_form(html_path, html)
         print(f"      -> {html_path}")
+
+        leaf_results_by_listing[listing.code] = leaf_results
+
+    # Annotated PDF: one yellow box per cited chunk's bbox. Reviewers click a
+    # citation in the HTML form and land on the page with the cited region
+    # already highlighted.
+    if annotated_pdf_path and bbox_sidecar_path and source_pdf_path:
+        cited = collect_cited_chunk_ids(leaf_results_by_listing)
+        print(f"\nAnnotating PDF with {len(cited)} cited chunks...")
+        out_path, n = annotate_pdf(
+            source_pdf=source_pdf_path,
+            bbox_sidecar=bbox_sidecar_path,
+            cited_chunk_ids=cited,
+            output_pdf=annotated_pdf_path,
+        )
+        print(f"      drew {n} highlight rectangles -> {out_path}")
 
     print("\nDone.")
     return 0

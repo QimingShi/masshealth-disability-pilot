@@ -22,6 +22,7 @@ from dataclasses import asdict
 from pathlib import Path
 
 import boto3
+import fitz
 
 from .ingest_textract import (
     Block,
@@ -572,6 +573,213 @@ def ingest_packet(
 
     # Full chunks with bbox/confidence (sidecar in _phi, for future
     # annotated-PDF generation when we want highlighted citation regions)
+    bbox_out = {
+        "case_id": case_id,
+        "chunks": [
+            {
+                "chunk_id": r.chunk_id,
+                "doc_id": r.doc_id,
+                "section": r.section,
+                "text": r.text,
+                "page_start": r.page_start,
+                "page_end": r.page_end,
+                "bbox_by_page": r.bbox.by_page,
+                "ocr_confidence": r.ocr_confidence,
+                "layout_block_type": r.layout_block_type,
+                "is_table": r.is_table,
+                "source_block_ids": r.source_block_ids,
+            }
+            for r in full_records
+        ],
+    }
+    bbox_path.write_text(json.dumps(bbox_out, indent=2), encoding="utf-8")
+    print(f"      bbox sidecar: {bbox_path}")
+
+    return chunks_path
+
+
+# =============================================================================
+# Multi-PDF case ingestion (allegation supplement + medical records, etc.)
+# =============================================================================
+
+def ingest_multi_pdf_case(
+    case_id: str,
+    pdfs: list[dict],
+    *,
+    profile_name: str = "user",
+    region_name: str = "us-east-1",
+    project_root: Path | None = None,
+) -> Path:
+    """Ingest multiple S3 PDFs into a single combined case.
+
+    Each PDF is OCR'd separately, then the PDFs are concatenated into one
+    combined source PDF and Textract block Page numbers are remapped so that
+    every chunk's page reference points into the combined PDF. The rest of
+    the matcher pipeline (sub-doc detection, chunking, annotated PDF, HTML
+    citations) consumes the combined output unchanged.
+
+    Args:
+        case_id: case identifier — outputs land in data/<case_id>/ and _phi/<case_id>/
+        pdfs: list of {bucket, key, role} dicts.
+              role is one of {"allegation_source", "medical_evidence"}
+              (currently informational; matcher reads chunks uniformly).
+              PDFs are processed in list order; concatenation follows the
+              same order so allegations come first by convention.
+
+    Side effects produced:
+      data/<case_id>/chunks.json            — combined chunks for the matcher
+      _phi/<case_id>/source.pdf             — combined PDF for citation links
+      _phi/<case_id>/source_NN.pdf          — per-PDF downloaded copies
+      _phi/<case_id>/textract_raw.json      — combined raw blocks (page-remapped)
+      _phi/<case_id>/chunks_with_bbox.json  — combined bbox sidecar
+      _phi/<case_id>/ingest_manifest.json   — record of which PDFs were
+                                              ingested, with role + page ranges
+    """
+    project_root = project_root or Path(__file__).parent.parent
+    session = boto3.Session(profile_name=profile_name, region_name=region_name)
+
+    data_dir = project_root / "data" / case_id
+    phi_dir = project_root / "_phi" / case_id
+    data_dir.mkdir(parents=True, exist_ok=True)
+    phi_dir.mkdir(parents=True, exist_ok=True)
+
+    chunks_path = data_dir / "chunks.json"
+    raw_path = phi_dir / "textract_raw.json"
+    bbox_path = phi_dir / "chunks_with_bbox.json"
+    combined_pdf_path = phi_dir / "source.pdf"
+    manifest_path = phi_dir / "ingest_manifest.json"
+
+    s3 = session.client("s3")
+
+    all_blocks: list[Block] = []
+    page_offset = 0
+    per_pdf_paths: list[Path] = []
+    manifest: list[dict] = []
+
+    for i, pdf_spec in enumerate(pdfs):
+        bucket = pdf_spec["bucket"]
+        key = pdf_spec["key"]
+        role = pdf_spec.get("role", "evidence")
+
+        print(f"\n=== PDF {i+1}/{len(pdfs)} [{role}]: {key} ===")
+
+        # 1. Kick off Textract analysis
+        print("[1/4] Starting Textract analysis...")
+        job_id = start_analysis(bucket, key, session=session)
+        print(f"      JobId: {job_id}")
+
+        # 2. Wait + fetch blocks
+        print("[2/4] Polling for completion...")
+        status = wait_for_analysis(job_id, session=session)
+        if status != "SUCCEEDED":
+            raise RuntimeError(f"Textract job did not succeed for {key}: {status}")
+        print("[3/4] Fetching paginated blocks...")
+        blocks = fetch_all_blocks(job_id, session=session)
+        print(f"      total blocks: {len(blocks)}")
+
+        # 3. Download local copy of this PDF
+        local_pdf = phi_dir / f"source_{i+1:02d}.pdf"
+        print(f"[4/4] Downloading PDF -> {local_pdf.name}...")
+        s3.download_file(bucket, key, str(local_pdf))
+        per_pdf_paths.append(local_pdf)
+
+        # Determine page count so we can remap subsequent PDFs' Page numbers
+        with fitz.open(local_pdf) as src_doc:
+            page_count = src_doc.page_count
+
+        # 4. Remap Page values in this PDF's blocks by the running offset
+        if page_offset > 0:
+            print(f"      remapping page numbers +{page_offset}")
+            for b in blocks:
+                if b.get("Page") is not None:
+                    b["Page"] = b["Page"] + page_offset
+
+        # Track manifest entry for this PDF
+        manifest.append({
+            "index": i + 1,
+            "role": role,
+            "bucket": bucket,
+            "key": key,
+            "local_path": f"_phi/{case_id}/source_{i+1:02d}.pdf",
+            "combined_pages": [page_offset + 1, page_offset + page_count],
+            "page_count": page_count,
+        })
+
+        all_blocks.extend(blocks)
+        page_offset += page_count
+
+    # Save the combined raw response for cheap re-chunking iteration
+    raw_path.write_text(json.dumps({"Blocks": all_blocks}), encoding="utf-8")
+    print(f"\nCombined raw response saved: {raw_path}")
+
+    # Concatenate all source PDFs into the combined source.pdf
+    print(f"Concatenating {len(per_pdf_paths)} PDF(s) into {combined_pdf_path.name}...")
+    combined = fitz.open()
+    for pdf_path in per_pdf_paths:
+        with fitz.open(pdf_path) as src:
+            combined.insert_pdf(src)
+    combined.save(str(combined_pdf_path), garbage=4, deflate=True)
+    combined.close()
+    print(f"      {combined_pdf_path} ({sum(m['page_count'] for m in manifest)} pages total)")
+
+    # Write manifest for traceability
+    manifest_path.write_text(
+        json.dumps({"case_id": case_id, "pdfs": manifest}, indent=2),
+        encoding="utf-8",
+    )
+    print(f"      manifest: {manifest_path}")
+
+    # Sub-doc detection + chunking against the combined (remapped) blocks
+    print("Detecting sub-documents and chunking...")
+    sub_docs = detect_sub_documents(all_blocks)
+    print(f"      detected {len(sub_docs)} sub-document(s)")
+
+    idx_all = {b["Id"]: b for b in all_blocks}
+    documents: list[dict] = []
+    pipeline_chunks: list[dict] = []
+    full_records: list[ChunkRecord] = []
+
+    for sd in sub_docs:
+        meta = _extract_doc_metadata(sd["blocks"], idx_all, derived_title=sd.get("derived_title", ""))
+        documents.append({
+            "doc_id": sd["doc_id"],
+            "doc_type": meta["doc_type"],
+            "doc_title": meta["doc_title"],
+            "encounter_date": meta["encounter_date"],
+            "page_range_in_packet": [sd["page_start"], sd["page_end"]],
+        })
+        print(
+            f"        {sd['doc_id']}  pp.{sd['page_start']:>2}-{sd['page_end']:<2}  "
+            f"type={meta['doc_type']:<32}  date={meta['encounter_date']}"
+        )
+        records = chunk_by_layout(
+            {"Blocks": sd["blocks"]},
+            doc_id=sd["doc_id"],
+            doc_meta=meta,
+        )
+        full_records.extend(records)
+        pipeline_chunks.extend(to_pipeline_chunks(records))
+
+    allegations = auto_extract_allegations(pipeline_chunks)
+
+    out_data = {
+        "case_id": case_id,
+        "source_pdf": f"_phi/{case_id}/source.pdf",
+        "_note": (
+            f"Multi-PDF ingestion ({len(pdfs)} source PDFs concatenated). "
+            f"Pages remapped to point at combined PDF. See ingest_manifest.json "
+            f"for per-source-PDF page ranges."
+        ),
+        "documents": documents,
+        "chunks": pipeline_chunks,
+        "allegations": allegations,
+    }
+    chunks_path.write_text(json.dumps(out_data, indent=2), encoding="utf-8")
+    print(f"\nWrote {chunks_path}")
+    print(f"      chunks: {len(pipeline_chunks)}  documents: {len(documents)}  "
+          f"allegations: {len(allegations)}")
+
+    # Bbox sidecar (for annotated-PDF generation)
     bbox_out = {
         "case_id": case_id,
         "chunks": [
