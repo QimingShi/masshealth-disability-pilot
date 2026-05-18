@@ -146,21 +146,25 @@ def _children(block: Block, kind: str = "CHILD") -> list[str]:
 
 
 def _word_blocks_under(block: Block, idx: dict[str, Block]) -> list[Block]:
-    """Walk down to all WORD blocks reachable from this block. Layout blocks
-    point to LINEs; LINEs point to WORDs; TABLEs point to CELLs which point to
-    WORDs. We don't care which path — just gather WORDs."""
+    """Walk down to all WORD blocks reachable from this block, IN READING ORDER.
+
+    Layout blocks point to LINEs; LINEs point to WORDs; TABLEs point to CELLs
+    which point to WORDs. We use recursion (or a stack with reversed children)
+    rather than a naive LIFO stack — a naive stack reverses traversal order,
+    which produces backwards text. That bug would silently break table cells
+    and any fallback text assembly."""
     out: list[Block] = []
-    stack = [block]
-    while stack:
-        b = stack.pop()
+
+    def visit(b: Block):
         if b.get("BlockType") == "WORD":
             out.append(b)
-            continue
+            return
         for cid in _children(b):
             cb = idx.get(cid)
-            if cb is None:
-                continue
-            stack.append(cb)
+            if cb is not None:
+                visit(cb)
+
+    visit(block)
     return out
 
 

@@ -12,6 +12,15 @@ _phi/
 # Per-case output forms contain verbatim chart quotes — PHI-derived.
 output/
 
+# Real case data goes in data/<case_id>/ subdirs (PHI-derived chunks.json).
+# The top-level data/chunks.json is the SYNTHETIC demo and stays tracked.
+data/*/
+
+# Session-specific inspection scripts (debug helpers, not general tooling)
+_inspect_raw.py
+_show_subdocs.py
+_inspect_medical_chunks.py
+
 # Preview / rendered images of source PDFs (may contain PHI even if redacted)
 _preview/
 

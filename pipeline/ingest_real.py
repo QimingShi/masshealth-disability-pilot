@@ -1,0 +1,690 @@
+"""Real Textract ingestion: PDF in S3 -> chunks.json for the pipeline.
+
+Replaces the manual hand-transcription path. Uses Textract async
+AnalyzeDocument with LAYOUT/TABLES/FORMS, paginates results, detects
+sub-document boundaries from page-footer patterns, runs chunk_by_layout
+per sub-doc, and writes chunks.json that the rest of the pipeline consumes
+unchanged.
+
+Outputs land in:
+  data/<case_id>/chunks.json          (tracked-shape; minimal metadata)
+  _phi/<case_id>/textract_raw.json    (full Textract response — PHI, gitignored)
+  _phi/<case_id>/source.pdf           (downloaded copy for HTML citation links)
+  _phi/<case_id>/chunks_with_bbox.json (chunks with bboxes, for future
+                                        annotated-PDF highlight generation)
+"""
+from __future__ import annotations
+
+import json
+import re
+import time
+from dataclasses import asdict
+from pathlib import Path
+
+import boto3
+
+from .ingest_textract import (
+    Block,
+    BBox,
+    ChunkRecord,
+    chunk_by_layout,
+    to_pipeline_chunks,
+)
+
+
+# =============================================================================
+# Textract API: start / poll / paginate
+# =============================================================================
+
+def start_analysis(bucket: str, key: str, *, session=None) -> str:
+    """Kick off async Textract analysis with LAYOUT/TABLES/FORMS. Returns JobId."""
+    session = session or boto3.Session()
+    textract = session.client("textract")
+    job = textract.start_document_analysis(
+        DocumentLocation={"S3Object": {"Bucket": bucket, "Name": key}},
+        FeatureTypes=["LAYOUT", "TABLES", "FORMS"],
+    )
+    return job["JobId"]
+
+
+def wait_for_analysis(job_id: str, *, session=None, poll_seconds: int = 5) -> str:
+    """Poll until job finishes. Returns final status: 'SUCCEEDED' or 'FAILED'.
+    Prints progress so the user can see something is happening."""
+    session = session or boto3.Session()
+    textract = session.client("textract")
+    while True:
+        result = textract.get_document_analysis(JobId=job_id, MaxResults=1)
+        status = result["JobStatus"]
+        if status in ("SUCCEEDED", "FAILED"):
+            return status
+        print(f"  status: {status}  (sleeping {poll_seconds}s)")
+        time.sleep(poll_seconds)
+
+
+def fetch_all_blocks(job_id: str, *, session=None) -> list[Block]:
+    """Page through GetDocumentAnalysis results and concatenate all blocks.
+    Textract returns blocks in batches; without NextToken handling you lose
+    everything past the first page of results."""
+    session = session or boto3.Session()
+    textract = session.client("textract")
+    blocks: list[Block] = []
+    next_token = None
+    while True:
+        kwargs = {"JobId": job_id, "MaxResults": 1000}
+        if next_token:
+            kwargs["NextToken"] = next_token
+        result = textract.get_document_analysis(**kwargs)
+        blocks.extend(result.get("Blocks", []))
+        next_token = result.get("NextToken")
+        if not next_token:
+            break
+    return blocks
+
+
+# =============================================================================
+# Sub-document boundary detection
+# =============================================================================
+# Packets bundle multiple sub-documents stapled together. Reliable signals:
+#   1. Page-footer "N/M" pattern (numerator resets when a new sub-doc starts)
+#   2. LAYOUT_TITLE re-appearance at the top of a page
+# This implementation uses (1) primarily and falls back to (2) if footers
+# are missing.
+
+# Footer patterns we recognize. The packet uses several variants:
+#   "Page 1 of 4"    "Page 1 of 1"    "1 / 4"    "-2-"    bare integers ("8")
+# Most reliable: explicit "Page N of M". Bare integers are typically packet-level
+# numbering (the whole bundle's page count, NOT per-sub-doc) so we ignore them.
+_FOOTER_PAGE_OF_RE = re.compile(r"\bpage\s*(\d+)\s*of\s*(\d+)", re.IGNORECASE)
+_FOOTER_NUM_SLASH_RE = re.compile(r"^\s*(\d+)\s*/\s*(\d+)\s*$")
+
+
+def _children(block: Block) -> list[str]:
+    for rel in block.get("Relationships") or []:
+        if rel.get("Type") == "CHILD":
+            return rel.get("Ids", [])
+    return []
+
+
+def _layout_block_text(block: Block, idx: dict[str, Block]) -> str:
+    """Get correct-order text from a LAYOUT_* block by collecting child LINE.Text
+    values. Far more reliable than walking to WORDs ourselves — Textract
+    pre-assembles LINE.Text in reading order."""
+    parts: list[str] = []
+    for cid in _children(block):
+        cb = idx.get(cid)
+        if cb and cb.get("BlockType") == "LINE" and cb.get("Text"):
+            parts.append(cb["Text"])
+    return " ".join(parts)
+
+
+def _parse_page_of(text: str) -> tuple[int, int] | None:
+    """Extract (current_page, total_pages) from text like 'Page 2 of 4' or '2/4'.
+    Returns None if no match or denom is 0."""
+    if not text:
+        return None
+    m = _FOOTER_PAGE_OF_RE.search(text)
+    if not m:
+        m = _FOOTER_NUM_SLASH_RE.search(text)
+    if not m:
+        return None
+    cur, total = int(m.group(1)), int(m.group(2))
+    if total == 0:
+        return None
+    return cur, total
+
+
+def _page_summary(blocks: list[Block], idx: dict[str, Block]) -> dict[int, dict]:
+    """Per-page summary: LAYOUT_TITLE text, LAYOUT_HEADER text, LAYOUT_FOOTER text,
+    and any parsed 'Page N of M' footer. Used as the basis for sub-doc detection."""
+    summary: dict[int, dict] = {}
+    for b in blocks:
+        bt = b.get("BlockType", "")
+        p = b.get("Page", 0)
+        if not p:
+            continue
+        s = summary.setdefault(p, {"titles": [], "headers": [], "footers": [], "page_of": None})
+        if bt == "LAYOUT_TITLE":
+            s["titles"].append(_layout_block_text(b, idx))
+        elif bt == "LAYOUT_HEADER":
+            s["headers"].append(_layout_block_text(b, idx))
+        elif bt == "LAYOUT_FOOTER":
+            s["footers"].append(_layout_block_text(b, idx))
+        elif bt == "LAYOUT_PAGE_NUMBER":
+            txt = _layout_block_text(b, idx)
+            parsed = _parse_page_of(txt)
+            if parsed and not s["page_of"]:
+                s["page_of"] = parsed
+    # Also check footers for "Page N of M" patterns (the packet sometimes
+    # encodes them as LAYOUT_FOOTER, not LAYOUT_PAGE_NUMBER).
+    for p, s in summary.items():
+        if not s["page_of"]:
+            for f in s["footers"]:
+                parsed = _parse_page_of(f)
+                if parsed:
+                    s["page_of"] = parsed
+                    break
+    return summary
+
+
+def _title_changed(prev: str | None, curr: str | None) -> bool:
+    """Heuristic: is the current page's title meaningfully different from the
+    prev page's effective title? Returns True when we believe the title indicates
+    a new sub-document."""
+    if not curr:
+        return False
+    if not prev:
+        return True  # First title we've seen
+    # Exact match -> same sub-doc
+    if prev.strip().lower() == curr.strip().lower():
+        return False
+    # Prefix overlap -> same form continuing across pages
+    a, b = prev.strip().lower(), curr.strip().lower()
+    if a.startswith(b) or b.startswith(a):
+        return False
+    # Token overlap >= 60% suggests same sub-doc
+    a_tokens = set(re.findall(r"\w+", a))
+    b_tokens = set(re.findall(r"\w+", b))
+    if a_tokens and b_tokens:
+        overlap = len(a_tokens & b_tokens) / max(len(a_tokens), len(b_tokens))
+        if overlap >= 0.6:
+            return False
+    return True
+
+
+def detect_sub_documents(blocks: list[Block]) -> list[dict]:
+    """Group pages into sub-documents using LAYOUT_TITLE as the primary signal,
+    with 'Page 1 of M' footers as a secondary marker.
+
+    Algorithm:
+      - Build per-page summary (titles, footers, parsed page-of-M).
+      - Walk pages in order. Start a new sub-doc when:
+        * Current page has a 'Page 1 of M' footer (very strong signal), OR
+        * Current page's title is meaningfully different from the active title
+          (carried forward across page-without-title gaps).
+      - Pages without a title inherit the prior sub-doc.
+
+    Returns list of {doc_id, page_start, page_end, blocks, derived_title}.
+    """
+    idx = {b["Id"]: b for b in blocks}
+    max_page = max((b.get("Page", 0) for b in blocks), default=1)
+    summary = _page_summary(blocks, idx)
+
+    boundaries: list[int] = [1]
+    active_title: str | None = None  # last title we saw
+
+    for p in range(2, max_page + 1):
+        s = summary.get(p, {})
+        page_of = s.get("page_of")
+        titles = s.get("titles", [])
+        curr_title = titles[0] if titles else None
+
+        new_subdoc = False
+
+        # Strong signal #1: "Page 1 of M" footer
+        if page_of and page_of[0] == 1:
+            new_subdoc = True
+
+        # Strong signal #2: title changed
+        if not new_subdoc and _title_changed(active_title, curr_title):
+            new_subdoc = True
+
+        if new_subdoc:
+            boundaries.append(p)
+            active_title = curr_title or active_title
+        else:
+            if curr_title:
+                active_title = curr_title
+
+    boundaries.append(max_page + 1)  # sentinel for slicing
+
+    out: list[dict] = []
+    for i in range(len(boundaries) - 1):
+        start, end = boundaries[i], boundaries[i + 1] - 1
+        if end < start:
+            continue
+        sd_blocks = [b for b in blocks if start <= b.get("Page", 0) <= end]
+
+        # Pick a representative title from this range (first non-empty title)
+        derived_title = ""
+        for pp in range(start, end + 1):
+            titles = summary.get(pp, {}).get("titles", [])
+            if titles and titles[0]:
+                derived_title = titles[0]
+                break
+
+        out.append({
+            "doc_id": f"doc-{i+1:02d}",
+            "page_start": start,
+            "page_end": end,
+            "blocks": sd_blocks,
+            "derived_title": derived_title,
+        })
+    return out
+
+
+# =============================================================================
+# Doc-level metadata extraction (best-effort, rule-based)
+# =============================================================================
+# Rule-based extraction of doc_type, doc_title, encounter_date from each
+# sub-document's header region. Production system would tune these heuristics.
+
+_DATE_RE = re.compile(r"(?:Date of Encounter|Encounter Date|Collection Time|Service Date)[:\s]+(\d{1,4}[-/]\d{1,2}[-/]\d{1,4}(?:\s+\d{1,2}:\d{2})?)", re.IGNORECASE)
+_DATE_FALLBACK = re.compile(r"\b(\d{1,2}/\d{1,2}/\d{2,4})\b")
+
+_DOC_TYPE_PATTERNS = [
+    # Disability application packet forms (MEPERS-style)
+    (r"\bmemorandum\b", "memorandum"),
+    (r"intake summary form|disability retirement intake", "intake_form"),
+    (r"application for disability retirement", "application_form"),
+    (r"application checklist", "application_checklist"),
+    (r"consent form authorizing release", "consent_release_of_info"),
+    (r"consent form designating", "consent_designate_representative"),
+    (r"\bconsent form\b", "consent_form"),
+    (r"authorization.*release.*healthcare", "consent_release_healthcare"),
+    (r"frequently asked questions|faqs?\b", "faqs"),
+    (r"new application interview|application interview", "applicant_interview"),
+    (r"employer interview", "employer_interview"),
+    (r"healthcare provider'?s request", "provider_request"),
+    (r"continuing health insurance", "health_insurance_notice"),
+    # Medical records
+    (r"primary care office note", "primary_care_note"),
+    (r"physical examination|physical exam", "physical_exam"),
+    (r"oncology.*(?:progress|follow.?up).*note", "oncology_progress_note"),
+    (r"after.visit.summary|visit.bundle", "visit_bundle"),
+    (r"pathology.*report", "pathology_report"),
+    (r"\* ?final report ?\*|final report", "imaging_report"),
+    (r"ct\s+(?:abdomen|chest|head|pelvis)|computed tomography", "ct_imaging_report"),
+    (r"mri\b|magnetic resonance", "mri_imaging_report"),
+    (r"x.?ray|radiograph", "xray_report"),
+    (r"mammogram|breast imaging", "mammogram"),
+    (r"ecg|ekg|electrocardiogram", "ecg_report"),
+    (r"laboratory|lab\s+result", "lab_report"),
+    (r"discharge\s+summary", "discharge_summary"),
+    (r"history\s+and\s+physical|h&p", "history_and_physical"),
+    (r"operative\s+(?:note|report)", "operative_note"),
+    (r"echocardiogram", "echocardiogram"),
+    (r"emergency\s+department|ed\s+visit", "ed_visit"),
+    # Institution-letterhead fallbacks for medical records when no explicit type marker
+    (r"northern light health", "medical_record_northern_light"),
+    (r"epic systems|mychart", "medical_record_epic"),
+    (r"cerner|powerchart", "medical_record_cerner"),
+]
+
+# EPIC-style structured marker in medical-record headers: "Document Type: X"
+# Lazy match up to known terminator keywords so we don't gobble adjacent fields.
+_DOC_TYPE_EXPLICIT_RE = re.compile(
+    r"Document\s+Type\s*:\s*(.{3,80}?)"
+    r"\s*(?:,|\||\n|"
+    r"\s+(?:Service\s+Date|Result\s+status|Template|Performed|Verified|"
+    r"Encounter|Author|Date\s+of|Provider|Patient)\b|$)",
+    re.IGNORECASE,
+)
+
+
+def _slug(text: str) -> str:
+    return re.sub(r"_+", "_", re.sub(r"\W+", "_", text.lower())).strip("_") or "unknown"
+
+
+def _extract_doc_metadata(
+    sd_blocks: list[Block],
+    idx: dict[str, Block],
+    derived_title: str = "",
+) -> dict:
+    """Best-effort doc_type / doc_title / encounter_date from a sub-doc's
+    header region. Uses correct-order text via _layout_block_text + LINE.Text."""
+    if not sd_blocks:
+        return {"doc_type": "unknown", "doc_title": derived_title or "Untitled", "encounter_date": None}
+
+    first_page = min((b.get("Page", 99999) for b in sd_blocks), default=0)
+
+    # Collect first-page LAYOUT_TITLE / LAYOUT_HEADER text
+    title_texts: list[str] = []
+    header_texts: list[str] = []
+    for b in sd_blocks:
+        if b.get("Page") != first_page:
+            continue
+        bt = b.get("BlockType")
+        if bt == "LAYOUT_TITLE":
+            t = _layout_block_text(b, idx)
+            if t:
+                title_texts.append(t)
+        elif bt == "LAYOUT_HEADER":
+            t = _layout_block_text(b, idx)
+            if t:
+                header_texts.append(t)
+
+    title_blob = " | ".join(title_texts)
+    header_blob = " | ".join(header_texts)
+    full_blob = f"{title_blob} | {header_blob}"[:3000]
+
+    # 1) Explicit EPIC-style "Document Type: X" wins if present
+    doc_type = "unknown"
+    m = _DOC_TYPE_EXPLICIT_RE.search(header_blob)
+    if m:
+        doc_type = _slug(m.group(1))
+    else:
+        for pattern, type_name in _DOC_TYPE_PATTERNS:
+            if re.search(pattern, full_blob, re.IGNORECASE):
+                doc_type = type_name
+                break
+
+    # 2) Title: prefer derived_title (from sub-doc detection) > first LAYOUT_TITLE
+    doc_title = derived_title or (title_texts[0] if title_texts else "")
+    if not doc_title and header_texts:
+        doc_title = header_texts[0]
+    doc_title = (doc_title or "Untitled sub-document")[:240]
+
+    # 3) Encounter date: search LINE.Text on first 2 pages of the sub-doc
+    pages_sorted = sorted({b.get("Page", 0) for b in sd_blocks})
+    search_pages = set(pages_sorted[:2])
+    page_text = " ".join(
+        b["Text"]
+        for b in sd_blocks
+        if b.get("BlockType") == "LINE" and b.get("Text") and b.get("Page") in search_pages
+    )[:6000]
+    date_match = _DATE_RE.search(page_text) or _DATE_FALLBACK.search(page_text)
+    encounter_date = date_match.group(1) if date_match else None
+
+    return {
+        "doc_type": doc_type,
+        "doc_title": doc_title,
+        "encounter_date": encounter_date,
+    }
+
+
+# =============================================================================
+# Allegation auto-extraction (best-effort)
+# =============================================================================
+# Pulls a starter set of allegations from chief-complaint and visit-diagnoses
+# chunks. Review and curate manually before relying on it for matching.
+
+_ICD_RE = re.compile(r"\b[A-TV-Z][0-9][0-9AB](?:\.[0-9A-Z]{1,4})?\b")
+
+
+def auto_extract_allegations(chunks: list[dict]) -> list[dict]:
+    allegations: list[dict] = []
+    seen: set[str] = set()
+
+    def add(text: str, source: str, chunk_id: str):
+        key = re.sub(r"\W+", " ", text).strip().lower()
+        if not key or key in seen or len(key) < 3:
+            return
+        seen.add(key)
+        allegations.append({
+            "text": text,
+            "source": source,
+            "source_chunk_id": chunk_id,
+        })
+
+    for c in chunks:
+        section = c.get("section", "")
+        section_lc = section.lower()
+        text = c.get("text", "")
+
+        # Chief complaint pattern: "Chief Complaint: ..." or "Diagnosis: ..."
+        if any(k in section_lc for k in ("header", "chief", "complaint", "hpi")):
+            for m in re.finditer(
+                r"(?i)(?:chief complaint|diagnosis/chief complaint|diagnosis)[:\s]+([^.\n]{4,150})",
+                text,
+            ):
+                add(m.group(1).strip().rstrip(",;"), "chief_complaint", c["chunk_id"])
+
+        # Visit Diagnoses: one allegation per non-trivial line
+        if "diagnos" in section_lc:
+            for line in text.split("\n"):
+                # Strip "Visit Diagnoses:" and "Primary:" / "Secondary:" prefixes
+                cleaned = re.sub(r"^\s*(visit\s+diagnoses|primary|secondary)\s*:\s*", "",
+                                 line, flags=re.IGNORECASE)
+                # Strip trailing ICD code
+                cleaned = _ICD_RE.sub("", cleaned).strip().rstrip(",.;")
+                if 4 <= len(cleaned) <= 150:
+                    add(cleaned, "visit_diagnoses", c["chunk_id"])
+
+        # PMH: bulleted past medical history
+        if "past medical history" in section_lc or section_lc == "pmh":
+            # Common patterns: "• Diabetes mellitus" or "- COPD" or "Diabetes mellitus."
+            for line in re.split(r"[\n•·;]", text):
+                cleaned = re.sub(r"^[-\s*•·]+", "", line).strip().rstrip(",.;")
+                cleaned = re.sub(r"^past medical history:?\s*", "", cleaned, flags=re.IGNORECASE)
+                if 4 <= len(cleaned) <= 150:
+                    add(cleaned, "past_medical_history", c["chunk_id"])
+
+    return allegations
+
+
+# =============================================================================
+# Main entry point
+# =============================================================================
+
+def ingest_packet(
+    bucket: str,
+    key: str,
+    case_id: str,
+    *,
+    profile_name: str = "user",
+    region_name: str = "us-east-1",
+    project_root: Path | None = None,
+    download_pdf: bool = True,
+) -> Path:
+    """End-to-end ingestion: PDF in S3 -> chunks.json ready for the pipeline.
+
+    Side effects:
+      data/<case_id>/chunks.json            (tracked-shape chunks)
+      _phi/<case_id>/textract_raw.json      (full raw response — PHI)
+      _phi/<case_id>/chunks_with_bbox.json  (full ChunkRecords with bbox)
+      _phi/<case_id>/source.pdf             (downloaded PDF for citation links)
+
+    Returns the chunks.json path.
+    """
+    project_root = project_root or Path(__file__).parent.parent
+    session = boto3.Session(profile_name=profile_name, region_name=region_name)
+
+    data_dir = project_root / "data" / case_id
+    phi_dir = project_root / "_phi" / case_id
+    data_dir.mkdir(parents=True, exist_ok=True)
+    phi_dir.mkdir(parents=True, exist_ok=True)
+
+    chunks_path = data_dir / "chunks.json"
+    raw_path = phi_dir / "textract_raw.json"
+    bbox_path = phi_dir / "chunks_with_bbox.json"
+    pdf_path = phi_dir / "source.pdf"
+
+    # === 1. Kick off Textract job ===
+    print(f"[1/5] Starting Textract analysis: s3://{bucket}/{key}")
+    job_id = start_analysis(bucket, key, session=session)
+    print(f"      JobId: {job_id}")
+
+    # === 2. Poll until done ===
+    print("[2/5] Polling for completion...")
+    status = wait_for_analysis(job_id, session=session)
+    if status != "SUCCEEDED":
+        raise RuntimeError(f"Textract job did not succeed: {status}")
+
+    # === 3. Fetch all paginated blocks ===
+    print("[3/5] Fetching all blocks (paginated)...")
+    blocks = fetch_all_blocks(job_id, session=session)
+    print(f"      total blocks: {len(blocks)}")
+    raw_path.write_text(json.dumps({"Blocks": blocks}), encoding="utf-8")
+    print(f"      raw response saved to {raw_path}")
+
+    # === 4. (Optional) download PDF for citation links ===
+    if download_pdf:
+        print("[4/5] Downloading PDF for citation links...")
+        s3 = session.client("s3")
+        s3.download_file(bucket, key, str(pdf_path))
+        print(f"      saved: {pdf_path}")
+    else:
+        print("[4/5] (skipping PDF download)")
+
+    # === 5. Detect sub-docs, chunk, write outputs ===
+    print("[5/5] Detecting sub-documents and chunking...")
+    sub_docs = detect_sub_documents(blocks)
+    print(f"      detected {len(sub_docs)} sub-document(s)")
+
+    idx_all = {b["Id"]: b for b in blocks}
+
+    documents: list[dict] = []
+    pipeline_chunks: list[dict] = []
+    full_records: list[ChunkRecord] = []
+
+    for sd in sub_docs:
+        meta = _extract_doc_metadata(sd["blocks"], idx_all, derived_title=sd.get("derived_title", ""))
+        documents.append({
+            "doc_id": sd["doc_id"],
+            "doc_type": meta["doc_type"],
+            "doc_title": meta["doc_title"],
+            "encounter_date": meta["encounter_date"],
+            "page_range_in_packet": [sd["page_start"], sd["page_end"]],
+        })
+        print(
+            f"        {sd['doc_id']}  pp.{sd['page_start']:>2}-{sd['page_end']:<2}  "
+            f"type={meta['doc_type']:<25}  date={meta['encounter_date']}"
+        )
+
+        records = chunk_by_layout(
+            {"Blocks": sd["blocks"]},
+            doc_id=sd["doc_id"],
+            doc_meta=meta,
+        )
+        full_records.extend(records)
+        pipeline_chunks.extend(to_pipeline_chunks(records))
+
+    # Auto-allegations (review manually)
+    allegations = auto_extract_allegations(pipeline_chunks)
+
+    # Tracked-shape chunks.json (no bbox, used by pipeline)
+    out_data = {
+        "case_id": case_id,
+        "source_pdf": f"_phi/{case_id}/source.pdf" if download_pdf else "",
+        "_note": (
+            f"Auto-generated by Textract ingestion from s3://{bucket}/{key}. "
+            f"Allegations auto-extracted from chief complaint / visit diagnoses / PMH; "
+            f"review before relying on for matching."
+        ),
+        "documents": documents,
+        "chunks": pipeline_chunks,
+        "allegations": allegations,
+    }
+    chunks_path.write_text(json.dumps(out_data, indent=2), encoding="utf-8")
+    print(f"      wrote {chunks_path}")
+    print(f"      chunks: {len(pipeline_chunks)}  documents: {len(documents)}  "
+          f"allegations: {len(allegations)}")
+
+    # Full chunks with bbox/confidence (sidecar in _phi, for future
+    # annotated-PDF generation when we want highlighted citation regions)
+    bbox_out = {
+        "case_id": case_id,
+        "chunks": [
+            {
+                "chunk_id": r.chunk_id,
+                "doc_id": r.doc_id,
+                "section": r.section,
+                "text": r.text,
+                "page_start": r.page_start,
+                "page_end": r.page_end,
+                "bbox_by_page": r.bbox.by_page,
+                "ocr_confidence": r.ocr_confidence,
+                "layout_block_type": r.layout_block_type,
+                "is_table": r.is_table,
+                "source_block_ids": r.source_block_ids,
+            }
+            for r in full_records
+        ],
+    }
+    bbox_path.write_text(json.dumps(bbox_out, indent=2), encoding="utf-8")
+    print(f"      bbox sidecar: {bbox_path}")
+
+    return chunks_path
+
+
+# =============================================================================
+# Notebook-friendly convenience: re-chunk from saved raw response without
+# re-running Textract (and re-spending money)
+# =============================================================================
+
+def rechunk_from_raw(
+    case_id: str,
+    *,
+    project_root: Path | None = None,
+) -> Path:
+    """Re-run the chunking step against a previously-saved textract_raw.json.
+    Useful when you tune chunk_by_layout or sub-doc detection and want to
+    iterate without paying for another Textract run.
+
+    Also rewrites the bbox sidecar so confidence/bbox lookups stay in sync
+    with the new chunk_ids.
+    """
+    project_root = project_root or Path(__file__).parent.parent
+    raw_path = project_root / "_phi" / case_id / "textract_raw.json"
+    if not raw_path.exists():
+        raise FileNotFoundError(f"No saved raw response at {raw_path}")
+    raw = json.loads(raw_path.read_text(encoding="utf-8"))
+    blocks = raw["Blocks"]
+
+    chunks_path = project_root / "data" / case_id / "chunks.json"
+    bbox_path = project_root / "_phi" / case_id / "chunks_with_bbox.json"
+    pdf_path = project_root / "_phi" / case_id / "source.pdf"
+
+    sub_docs = detect_sub_documents(blocks)
+    idx_all = {b["Id"]: b for b in blocks}
+
+    documents = []
+    pipeline_chunks = []
+    full_records = []
+    for sd in sub_docs:
+        meta = _extract_doc_metadata(sd["blocks"], idx_all, derived_title=sd.get("derived_title", ""))
+        documents.append({
+            "doc_id": sd["doc_id"],
+            "doc_type": meta["doc_type"],
+            "doc_title": meta["doc_title"],
+            "encounter_date": meta["encounter_date"],
+            "page_range_in_packet": [sd["page_start"], sd["page_end"]],
+        })
+        records = chunk_by_layout(
+            {"Blocks": sd["blocks"]},
+            doc_id=sd["doc_id"],
+            doc_meta=meta,
+        )
+        full_records.extend(records)
+        pipeline_chunks.extend(to_pipeline_chunks(records))
+
+    allegations = auto_extract_allegations(pipeline_chunks)
+    out_data = {
+        "case_id": case_id,
+        "source_pdf": f"_phi/{case_id}/source.pdf" if pdf_path.exists() else "",
+        "_note": "Re-chunked from saved Textract response.",
+        "documents": documents,
+        "chunks": pipeline_chunks,
+        "allegations": allegations,
+    }
+    chunks_path.parent.mkdir(parents=True, exist_ok=True)
+    chunks_path.write_text(json.dumps(out_data, indent=2), encoding="utf-8")
+    print(f"  wrote {chunks_path}: {len(pipeline_chunks)} chunks, "
+          f"{len(documents)} docs, {len(allegations)} allegations")
+
+    # Refresh bbox sidecar so confidence/bbox lookups stay consistent with the
+    # current chunk_ids. Otherwise downstream inspectors see chunk_id mismatches.
+    bbox_out = {
+        "case_id": case_id,
+        "chunks": [
+            {
+                "chunk_id": r.chunk_id,
+                "doc_id": r.doc_id,
+                "section": r.section,
+                "text": r.text,
+                "page_start": r.page_start,
+                "page_end": r.page_end,
+                "bbox_by_page": r.bbox.by_page,
+                "ocr_confidence": r.ocr_confidence,
+                "layout_block_type": r.layout_block_type,
+                "is_table": r.is_table,
+                "source_block_ids": r.source_block_ids,
+            }
+            for r in full_records
+        ],
+    }
+    bbox_path.parent.mkdir(parents=True, exist_ok=True)
+    bbox_path.write_text(json.dumps(bbox_out, indent=2), encoding="utf-8")
+    print(f"  bbox sidecar refreshed: {bbox_path}")
+
+    return chunks_path

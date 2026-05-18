@@ -4,5 +4,5 @@ sentence-transformers>=2.2   # Local embedding model (all-MiniLM-L6-v2)
 numpy>=1.24                  # Vector math
 pymupdf>=1.23                # PDF rendering / survey utilities
 
-# Optional: only needed if you implement the Textract ingest path
-# boto3>=1.28
+# AWS Textract ingestion (real OCR path)
+boto3>=1.28
