@@ -57,13 +57,30 @@ def embed_text(client, text: str) -> np.ndarray:
 
 
 # ---------------------------------------------------------------------------
-#  Postgres connection — delegate to pipeline.db.connect_pg so the
-#  db/local_override.py credentials file (gitignored) is honored everywhere.
+#  Postgres connection
 # ---------------------------------------------------------------------------
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from pipeline.db import connect_pg   # noqa: E402
+
+def connect_pg():
+    url = os.environ.get("DATABASE_URL")
+    if url:
+        url = url.replace("postgresql+psycopg2://", "postgresql://")
+        parsed = urlparse(url)
+        kwargs = {
+            "host": parsed.hostname,
+            "port": parsed.port or 5432,
+            "user": parsed.username,
+            "password": parsed.password or os.environ.get("PGPASSWORD"),
+            "dbname": parsed.path.lstrip("/"),
+        }
+        if parsed.query:
+            for kv in parsed.query.split("&"):
+                if "=" in kv:
+                    k, v = kv.split("=", 1)
+                    if k in {"sslmode", "sslrootcert"}:
+                        kwargs[k] = v
+    else:
+        kwargs = {}
+    return psycopg2.connect(**kwargs)
 
 
 # ---------------------------------------------------------------------------
@@ -75,9 +92,9 @@ def main() -> int:
     session = boto3.Session(profile_name="user", region_name="us-east-1")
     bedrock = session.client("bedrock-runtime")
 
-    # connect_pg() (from pipeline.db) already calls register_vector internally
     print("Connecting to Postgres...")
     conn = connect_pg()
+    register_vector(conn)
     print(f"  connected: {conn.get_dsn_parameters().get('host')} / "
           f"{conn.get_dsn_parameters().get('dbname')}")
 

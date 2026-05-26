@@ -25,11 +25,6 @@ _run_multi_ingest.py
 _inspect_supplement.py
 _show_mepers_allegations.py
 _show_textract_page1.py
-_preflight_path_a.py
-
-# Local DB credentials (you have a template at db/local_override.example.py)
-# This file contains a password — must NEVER be committed.
-db/local_override.py
 
 # Preview / rendered images of source PDFs (may contain PHI even if redacted)
 _preview/
