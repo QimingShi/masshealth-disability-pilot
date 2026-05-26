@@ -36,19 +36,31 @@ def connect_pg():
          db/local_override.py and fill in your DATABASE_URL.
       2. DATABASE_URL env var (with optional PGPASSWORD fallback).
       3. Standard libpq env vars (PGHOST / PGUSER / PGPASSWORD / PGDATABASE).
+
+    Prints which path it used to stderr so silent fall-through bugs are
+    obvious. Set PGDB_QUIET=1 in env to suppress.
     """
+    quiet = os.environ.get("PGDB_QUIET") == "1"
+
+    def _log(msg: str) -> None:
+        if not quiet:
+            import sys
+            print(f"[connect_pg] {msg}", file=sys.stderr)
+
     # 1) Local override (gitignored)
     try:
         from db.local_override import connect_pg as _override
+        _log("using db/local_override.py")
         conn = _override()
         register_vector(conn)
         return conn
-    except ImportError:
-        pass
+    except ImportError as e:
+        _log(f"no db/local_override.py (ImportError: {e}); trying env vars")
 
     # 2) DATABASE_URL env var
     url = os.environ.get("DATABASE_URL")
     if url:
+        _log(f"using DATABASE_URL env var (host={urlparse(url).hostname})")
         url = url.replace("postgresql+psycopg2://", "postgresql://")
         parsed = urlparse(url)
         kwargs = {
@@ -65,7 +77,12 @@ def connect_pg():
                     if k in {"sslmode", "sslrootcert"}:
                         kwargs[k] = v
     else:
-        # 3) Bare libpq env vars (PGHOST / PGUSER / PGPASSWORD / PGDATABASE)
+        # 3) Bare libpq env vars (PGHOST / PGUSER / PGPASSWORD / PGDATABASE).
+        # WARNING: without any of those set, psycopg2 defaults to host='localhost',
+        # which is why you'd see "connection refused localhost" errors when
+        # nothing is configured.
+        _log("no DATABASE_URL set; relying on PG* env vars or libpq defaults "
+             "(host=localhost if PGHOST not set)")
         kwargs = {}
     conn = psycopg2.connect(**kwargs)
     register_vector(conn)
