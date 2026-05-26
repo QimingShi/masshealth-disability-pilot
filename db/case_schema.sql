@@ -201,7 +201,14 @@ CREATE TABLE IF NOT EXISTS allegations (
     source              VARCHAR(40),                    -- "chief_complaint" | "visit_diagnoses" |
                                                         -- "past_medical_history" | "supplement_form" |
                                                         -- "narrative_phrase" | "manual"
-    source_chunk_id     INT          REFERENCES chunks(id),
+    source_chunk_id     INT          REFERENCES chunks(id) ON DELETE SET NULL,
+                                                        -- Allegation text is the member's claim and
+                                                        -- stands on its own; if its source chunk gets
+                                                        -- deleted (re-OCR), allegation survives with
+                                                        -- a NULL source pointer. Without this clause,
+                                                        -- re-running load_case_to_db.py raises a FK
+                                                        -- violation because chunks can't be cascaded
+                                                        -- past existing allegations.
     manually_curated    BOOLEAN      DEFAULT FALSE,
     embedding           vector(1024),                   -- Bedrock Titan v2
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW()
