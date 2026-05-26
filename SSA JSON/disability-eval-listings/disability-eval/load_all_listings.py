@@ -137,7 +137,10 @@ def validate_listing_doc(doc: Any) -> None:
 
 DEFAULT_DATABASE_URL = os.environ.get(
     "DATABASE_URL",
-    "postgresql+psycopg2://localhost/disability_eval",
+    # Default to the EXPEDITE non-prod RDS instance. Username only; password
+    # comes from the PGPASSWORD env var (or ~/.pgpass) so it's not in source.
+    # Override with --database-url or by setting DATABASE_URL.
+    "postgresql+psycopg2://shiq@expedite-nonprod-rds.cfqvorcy6lau.us-east-1.rds.amazonaws.com:5432/expedite?sslmode=require",
 )
 DEFAULT_BUNDLE_PATH = Path(__file__).resolve().parent / "listings_bundle.json"
 

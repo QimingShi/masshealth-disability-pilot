@@ -24,6 +24,7 @@ _show_redacted.py
 _run_multi_ingest.py
 _inspect_supplement.py
 _show_mepers_allegations.py
+_show_textract_page1.py
 
 # Preview / rendered images of source PDFs (may contain PHI even if redacted)
 _preview/
