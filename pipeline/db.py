@@ -27,11 +27,26 @@ from pgvector.psycopg2 import register_vector
 # ---------------------------------------------------------------------------
 
 def connect_pg():
-    """Connect to Postgres using DATABASE_URL or PG* env vars.
+    """Connect to Postgres.
 
-    DATABASE_URL accepts both 'postgresql://...' and 'postgresql+psycopg2://...'
-    forms. Password may be embedded in the URL OR provided via PGPASSWORD.
+    Resolution order:
+      1. db/local_override.py defines `connect_pg()` — use that (local dev
+         convenience; the file is gitignored so credentials never get
+         committed). Pattern: copy db/local_override.example.py to
+         db/local_override.py and fill in your DATABASE_URL.
+      2. DATABASE_URL env var (with optional PGPASSWORD fallback).
+      3. Standard libpq env vars (PGHOST / PGUSER / PGPASSWORD / PGDATABASE).
     """
+    # 1) Local override (gitignored)
+    try:
+        from db.local_override import connect_pg as _override
+        conn = _override()
+        register_vector(conn)
+        return conn
+    except ImportError:
+        pass
+
+    # 2) DATABASE_URL env var
     url = os.environ.get("DATABASE_URL")
     if url:
         url = url.replace("postgresql+psycopg2://", "postgresql://")
@@ -50,7 +65,8 @@ def connect_pg():
                     if k in {"sslmode", "sslrootcert"}:
                         kwargs[k] = v
     else:
-        kwargs = {}  # rely on PGHOST/PGUSER/PGPASSWORD/PGDATABASE
+        # 3) Bare libpq env vars (PGHOST / PGUSER / PGPASSWORD / PGDATABASE)
+        kwargs = {}
     conn = psycopg2.connect(**kwargs)
     register_vector(conn)
     return conn
