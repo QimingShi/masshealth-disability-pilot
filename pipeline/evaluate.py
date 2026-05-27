@@ -2,17 +2,48 @@
 met / not_met / insufficient, with verbatim chunk citations. Enforced server-side:
   - every cited chunk_id must be in the input set (else reject)
   - every quote must appear verbatim in the cited chunk's text (else reject)
+
+Backend: Amazon Bedrock via boto3 + an application inference profile. The
+profile binds a specific Claude model + region under the AWS account; rotate
+models or regions by reconfiguring the profile in Bedrock, not by editing
+this file. Authentication uses an SSO profile (env var AWS_PROFILE, default
+"user") — the same path the embedding workers already use.
 """
 from dataclasses import dataclass, asdict
 import json
 import os
 import re
 
+import boto3
+
 from .chunks import Listing
 from .retrieve import RetrievedChunk
 
 
-MODEL = os.environ.get("LISTING_EVAL_MODEL", "claude-sonnet-4-6")
+# ---- Bedrock routing --------------------------------------------------------
+# The inference profile ARN is what Bedrock actually routes to. The MODEL
+# constant is a human-readable label persisted to leaf_assessments.model for
+# analytics — change the underlying model by reconfiguring the profile in
+# Bedrock, then update the label here to match.
+BEDROCK_INFERENCE_PROFILE = os.environ.get(
+    "LISTING_EVAL_BEDROCK_PROFILE",
+    "arn:aws:bedrock:us-east-1:251862868170:application-inference-profile/i6q45gpa1bzt",
+)
+MODEL = os.environ.get("LISTING_EVAL_MODEL", "claude-sonnet-4-6 (bedrock)")
+AWS_PROFILE = os.environ.get("AWS_PROFILE", "user")
+AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
+
+# Lazy module-level Bedrock client. Session creation hits ~/.aws/config and is
+# non-trivial; the client is thread-safe so cache it across all leaf calls.
+_bedrock_client = None
+
+
+def _get_bedrock_client():
+    global _bedrock_client
+    if _bedrock_client is None:
+        session = boto3.Session(profile_name=AWS_PROFILE)
+        _bedrock_client = session.client("bedrock-runtime", region_name=AWS_REGION)
+    return _bedrock_client
 
 
 @dataclass
@@ -157,22 +188,39 @@ def evaluate_leaf(
 
 
 def _call_claude(system: str, user: str) -> str:
-    from anthropic import Anthropic
-    client = Anthropic()  # reads ANTHROPIC_API_KEY from env
-    msg = client.messages.create(
-        model=MODEL,
-        max_tokens=4096,  # leaves with many retrieved chunks can produce
-                          # multi-evidence JSON > 1024 tokens; 1024 truncates
-                          # mid-string and the parse fails.
-        # NOTE: leaving temperature at SDK default (1.0). Setting temperature=0
+    """Invoke Claude via Bedrock with the Messages API body shape.
+
+    Why no prompt caching: _SYSTEM here is ~250 tokens, well below Sonnet/Opus
+    4.x's 4096-token cacheable-prefix minimum, and the user message varies per
+    leaf (different criterion + different retrieved chunks). There is no
+    shared prefix large enough to benefit from cache_control. Revisit if we
+    restructure to send the full case chunk set as cacheable context.
+    """
+    client = _get_bedrock_client()
+    body = {
+        "anthropic_version": "bedrock-2023-05-31",
+        # max_tokens=4096: leaves with many retrieved chunks can produce
+        # multi-evidence JSON > 1024 tokens; 1024 truncates mid-string and
+        # the parse fails.
+        "max_tokens": 4096,
+        # NOTE: leaving temperature unset (model default). Setting temperature=0
         # was observed to occasionally produce overly-strict "insufficient"
-        # verdicts on clear-cut leaves (e.g. 13.18 PRECONDITION on a chart
-        # with pathology-confirmed CRC). Default temperature performs better.
-        system=system,
-        messages=[{"role": "user", "content": user}],
+        # verdicts on clear-cut leaves (e.g. 13.18 PRECONDITION on a chart with
+        # pathology-confirmed CRC). Default temperature performs better.
+        "system": system,
+        "messages": [{"role": "user", "content": user}],
+    }
+    response = client.invoke_model(
+        modelId=BEDROCK_INFERENCE_PROFILE,
+        body=json.dumps(body),
+        contentType="application/json",
     )
-    # Concatenate any text blocks.
-    return "".join(b.text for b in msg.content if getattr(b, "type", None) == "text")
+    result = json.loads(response["body"].read())
+    # Concatenate any text blocks. Bedrock returns content blocks as plain
+    # dicts (not Pydantic objects), so use dict access.
+    return "".join(
+        b.get("text", "") for b in result.get("content", []) if b.get("type") == "text"
+    )
 
 
 def _parse_response(text: str) -> dict:

@@ -48,12 +48,15 @@ def main(argv: list[str]) -> int:
     mock_mode = os.environ.get("MOCK_EVAL") == "1"
     if mock_mode:
         print("[MOCK MODE] Using canned LLM responses (no API calls). "
-              "Set MOCK_EVAL=0 and ANTHROPIC_API_KEY for real evaluation.")
-    elif "ANTHROPIC_API_KEY" not in os.environ:
-        print("ERROR: ANTHROPIC_API_KEY env var not set.", file=sys.stderr)
-        print("       Set it before running:  $env:ANTHROPIC_API_KEY = '...'", file=sys.stderr)
-        print("       Or run in mock mode:    $env:MOCK_EVAL = '1'", file=sys.stderr)
-        return 2
+              "Set MOCK_EVAL=0 for real evaluation via Bedrock.")
+    else:
+        # Real evaluation goes through Amazon Bedrock via boto3. We don't
+        # validate creds here — boto3 will raise a clear error at first
+        # invoke_model() if SSO is stale or the profile is wrong. Users hit
+        # that with `aws sso login --profile user` in a fresh shell.
+        print(f"[BEDROCK] Eval via inference profile (AWS_PROFILE="
+              f"{os.environ.get('AWS_PROFILE', 'user')}, "
+              f"region={os.environ.get('AWS_REGION', 'us-east-1')})")
 
     # ---- Route to DB or JSON path ----
     if len(argv) >= 3 and argv[1] == "--from-db":
