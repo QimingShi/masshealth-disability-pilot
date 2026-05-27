@@ -29,7 +29,7 @@ BEDROCK_INFERENCE_PROFILE = os.environ.get(
     "LISTING_EVAL_BEDROCK_PROFILE",
     "arn:aws:bedrock:us-east-1:251862868170:application-inference-profile/i6q45gpa1bzt",
 )
-MODEL = os.environ.get("LISTING_EVAL_MODEL", "claude-sonnet-4-6 (bedrock)")
+MODEL = os.environ.get("LISTING_EVAL_MODEL", "claude-opus-4-6 (bedrock)")
 AWS_PROFILE = os.environ.get("AWS_PROFILE", "user")
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 
