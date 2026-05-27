@@ -32,8 +32,11 @@
 CREATE TABLE IF NOT EXISTS leaf_assessments (
     id                      BIGSERIAL    PRIMARY KEY,
     case_id                 INT          NOT NULL REFERENCES cases(id)                ON DELETE CASCADE,
-    listing_id              INT          NOT NULL REFERENCES ssa_listings(id)         ON DELETE CASCADE,
-    leaf_id                 INT          NOT NULL REFERENCES ssa_listing_criteria(id) ON DELETE CASCADE,
+    -- ssa_listings.id and ssa_listing_criteria.id are UUID (see schema_v1.sql),
+    -- so these FK columns must be UUID too. Case-side PKs (cases.id, chunks.id)
+    -- are SERIAL/INT.
+    listing_id              UUID         NOT NULL REFERENCES ssa_listings(id)         ON DELETE CASCADE,
+    leaf_id                 UUID         NOT NULL REFERENCES ssa_listing_criteria(id) ON DELETE CASCADE,
 
     leaf_path               VARCHAR(120),                       -- e.g. "13.18.A.1"
     criterion_text          TEXT,                                -- snapshot of leaf.criterion at eval time
@@ -111,7 +114,7 @@ CREATE INDEX IF NOT EXISTS idx_lae_chunk
 CREATE TABLE IF NOT EXISTS listing_assessments (
     id                      BIGSERIAL    PRIMARY KEY,
     case_id                 INT          NOT NULL REFERENCES cases(id)        ON DELETE CASCADE,
-    listing_id              INT          NOT NULL REFERENCES ssa_listings(id) ON DELETE CASCADE,
+    listing_id              UUID         NOT NULL REFERENCES ssa_listings(id) ON DELETE CASCADE,
 
     form_verdict            VARCHAR(40)  NOT NULL,
                             -- 'Meets'
@@ -163,7 +166,7 @@ CREATE TABLE IF NOT EXISTS case_summaries (
     id                      BIGSERIAL    PRIMARY KEY,
     case_id                 INT          NOT NULL UNIQUE REFERENCES cases(id) ON DELETE CASCADE,
 
-    top_listing_id          INT          REFERENCES ssa_listings(id),
+    top_listing_id          UUID         REFERENCES ssa_listings(id),
                                                  -- candidate_rank = 1 listing
     top_form_verdict        VARCHAR(40),
     any_meets               BOOLEAN      NOT NULL DEFAULT FALSE,

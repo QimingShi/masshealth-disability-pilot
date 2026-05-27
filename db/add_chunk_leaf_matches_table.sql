@@ -20,7 +20,9 @@
 CREATE TABLE IF NOT EXISTS chunk_leaf_matches (
     id              BIGSERIAL    PRIMARY KEY,
     case_id         INT          NOT NULL REFERENCES cases(id) ON DELETE CASCADE,
-    leaf_id         INT          NOT NULL REFERENCES ssa_listing_criteria(id) ON DELETE CASCADE,
+    -- ssa_listing_criteria.id is UUID (see db/schema_v1.sql), so this must
+    -- match. The case-side PKs (cases.id, chunks.id) are SERIAL/INT.
+    leaf_id         UUID         NOT NULL REFERENCES ssa_listing_criteria(id) ON DELETE CASCADE,
     chunk_id        INT          NOT NULL REFERENCES chunks(id) ON DELETE CASCADE,
     similarity      REAL         NOT NULL,           -- 1 - cosine_distance, range 0..1
     rank_in_leaf    INT          NOT NULL,           -- 1 = most similar for this leaf

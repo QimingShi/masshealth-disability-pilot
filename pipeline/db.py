@@ -425,7 +425,8 @@ def get_listings(conn, *, with_embedding: bool = False) -> list[dict]:
     return out
 
 
-def get_listing_synonyms(conn, listing_pk: int) -> dict[str, list[str]]:
+def get_listing_synonyms(conn, listing_pk) -> dict[str, list[str]]:
+    # listing_pk is UUID — psycopg2 binds str/UUID transparently.
     """Return the synonym map for one listing in {canonical: [variants]} shape."""
     cur = conn.cursor()
     cur.execute("""
@@ -439,7 +440,8 @@ def get_listing_synonyms(conn, listing_pk: int) -> dict[str, list[str]]:
     return out
 
 
-def get_listing_criteria_tree(conn, listing_pk: int) -> dict:
+def get_listing_criteria_tree(conn, listing_pk) -> dict:
+    # listing_pk is UUID — see ssa_listings.id in db/schema_v1.sql.
     """Return the listing's full rule_json with each node's DB id attached
     inline at `_db_id`. The tree shape matches what evaluate.py and
     consolidate.py expect."""

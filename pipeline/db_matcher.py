@@ -20,9 +20,20 @@ What's different from the in-memory path:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Any, Iterable
+from uuid import UUID
 
 from .chunks import Chunk, Listing
+
+# Type alias for SSA-side PKs. ssa_listings.id and ssa_listing_criteria.id
+# are both UUID in db/schema_v1.sql. psycopg2 returns them as uuid.UUID
+# instances by default — Python comparison, hashing, and parameter binding
+# all work transparently.
+ListingPK   = UUID
+LeafPK      = UUID
+# Case-side PKs (cases, chunks, documents) are SERIAL/INT.
+CasePK      = int
+ChunkPK     = int
 
 
 # ---------------------------------------------------------------------------
@@ -34,13 +45,13 @@ class DBCandidate:
     """A candidate listing surfaced via SQL similarity. Mirrors the
     pipeline.candidates.Candidate dataclass enough that downstream code can
     treat them interchangeably; carries DB pk for follow-up queries."""
-    listing_pk: int
+    listing_pk: ListingPK            # UUID — ssa_listings.id
     listing: Listing
     score: float
     reasoning: list[str]
 
 
-def find_candidates_sql(conn, case_pk: int, *,
+def find_candidates_sql(conn, case_pk: CasePK, *,
                         top_k: int = 5,
                         per_allegation_k: int = 5,
                         min_similarity: float = 0.35
@@ -128,7 +139,7 @@ def find_candidates_sql(conn, case_pk: int, *,
 #  Per-leaf retrieval (SQL, criterion embedding vs chunk embedding)
 # ---------------------------------------------------------------------------
 
-def retrieve_chunks_for_leaf_sql(conn, case_pk: int, leaf_db_id: int, *,
+def retrieve_chunks_for_leaf_sql(conn, case_pk: CasePK, leaf_db_id: LeafPK, *,
                                   top_k: int = 25,
                                   min_similarity: float = 0.0
                                   ) -> list[dict]:
@@ -194,8 +205,8 @@ def retrieve_chunks_for_leaf_sql(conn, case_pk: int, leaf_db_id: int, *,
 #  Persist retrieval results for downstream analytics
 # ---------------------------------------------------------------------------
 
-def persist_chunk_leaf_matches(conn, case_pk: int,
-                               retrieved_per_leaf: dict[int, list[dict]]) -> int:
+def persist_chunk_leaf_matches(conn, case_pk: CasePK,
+                               retrieved_per_leaf: dict[LeafPK, list[dict]]) -> int:
     """Idempotent write to chunk_leaf_matches for one matcher run.
 
     Args:
@@ -236,9 +247,9 @@ def persist_chunk_leaf_matches(conn, case_pk: int,
 # ---------------------------------------------------------------------------
 
 def persist_leaf_assessment(conn, *,
-                            case_pk: int,
-                            listing_pk: int,
-                            leaf_db_id: int,
+                            case_pk: CasePK,
+                            listing_pk: ListingPK,
+                            leaf_db_id: LeafPK,
                             leaf_path: str,
                             criterion_text: str,
                             leaf_result,                          # evaluate.LeafResult
@@ -292,8 +303,8 @@ def persist_leaf_assessment(conn, *,
 
 
 def persist_listing_assessment(conn, *,
-                               case_pk: int,
-                               listing_pk: int,
+                               case_pk: CasePK,
+                               listing_pk: ListingPK,
                                form_verdict: str,
                                root_verdict: str,
                                grounded: dict,
@@ -337,7 +348,7 @@ def persist_listing_assessment(conn, *,
 
 
 def persist_case_summary(conn, *,
-                         case_pk: int,
+                         case_pk: CasePK,
                          n_candidates: int,
                          listing_outcomes: list[dict],
                          summary_text: str | None,
