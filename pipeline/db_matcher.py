@@ -65,16 +65,18 @@ def find_candidates_sql(conn, case_pk: CasePK, *,
     but embedding-based is the dominant signal in practice.
     """
     cur = conn.cursor()
+    # Note on the query shape:
+    #   ssa_listings.rule_json is column type JSON (not JSONB). PostgreSQL's
+    #   JSON type has no equality operator, so rule_json can't appear in
+    #   GROUP BY. We aggregate on listing_id alone (it's the PK and
+    #   functionally determines all other listing columns) and then JOIN
+    #   ssa_listings back in to fetch the metadata + rule_json. Cheap — the
+    #   join hits the PK index for at most top_k rows.
     cur.execute("""
         WITH allegation_listing_pairs AS (
             SELECT a.id        AS allegation_id,
                    a.text      AS allegation_text,
                    l.id        AS listing_id,
-                   l.code,
-                   l.title,
-                   l.body_system,
-                   l.summary,
-                   l.rule_json,
                    1 - (a.embedding <=> l.summary_embedding) AS similarity
             FROM allegations a
             CROSS JOIN ssa_listings l
@@ -95,17 +97,23 @@ def find_candidates_sql(conn, case_pk: CasePK, *,
             FROM top_per_allegation
             WHERE rank <= %(per_allegation_k)s
               AND similarity >= %(min_similarity)s
+        ),
+        aggregated AS (
+            SELECT listing_id,
+                   MAX(similarity)                                AS best_similarity,
+                   COUNT(DISTINCT allegation_id)                  AS n_allegations,
+                   array_agg(DISTINCT
+                       allegation_text || ' ~ summary (' ||
+                       to_char(similarity, 'FM0.00') || ')'
+                   )                                              AS reasoning_bits
+            FROM kept
+            GROUP BY listing_id
         )
-        SELECT listing_id, code, title, body_system, summary, rule_json,
-               MAX(similarity)                                AS best_similarity,
-               COUNT(DISTINCT allegation_id)                  AS n_allegations,
-               array_agg(DISTINCT
-                   allegation_text || ' ~ summary (' ||
-                   to_char(similarity, 'FM0.00') || ')'
-               )                                              AS reasoning_bits
-        FROM kept
-        GROUP BY listing_id, code, title, body_system, summary, rule_json
-        ORDER BY best_similarity DESC, n_allegations DESC
+        SELECT ag.listing_id, l.code, l.title, l.body_system, l.summary, l.rule_json,
+               ag.best_similarity, ag.n_allegations, ag.reasoning_bits
+        FROM aggregated ag
+        JOIN ssa_listings l ON l.id = ag.listing_id
+        ORDER BY ag.best_similarity DESC, ag.n_allegations DESC
         LIMIT %(top_k)s
     """, {
         "case_pk":           case_pk,
