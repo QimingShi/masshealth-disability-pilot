@@ -316,6 +316,159 @@ def insert_allegations(conn, case_id_pk: int, chunk_id_map: dict[str, int],
 #  Helpers
 # ---------------------------------------------------------------------------
 
+# ============================================================================
+#  Read-side: load a case + its chunks/allegations + the listing reference data
+#  out of Postgres. Returns dataclasses (or plain dicts when a dataclass would
+#  be more friction than help) so run.py can swap from JSON to DB-loaded data
+#  without rewriting downstream stages.
+# ============================================================================
+
+def get_case_pk_by_case_id(conn, case_id_str: str) -> int | None:
+    """Resolve the human-readable case_id (e.g. 'redacted-001-fresh') to the
+    integer primary key used by foreign keys. Returns None if not found."""
+    cur = conn.cursor()
+    cur.execute("SELECT id FROM cases WHERE case_id = %s", (case_id_str,))
+    row = cur.fetchone()
+    return row[0] if row else None
+
+
+def get_chunks_for_case(conn, case_pk: int, *, with_embedding: bool = True
+                        ) -> list[dict]:
+    """Return all chunks for a case, joined with document metadata.
+
+    Each dict has the keys the rest of the pipeline expects:
+      id (int pk), chunk_id (str), doc_id (str), doc_type, doc_title,
+      encounter_date, section, page_start, page_end, text, bbox, embedding.
+    """
+    cur = conn.cursor()
+    cols = (
+        "c.id, c.chunk_id, d.doc_id, d.doc_type, d.doc_title, "
+        "d.encounter_date, c.section, c.page_start, c.page_end, c.text, "
+        "c.bbox, c.ocr_confidence, c.layout_block_type, c.is_table"
+    )
+    if with_embedding:
+        cols += ", c.embedding"
+    cur.execute(f"""
+        SELECT {cols}
+        FROM chunks c
+        JOIN documents d ON d.id = c.document_id
+        WHERE c.case_id = %s
+        ORDER BY c.page_start, c.id
+    """, (case_pk,))
+    out: list[dict] = []
+    for row in cur.fetchall():
+        rec = {
+            "id":               row[0],
+            "chunk_id":         row[1],
+            "doc_id":           row[2],
+            "doc_type":         row[3],
+            "doc_title":        row[4],
+            "encounter_date":   row[5].isoformat() if row[5] else None,
+            "section":          row[6],
+            "page_start":       row[7],
+            "page_end":         row[8],
+            "text":             row[9],
+            "bbox":             row[10],
+            "ocr_confidence":   row[11],
+            "layout_block_type": row[12],
+            "is_table":         row[13],
+        }
+        if with_embedding:
+            rec["embedding"] = row[14]
+        out.append(rec)
+    return out
+
+
+def get_allegations_for_case(conn, case_pk: int) -> list[dict]:
+    """Return all allegations for a case (with embeddings)."""
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT id, text, source, source_chunk_id, manually_curated, embedding
+        FROM allegations
+        WHERE case_id = %s
+        ORDER BY id
+    """, (case_pk,))
+    return [
+        {
+            "id":                row[0],
+            "text":              row[1],
+            "source":            row[2],
+            "source_chunk_pk":   row[3],
+            "manually_curated":  row[4],
+            "embedding":         row[5],
+        }
+        for row in cur.fetchall()
+    ]
+
+
+def get_listings(conn, *, with_embedding: bool = False) -> list[dict]:
+    """Return all SSA listings. Optionally include summary_embedding for
+    candidate-identification work in Python."""
+    cur = conn.cursor()
+    cols = "id, code, title, body_system, summary, rule_json"
+    if with_embedding:
+        cols += ", summary_embedding"
+    cur.execute(f"SELECT {cols} FROM ssa_listings ORDER BY code")
+    out = []
+    for row in cur.fetchall():
+        rec = {
+            "id":           row[0],
+            "code":         row[1],
+            "title":        row[2],
+            "body_system":  row[3],
+            "summary":      row[4],
+            "rule_json":    row[5],
+        }
+        if with_embedding:
+            rec["summary_embedding"] = row[6]
+        out.append(rec)
+    return out
+
+
+def get_listing_synonyms(conn, listing_pk: int) -> dict[str, list[str]]:
+    """Return the synonym map for one listing in {canonical: [variants]} shape."""
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT canonical, variant
+        FROM ssa_listing_synonyms
+        WHERE listing_id = %s
+    """, (listing_pk,))
+    out: dict[str, list[str]] = {}
+    for canonical, variant in cur.fetchall():
+        out.setdefault(canonical, []).append(variant)
+    return out
+
+
+def get_listing_criteria_tree(conn, listing_pk: int) -> dict:
+    """Return the listing's full rule_json with each node's DB id attached
+    inline at `_db_id`. The tree shape matches what evaluate.py and
+    consolidate.py expect."""
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT rule_json FROM ssa_listings WHERE id = %s", (listing_pk,)
+    )
+    row = cur.fetchone()
+    if not row:
+        raise KeyError(f"No ssa_listings row with id={listing_pk}")
+    rule_json = row[0]
+
+    # Index every (path → criterion id) pair so we can decorate the tree
+    cur.execute("""
+        SELECT path, id FROM ssa_listing_criteria
+        WHERE listing_id = %s
+    """, (listing_pk,))
+    path_to_id = {p: cid for p, cid in cur.fetchall()}
+
+    def annotate(node: dict) -> None:
+        if node.get("path") in path_to_id:
+            node["_db_id"] = path_to_id[node["path"]]
+        for child in node.get("children", []):
+            annotate(child)
+
+    annotate(rule_json)
+    return rule_json
+
+
 def _parse_date(s: str | None) -> str | None:
     """Best-effort parse of a date string into ISO format (YYYY-MM-DD).
     Returns None if input is None or can't be parsed; psycopg2 will INSERT
