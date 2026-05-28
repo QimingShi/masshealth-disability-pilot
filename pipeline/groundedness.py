@@ -63,18 +63,25 @@ def evidence_strength(verdict: str,
 def groundedness_for_listing(
     leaf_results: dict[str, LeafResult],
     retrieved_per_leaf: dict[str, list[dict]],
+    load_bearing_paths: set[str] | None = None,
 ) -> dict:
     """Compute groundedness signals for ONE listing's full leaf set.
 
     Args:
-        leaf_results: {leaf_path: LeafResult} from evaluate_leaf
-        retrieved_per_leaf: {leaf_path: [retrieved_chunk_dict, ...]}
+        leaf_results: {leaf_path: LeafResult} from evaluate_leaf.
+        retrieved_per_leaf: {leaf_path: [retrieved_chunk_dict, ...]}.
             Each retrieved dict carries 'similarity' (used for avg-top-sim).
             Empty list / missing key both treated as no retrieval.
+        load_bearing_paths: set of leaf paths whose verdict drove the root
+            consolidation. avg_top_similarity is averaged over THESE paths
+            only — see pipeline/consolidate.py::load_bearing_leaf_paths for
+            the definition. Passing None reverts to averaging over all
+            leaves (legacy behavior; useful for tests / analytics).
 
     Returns a dict matching the listing_assessments columns:
         groundedness_score, frac_leaves_decided, avg_top_similarity,
-        avg_evidence_per_leaf, n_leaves, n_met, n_not_met, n_insufficient.
+        avg_evidence_per_leaf, n_leaves, n_load_bearing,
+        n_met, n_not_met, n_insufficient.
     """
     n_leaves = len(leaf_results)
     if n_leaves == 0:
@@ -84,8 +91,20 @@ def groundedness_for_listing(
     n_not_met = sum(1 for lr in leaf_results.values() if lr.verdict == "not_met")
     n_insufficient = n_leaves - n_met - n_not_met
 
+    # avg_top_similarity is averaged over load-bearing leaves only. This
+    # avoids the OR-pathway drag-down: if listing 13.18 is met via path A
+    # (distant metastases, sim 0.75), the irrelevant alternative paths
+    # (resectability, recurrence, small-cell — sim 0.18-0.30) shouldn't
+    # dilute the score. Only path A drove the verdict.
+    if load_bearing_paths is None:
+        # Legacy behavior: average over every leaf with retrieval.
+        relevant_paths = set(leaf_results.keys())
+    else:
+        relevant_paths = load_bearing_paths
+    n_load_bearing = len(relevant_paths)
+
     top_sims: list[float] = []
-    for path in leaf_results.keys():
+    for path in relevant_paths:
         recs = retrieved_per_leaf.get(path) or []
         if recs:
             top_sims.append(float(recs[0].get("similarity", 0.0)))
@@ -111,6 +130,7 @@ def groundedness_for_listing(
         "avg_top_similarity":    round(avg_top_sim, 3),
         "avg_evidence_per_leaf": round(avg_evidence, 3),
         "n_leaves":              n_leaves,
+        "n_load_bearing":        n_load_bearing,
         "n_met":                 n_met,
         "n_not_met":             n_not_met,
         "n_insufficient":        n_insufficient,
@@ -124,6 +144,7 @@ def _empty_groundedness() -> dict:
         "avg_top_similarity":    0.0,
         "avg_evidence_per_leaf": 0.0,
         "n_leaves":              0,
+        "n_load_bearing":        0,
         "n_met":                 0,
         "n_not_met":             0,
         "n_insufficient":        0,

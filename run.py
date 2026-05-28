@@ -30,7 +30,7 @@ from pipeline.embed import build_chunk_index, build_listing_index
 from pipeline.candidates import identify_candidates
 from pipeline.retrieve import retrieve_for_leaf
 from pipeline.evaluate import evaluate_leaf, LeafResult
-from pipeline.consolidate import consolidate, form_verdict
+from pipeline.consolidate import consolidate, form_verdict, load_bearing_leaf_paths
 from pipeline.output import render_form, render_form_html, write_form
 from pipeline.annotate_pdf import annotate_pdf, collect_cited_chunk_ids
 
@@ -403,7 +403,13 @@ def run_from_db(case_id_str: str) -> int:
             print(f"      VERDICT: {verdict_label}")
 
             # ---- Layer 3 persist: listing_assessments row ----
-            grounded = groundedness_for_listing(leaf_results, retrieved_by_path)
+            # Load-bearing leaves drove the consolidated verdict. Pass them
+            # to groundedness so avg_top_similarity averages only over the
+            # leaves that mattered, not over irrelevant OR-pathways.
+            lb_paths = load_bearing_leaf_paths(listing.rule_json, root)
+            grounded = groundedness_for_listing(
+                leaf_results, retrieved_by_path, load_bearing_paths=lb_paths,
+            )
             cand_rank = len(listing_outcomes) + 1   # candidates are processed in rank order
             decision_text = build_decision_summary(
                 listing_code=listing.code,
@@ -424,7 +430,8 @@ def run_from_db(case_id_str: str) -> int:
             )
             print(f"      groundedness={grounded['groundedness_score']:.2f}  "
                   f"({grounded['n_met']}M/{grounded['n_not_met']}N/"
-                  f"{grounded['n_insufficient']}I of {grounded['n_leaves']})")
+                  f"{grounded['n_insufficient']}I of {grounded['n_leaves']}; "
+                  f"load-bearing={grounded['n_load_bearing']})")
             listing_outcomes.append({
                 "listing_pk":          listing_pk,
                 "listing_code":        listing.code,

@@ -336,9 +336,9 @@ def persist_listing_assessment(conn, *,
             (case_id, listing_id, form_verdict, root_verdict,
              groundedness_score, frac_leaves_decided, avg_top_similarity,
              avg_evidence_per_leaf,
-             n_leaves, n_met, n_not_met, n_insufficient,
+             n_leaves, n_load_bearing, n_met, n_not_met, n_insufficient,
              candidate_score, candidate_rank, decision_summary)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING id
     """, (
         case_pk, listing_pk, form_verdict, root_verdict,
@@ -347,6 +347,7 @@ def persist_listing_assessment(conn, *,
         grounded["avg_top_similarity"],
         grounded["avg_evidence_per_leaf"],
         grounded["n_leaves"],
+        grounded.get("n_load_bearing"),   # NULL-safe for callers using legacy dict
         grounded["n_met"],
         grounded["n_not_met"],
         grounded["n_insufficient"],
