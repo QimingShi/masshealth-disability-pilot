@@ -126,15 +126,17 @@ def parse_s3_folder(s: str) -> tuple[str, str]:
 
 
 def extract_case_id_from_folder(prefix: str) -> str | None:
-    """Pull the 7+ digit case id from the last path component.
+    """Pull the 7-digit MassHealth case id from the last path component.
 
     Convention: case folders are named like '2181878 Psych- 100/' with the
-    case id as a digit prefix. Returns None if no match.
+    case id as a 7-digit prefix. The lookahead requires a non-digit or end-
+    of-string after the 7 digits — so '12345678 Folder' (8 digits) fails
+    rather than silently truncating to '1234567'. Returns None if no match.
     """
     parts = [p for p in prefix.strip("/").split("/") if p]
     if not parts:
         return None
-    m = re.match(r"^(\d{7,})", parts[-1])
+    m = re.match(r"^(\d{7})(?=\D|$)", parts[-1])
     return m.group(1) if m else None
 
 
@@ -235,17 +237,20 @@ def main() -> int:
     if args.folder:
         # ---- Folder mode ---------------------------------------------------
         bucket, prefix = parse_s3_folder(args.folder)
-        # Auto-extract case_id from folder name if not provided
+        # Auto-extract case_id from folder name if not provided. Tracking the
+        # source explicitly so we can mark "(auto-detected)" in the banner.
+        case_id_was_auto = False
         if not args.case_id:
             args.case_id = extract_case_id_from_folder(prefix)
+            case_id_was_auto = True
             if not args.case_id:
-                p.error(f"could not auto-detect case_id from folder {args.folder!r}; "
-                        "pass case_id explicitly")
+                p.error(f"could not auto-detect 7-digit case_id from folder "
+                        f"{args.folder!r}; pass case_id explicitly")
                 return 2
 
         print(f"=== Folder ingest: s3://{bucket}/{prefix} ===")
-        print(f"case_id: {args.case_id}"
-              + (" (auto-detected)" if not args.case_id else ""))
+        suffix = " (auto-detected from folder name)" if case_id_was_auto else ""
+        print(f"case_id: {args.case_id}{suffix}")
         print()
 
         kept, skipped = list_and_classify_folder(
