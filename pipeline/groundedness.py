@@ -190,27 +190,69 @@ def decision_summary(listing_code: str,
 
 # ---- Case-level summary ------------------------------------------------------
 
+# Headline-verdict priority for the case-level summary. A reviewer scanning
+# a queue of case_summaries cares first about "did we find a listing that
+# meets?" -- not about which candidate had the highest SQL similarity. So
+# we rank Meets > Does not meet > Insufficient, with groundedness as the
+# tiebreaker (higher confidence wins within a verdict bucket).
+_VERDICT_PRIORITY = {
+    "Meets": 0,
+    "Does not meet/equal": 1,
+    # Insufficient is the catch-all default (handles "Insufficient evidence
+    # (review chart)" and any future variants).
+}
+
+
+def _verdict_rank(form_verdict: str) -> int:
+    return _VERDICT_PRIORITY.get(form_verdict, 2)
+
+
+def pick_headline_outcome(listing_outcomes: list[dict]) -> dict | None:
+    """Pick the case's headline candidate by verdict priority.
+
+    Order:
+      1. Meets (highest priority)
+      2. Does not meet/equal
+      3. Insufficient evidence (...)
+
+    Tiebreakers within a bucket:
+      - highest groundedness_score first (most confident verdict)
+      - lowest candidate_rank (highest SQL similarity)
+
+    Returns None for empty input. This is what populates
+    case_summaries.top_listing_id / top_form_verdict.
+    """
+    if not listing_outcomes:
+        return None
+    return min(
+        listing_outcomes,
+        key=lambda o: (
+            _verdict_rank(o["form_verdict"]),
+            -float(o.get("groundedness_score") or 0.0),
+            o.get("candidate_rank", 99),
+        ),
+    )
+
+
 def case_summary_text(case_id_str: str,
                       listing_outcomes: list[dict]) -> str:
     """Generate a deterministic 1-3 sentence case-level summary.
 
-    Args:
-        case_id_str: human-readable case id
-        listing_outcomes: list of {listing_code, listing_title, form_verdict,
-            groundedness_score, candidate_rank}, ordered however -we'll
-            sort by candidate_rank.
+    Headline candidate is picked by verdict priority (Meets > Does not meet
+    > Insufficient), not SQL-similarity rank. So if any candidate met, the
+    summary leads with that listing -- even if another candidate had a
+    higher similarity score but came back insufficient.
     """
     if not listing_outcomes:
         return f"Case {case_id_str}: no candidate listings surfaced."
 
-    ordered = sorted(listing_outcomes, key=lambda o: o.get("candidate_rank", 99))
-    top = ordered[0]
-    n_meets = sum(1 for o in ordered if o["form_verdict"] == "Meets")
+    headline = pick_headline_outcome(listing_outcomes)
+    n_meets = sum(1 for o in listing_outcomes if o["form_verdict"] == "Meets")
 
     lead = (
-        f"Case {case_id_str}: evaluated {len(ordered)} candidate listing(s); "
-        f"top candidate {top['listing_code']} -> {top['form_verdict']} "
-        f"(groundedness {top['groundedness_score']:.2f})."
+        f"Case {case_id_str}: evaluated {len(listing_outcomes)} candidate listing(s); "
+        f"headline {headline['listing_code']} -> {headline['form_verdict']} "
+        f"(groundedness {headline['groundedness_score']:.2f})."
     )
     if n_meets > 0:
         lead += f" {n_meets} listing(s) appear MET; reviewer should verify."

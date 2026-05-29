@@ -369,12 +369,20 @@ def persist_case_summary(conn, *,
 
     listing_outcomes: list of {listing_pk, listing_code, listing_title,
         form_verdict, groundedness_score, candidate_rank}.
+
+    top_listing_id / top_form_verdict are the "headline" candidate -- picked
+    by verdict priority (Meets > Does not meet > Insufficient), not by SQL
+    similarity rank. If any candidate met, that's what surfaces here, even
+    if a higher-similarity candidate came back insufficient. See
+    pipeline/groundedness.py::pick_headline_outcome for the tiebreaker.
     """
+    # Late import to keep this module's import graph minimal at module load.
+    from .groundedness import pick_headline_outcome
+
     cur = conn.cursor()
     cur.execute("DELETE FROM case_summaries WHERE case_id = %s", (case_pk,))
 
-    top = (min(listing_outcomes, key=lambda o: o.get("candidate_rank", 99))
-           if listing_outcomes else None)
+    headline = pick_headline_outcome(listing_outcomes)
     n_meets = sum(1 for o in listing_outcomes
                   if o["form_verdict"] == "Meets")
     n_dnm = sum(1 for o in listing_outcomes
@@ -392,8 +400,8 @@ def persist_case_summary(conn, *,
         RETURNING id
     """, (
         case_pk,
-        top["listing_pk"] if top else None,
-        top["form_verdict"] if top else None,
+        headline["listing_pk"] if headline else None,
+        headline["form_verdict"] if headline else None,
         n_meets > 0,
         n_candidates, n_meets, n_dnm, n_insuf,
         overall_groundedness, summary_text,
