@@ -60,17 +60,17 @@ from pipeline.ingest_real import ingest_multi_pdf_case   # noqa: E402
 #
 # These patterns reflect the MassHealth case-folder naming convention:
 #   - The disability supplement (member's allegation) has "Supplement" in the name.
-#   - Medical evidence files are prefixed "AI" (Additional/Acquired Information)
-#     or "MR" (Medical Records), word-bounded so "MRI", "rail", "main" etc.
-#     don't false-positive.
+#   - Medical evidence files are prefixed "AI" (Additional/Acquired Information),
+#     word-bounded so "rail", "main" etc. don't false-positive.
 #   - Everything else (release forms, MA review forms, completed prior
 #     evaluations, non-PDF files) is skipped.
 #
-# Override via --allegation-pattern / --medical-pattern if a new folder uses
-# a different convention. Keep patterns as regexes for flexibility.
+# Override via --allegation-pattern / --medical-pattern if a folder uses
+# a different convention (e.g. some folders prefix medical records with
+# "MR" instead of "AI" -- pass --medical-pattern "(?i)\b(AI|MR)\b").
 
 DEFAULT_ALLEGATION_PATTERN = r"(?i)supplement"
-DEFAULT_MEDICAL_PATTERN    = r"(?i)\b(AI|MR)\b"
+DEFAULT_MEDICAL_PATTERN    = r"(?i)\bAI\b"
 
 
 def classify_filename(filename: str,
@@ -205,7 +205,7 @@ def main() -> int:
         help="folder mode: S3 prefix (e.g. 'bucket/2181878 Psych- 100/'). "
              "Lists every PDF in the prefix, classifies by filename, ingests "
              "the kept files. Default rules: 'Supplement'->allegation, "
-             "'AI' or 'MR' (word-bounded)->medical_evidence, others skipped.",
+             "'AI' (word-bounded)->medical_evidence, others skipped.",
     )
     p.add_argument(
         "--allegation-pattern", default=DEFAULT_ALLEGATION_PATTERN,
