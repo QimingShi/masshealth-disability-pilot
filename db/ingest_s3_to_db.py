@@ -46,6 +46,7 @@ state diverges.
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -53,6 +54,41 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from pipeline.ingest_real import ingest_multi_pdf_case   # noqa: E402
+
+
+# ---- Filename classification (used by --folder mode) ------------------------
+#
+# These patterns reflect the MassHealth case-folder naming convention:
+#   - The disability supplement (member's allegation) has "Supplement" in the name.
+#   - Medical evidence files are prefixed "AI" (Additional/Acquired Information)
+#     or "MR" (Medical Records), word-bounded so "MRI", "rail", "main" etc.
+#     don't false-positive.
+#   - Everything else (release forms, MA review forms, completed prior
+#     evaluations, non-PDF files) is skipped.
+#
+# Override via --allegation-pattern / --medical-pattern if a new folder uses
+# a different convention. Keep patterns as regexes for flexibility.
+
+DEFAULT_ALLEGATION_PATTERN = r"(?i)supplement"
+DEFAULT_MEDICAL_PATTERN    = r"(?i)\b(AI|MR)\b"
+
+
+def classify_filename(filename: str,
+                      allegation_pattern: str = DEFAULT_ALLEGATION_PATTERN,
+                      medical_pattern: str = DEFAULT_MEDICAL_PATTERN
+                      ) -> str | None:
+    """Classify a filename as 'allegation_source' | 'medical_evidence' | None.
+
+    Order matters: allegation pattern is checked first so a file matching
+    both (rare but possible) gets routed to allegation.
+    """
+    if not filename.lower().endswith(".pdf"):
+        return None
+    if re.search(allegation_pattern, filename):
+        return "allegation_source"
+    if re.search(medical_pattern, filename):
+        return "medical_evidence"
+    return None
 
 
 def parse_pdf_spec(s: str) -> dict:
@@ -74,23 +110,115 @@ def parse_pdf_spec(s: str) -> dict:
     return {"bucket": bucket, "key": key, "role": role}
 
 
+def parse_s3_folder(s: str) -> tuple[str, str]:
+    """Parse 's3://bucket/path/' or 'bucket/path/' into (bucket, prefix)."""
+    if s.startswith("s3://"):
+        s = s[5:]
+    s = s.strip("/")
+    if "/" not in s:
+        # Treat as bucket root
+        return s, ""
+    bucket, _, prefix = s.partition("/")
+    # Ensure prefix ends with /, otherwise S3 will match neighboring folders
+    if prefix and not prefix.endswith("/"):
+        prefix = prefix + "/"
+    return bucket, prefix
+
+
+def extract_case_id_from_folder(prefix: str) -> str | None:
+    """Pull the 7+ digit case id from the last path component.
+
+    Convention: case folders are named like '2181878 Psych- 100/' with the
+    case id as a digit prefix. Returns None if no match.
+    """
+    parts = [p for p in prefix.strip("/").split("/") if p]
+    if not parts:
+        return None
+    m = re.match(r"^(\d{7,})", parts[-1])
+    return m.group(1) if m else None
+
+
+def list_and_classify_folder(s3_folder: str, *,
+                              profile_name: str = "user",
+                              region_name: str = "us-east-1",
+                              allegation_pattern: str = DEFAULT_ALLEGATION_PATTERN,
+                              medical_pattern: str = DEFAULT_MEDICAL_PATTERN
+                              ) -> tuple[list[dict], list[str]]:
+    """List PDFs under an S3 prefix and classify by filename.
+
+    Returns (kept_pdfs, skipped_basenames) — kept_pdfs in the
+    list-of-dicts shape ingest_multi_pdf_case wants, skipped_basenames
+    listed for the operator to audit.
+    """
+    import boto3
+    bucket, prefix = parse_s3_folder(s3_folder)
+
+    session = boto3.Session(profile_name=profile_name)
+    s3 = session.client("s3", region_name=region_name)
+
+    # Auto-paginate in case the folder has > 1000 objects
+    kept: list[dict] = []
+    skipped: list[str] = []
+    paginator = s3.get_paginator("list_objects_v2")
+    for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
+        for obj in page.get("Contents", []):
+            key = obj["Key"]
+            # Skip the prefix itself if S3 returned a "directory" marker
+            if key.endswith("/"):
+                continue
+            basename = Path(key).name
+            role = classify_filename(basename,
+                                     allegation_pattern, medical_pattern)
+            if role is None:
+                skipped.append(basename)
+                continue
+            kept.append({"bucket": bucket, "key": key, "role": role,
+                         "basename": basename})
+    return kept, skipped
+
+
 def main() -> int:
     p = argparse.ArgumentParser(
         description="Ingest case PDFs from S3 directly into Postgres "
                     "(Textract + chunking + embeddings + DB write).",
     )
-    p.add_argument("case_id",
-                   help="case identifier — outputs land in data/<case_id>/ and _phi/<case_id>/")
+    # case_id is positional but optional when --folder is given and the
+    # folder name has a 7+ digit prefix (the MA convention). Auto-extract.
+    p.add_argument("case_id", nargs="?",
+                   help="case identifier — outputs land in data/<case_id>/ and "
+                        "_phi/<case_id>/. Optional with --folder if the prefix "
+                        "name starts with a 7+ digit case number.")
 
-    # Two ways to specify PDFs:
+    # Three ways to specify PDFs:
     #   single PDF:  positional bucket + key
     #   multi PDF:   --pdfs flag with one or more bucket/key[:role] specs
+    #   folder mode: --folder <s3-prefix> auto-discovers + classifies
     p.add_argument("bucket", nargs="?", help="single-PDF mode: S3 bucket")
     p.add_argument("key",    nargs="?", help="single-PDF mode: S3 object key")
     p.add_argument(
         "--pdfs", nargs="+", type=parse_pdf_spec,
         help="multi-PDF mode: one or more '<bucket>/<key>:<role>' specs "
              "(role optional, defaults to medical_evidence)",
+    )
+    p.add_argument(
+        "--folder",
+        help="folder mode: S3 prefix (e.g. 'bucket/2181878 Psych- 100/'). "
+             "Lists every PDF in the prefix, classifies by filename, ingests "
+             "the kept files. Default rules: 'Supplement'->allegation, "
+             "'AI' or 'MR' (word-bounded)->medical_evidence, others skipped.",
+    )
+    p.add_argument(
+        "--allegation-pattern", default=DEFAULT_ALLEGATION_PATTERN,
+        help=f"regex for allegation files (default: {DEFAULT_ALLEGATION_PATTERN!r})",
+    )
+    p.add_argument(
+        "--medical-pattern", default=DEFAULT_MEDICAL_PATTERN,
+        help=f"regex for medical-evidence files (default: {DEFAULT_MEDICAL_PATTERN!r})",
+    )
+    p.add_argument(
+        "--dry-run", action="store_true",
+        help="Print the folder classification plan and exit without ingesting. "
+             "Only meaningful with --folder.",
     )
 
     p.add_argument("--profile",   default="user",       help="AWS profile (default: user)")
@@ -104,13 +232,71 @@ def main() -> int:
     args = p.parse_args()
 
     # Resolve PDFs into the list-of-dicts shape ingest_multi_pdf_case wants
-    if args.pdfs:
+    if args.folder:
+        # ---- Folder mode ---------------------------------------------------
+        bucket, prefix = parse_s3_folder(args.folder)
+        # Auto-extract case_id from folder name if not provided
+        if not args.case_id:
+            args.case_id = extract_case_id_from_folder(prefix)
+            if not args.case_id:
+                p.error(f"could not auto-detect case_id from folder {args.folder!r}; "
+                        "pass case_id explicitly")
+                return 2
+
+        print(f"=== Folder ingest: s3://{bucket}/{prefix} ===")
+        print(f"case_id: {args.case_id}"
+              + (" (auto-detected)" if not args.case_id else ""))
+        print()
+
+        kept, skipped = list_and_classify_folder(
+            args.folder,
+            profile_name=args.profile,
+            region_name=args.region,
+            allegation_pattern=args.allegation_pattern,
+            medical_pattern=args.medical_pattern,
+        )
+
+        print(f"Found {len(kept) + len(skipped)} file(s) in folder. "
+              f"Classification:")
+        for spec in kept:
+            print(f"  + {spec['role']:<20}  {spec['basename']}")
+        for name in skipped:
+            print(f"    {'(skip)':<20}  {name}")
+        print()
+
+        n_alleg = sum(1 for s in kept if s["role"] == "allegation_source")
+        n_med   = sum(1 for s in kept if s["role"] == "medical_evidence")
+        print(f"Will ingest: {len(kept)} files "
+              f"({n_alleg} allegation_source + {n_med} medical_evidence)")
+        print(f"Will skip:   {len(skipped)} files")
+        print()
+
+        if n_med == 0 and n_alleg == 0:
+            print("ERROR: no files matched the classification patterns. "
+                  "Check --allegation-pattern / --medical-pattern, or use "
+                  "--pdfs to specify files explicitly.", file=sys.stderr)
+            return 4
+        if n_med == 0:
+            print("WARNING: no medical_evidence files — matcher will have "
+                  "no chart content to evaluate against.", file=sys.stderr)
+
+        if args.dry_run:
+            print("(--dry-run) stopping before ingest.")
+            return 0
+
+        pdfs = kept
+
+    elif args.pdfs:
         pdfs = args.pdfs
     elif args.bucket and args.key:
+        if not args.case_id:
+            p.error("case_id is required in single-PDF mode")
+            return 2
         pdfs = [{"bucket": args.bucket, "key": args.key, "role": "medical_evidence"}]
     else:
-        p.error("Either provide positional <bucket> <key> for a single PDF, "
-                "or --pdfs <bucket>/<key>[:<role>] ... for multi-PDF cases.")
+        p.error("Provide one of: positional <case_id> <bucket> <key> (single PDF), "
+                "--pdfs <bucket>/<key>[:<role>] ... (multi-PDF), "
+                "or --folder <s3-prefix> (auto-discover + classify).")
         return 2
 
     print(f"=== End-to-end ingest: {args.case_id} ===")
