@@ -4197,16 +4197,15 @@
   },
   "6.05": {
     "code": "6.05",
-    "title": "Chronic kidney disease with impaired kidney function",
+    "title": "Chronic kidney disease with impairment of kidney function",
     "body_system": "genitourinary",
     "version": 1,
-    "summary": "CKD with reduced glomerular filtration rate or low serum albumin/elevated proteinuria, plus one of: severe anemia, atherosclerotic renovascular disease, hyperparathyroidism, peripheral neuropathy, or fluid overload, persisting ≥90 days within 12-month period.",
+    "summary": "Chronic kidney disease with both: (A) reduced glomerular filtration evidenced by elevated serum creatinine, low creatinine clearance, or low eGFR on at least two occasions 90+ days apart within 12 months, AND (B) one of four complications: renal osteodystrophy with bone pain + imaging, peripheral neuropathy, fluid overload syndrome, or anorexia with BMI <=18.0.",
     "synonyms": {
       "chronic kidney disease": [
         "CKD",
         "kidney disease",
         "chronic renal insufficiency",
-        "CRI",
         "renal insufficiency"
       ],
       "GFR": [
@@ -4222,34 +4221,36 @@
       "creatinine clearance": [
         "CrCl",
         "creatinine clearance",
-        "24-hour urine"
+        "24-hour urine creatinine"
       ],
-      "proteinuria": [
-        "protein in urine",
-        "urine protein",
-        "albumin/creatinine ratio",
-        "ACR",
-        "UPCR",
-        "urine protein-creatinine ratio",
-        "nephrotic-range proteinuria"
+      "renal osteodystrophy": [
+        "bone disease",
+        "osteitis fibrosa",
+        "osteomalacia",
+        "pathologic fracture",
+        "bone pain"
       ],
-      "albumin": [
-        "serum albumin",
-        "low albumin",
-        "hypoalbuminemia"
-      ],
-      "anemia": [
-        "renal anemia",
-        "anemia of CKD"
+      "peripheral neuropathy": [
+        "uremic neuropathy",
+        "polyneuropathy",
+        "diabetic neuropathy"
       ],
       "fluid overload": [
         "volume overload",
-        "edema",
-        "fluid retention"
+        "anasarca",
+        "vascular congestion",
+        "pulmonary edema"
       ],
-      "neuropathy": [
-        "uremic neuropathy",
-        "peripheral neuropathy"
+      "diastolic hypertension": [
+        "diastolic BP",
+        "diastolic blood pressure",
+        "resistant hypertension"
+      ],
+      "anorexia": [
+        "weight loss",
+        "low BMI",
+        "cachexia",
+        "wasting"
       ]
     },
     "rule_json": {
@@ -4259,29 +4260,119 @@
         {
           "logic": "OR",
           "path": "A",
-          "criterion": "Reduced kidney function: low GFR/CrCl/serum creatinine, OR low serum albumin with proteinuria",
+          "criterion": "Reduced glomerular filtration: one of three lab findings on at least two occasions at least 90 days apart within a consecutive 12-month period",
           "children": [
             {
               "path": "A.1",
-              "criterion": "Serum creatinine ≥4 mg/dL, OR creatinine clearance ≤20 mL/min, OR estimated GFR ≤20 mL/min/1.73m², on at least two evaluations at least 90 days apart within 12-month period",
+              "criterion": "Serum creatinine of 4 mg/dL or greater",
               "keywords": [
                 "serum creatinine 4",
-                "GFR 20",
-                "eGFR 20",
-                "creatinine clearance 20",
-                "CrCl"
+                "creatinine 4 mg",
+                "elevated creatinine",
+                "Cr 4"
               ],
               "duration_months_required": 12
             },
             {
               "path": "A.2",
-              "criterion": "Serum albumin ≤3.0 g/dL with proteinuria of 3.5 g/24 hrs (or ACR 3500 mg/g), on at least two evaluations 90 days apart in 12-month period",
+              "criterion": "Creatinine clearance of 20 mL/min or less",
               "keywords": [
-                "serum albumin 3.0",
-                "hypoalbuminemia",
-                "proteinuria 3.5",
-                "nephrotic syndrome",
-                "ACR 3500"
+                "creatinine clearance 20",
+                "CrCl 20",
+                "24-hour urine"
+              ],
+              "duration_months_required": 12
+            },
+            {
+              "path": "A.3",
+              "criterion": "Estimated glomerular filtration rate (eGFR) of 20 mL/min/1.73m^2 or less",
+              "keywords": [
+                "eGFR 20",
+                "GFR 20",
+                "estimated GFR",
+                "stage 4 CKD",
+                "stage 5 CKD"
+              ],
+              "duration_months_required": 12
+            }
+          ]
+        },
+        {
+          "logic": "OR",
+          "path": "B",
+          "criterion": "One of four complications of CKD",
+          "children": [
+            {
+              "path": "B.1",
+              "criterion": "Renal osteodystrophy with severe bone pain AND imaging studies documenting bone abnormalities (osteitis fibrosa, osteomalacia, or pathologic fractures)",
+              "keywords": [
+                "renal osteodystrophy",
+                "osteitis fibrosa",
+                "osteomalacia",
+                "pathologic fracture",
+                "severe bone pain",
+                "secondary hyperparathyroidism",
+                "bone imaging",
+                "DEXA"
+              ]
+            },
+            {
+              "path": "B.2",
+              "criterion": "Peripheral neuropathy (uremic or other)",
+              "keywords": [
+                "peripheral neuropathy",
+                "uremic neuropathy",
+                "polyneuropathy",
+                "stocking-glove",
+                "EMG",
+                "nerve conduction"
+              ]
+            },
+            {
+              "logic": "OR",
+              "path": "B.3",
+              "criterion": "Fluid overload syndrome documented by one of two findings",
+              "children": [
+                {
+                  "path": "B.3.a",
+                  "criterion": "Diastolic hypertension >=110 mmHg despite at least 90 consecutive days of prescribed therapy, documented by at least two measurements at least 90 days apart within a 12-month period",
+                  "keywords": [
+                    "diastolic hypertension",
+                    "diastolic 110",
+                    "resistant hypertension",
+                    "uncontrolled HTN",
+                    "90 days therapy"
+                  ],
+                  "duration_months_required": 12
+                },
+                {
+                  "path": "B.3.b",
+                  "criterion": "Signs of vascular congestion or anasarca despite at least 90 consecutive days of prescribed therapy, documented on at least two occasions at least 90 days apart within a 12-month period",
+                  "keywords": [
+                    "vascular congestion",
+                    "anasarca",
+                    "pulmonary edema",
+                    "JVD",
+                    "S3 gallop",
+                    "peripheral edema",
+                    "pleural effusion",
+                    "ascites"
+                  ],
+                  "duration_months_required": 12
+                }
+              ]
+            },
+            {
+              "path": "B.4",
+              "criterion": "Anorexia with weight loss determined by body mass index (BMI) of 18.0 or less, calculated on at least two occasions at least 90 days apart within a 12-month period",
+              "keywords": [
+                "anorexia",
+                "weight loss",
+                "BMI 18",
+                "low BMI",
+                "cachexia",
+                "wasting",
+                "malnutrition"
               ],
               "duration_months_required": 12
             }
