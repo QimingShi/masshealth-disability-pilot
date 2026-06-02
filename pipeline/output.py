@@ -653,46 +653,6 @@ def render_case_summary_html(
             f'{inner}</section>'
         )
 
-    # PDF-link status banner: tells the reviewer whether citations open the
-    # packet PDF or fall back to plain page-number text.
-    #
-    # We match cite_link's logic exactly: if source_pdf_path is not None we
-    # generate hrefs (regardless of whether the file already exists -- the
-    # annotated PDF is written AFTER the HTML, so an exists() check would
-    # falsely report "disabled" right after a fresh matcher run). Only None
-    # means citations fall back to inert spans.
-    if source_pdf_path is not None:
-        try:
-            pdf_href = source_pdf_path.resolve().as_uri()
-        except (OSError, ValueError):
-            pdf_href = ""
-        if pdf_href:
-            file_status = "exists" if source_pdf_path.exists() else \
-                          "will be created at end of matcher run"
-            pdf_status_html = (
-                f'<div class="pdf-status enabled">'
-                f'PDF citations: <strong>enabled</strong> &mdash; '
-                f'<a href="{escape(pdf_href)}" target="_blank" rel="noopener">'
-                f'open packet PDF</a> '
-                f'(<code>{escape(str(source_pdf_path))}</code> &mdash; {file_status})'
-                f'</div>'
-            )
-        else:
-            pdf_status_html = (
-                '<div class="pdf-status disabled">PDF citations: '
-                '<strong>not available</strong> &mdash; source PDF path could not be resolved.</div>'
-            )
-    else:
-        pdf_status_html = (
-            f'<div class="pdf-status disabled">'
-            f'PDF citations: <strong>not available</strong> &mdash; '
-            f'no source PDF found for this case locally. '
-            f'Citations show page numbers as plain text only. '
-            f'Re-run <code>py db\\ingest_s3_to_db.py</code> for this case_id to generate '
-            f'<code>_phi/&lt;case_id&gt;/source.pdf</code> locally.'
-            f'</div>'
-        )
-
     return _CASE_SUMMARY_TEMPLATE.format(
         case_id=escape(case_id),
         n_meets=n_meets,
@@ -700,7 +660,6 @@ def render_case_summary_html(
         n_insuf=n_insuf,
         n_total=len(listing_outcomes),
         avg_grounded=avg_grounded,
-        pdf_status_html=pdf_status_html,
         sidebar_html=sidebar_html,
         table_rows=rows_html,
         detail_sections="\n\n".join(detail_sections),
@@ -755,13 +714,6 @@ _CASE_SUMMARY_TEMPLATE = """<!DOCTYPE html>
   .org {{ color: #555; font-size: 0.95em; margin-top: 0.3em; margin-bottom: 1.5em; }}
   .case-headline {{ background: #f5f5f5; padding: 1em 1.5em; border-radius: 6px;
                     margin: 1em 0 2em 0; font-size: 1.05em; }}
-  .pdf-status {{ padding: 0.6em 1em; border-radius: 4px; margin: 1em 0;
-                  font-size: 0.92em; line-height: 1.4; }}
-  .pdf-status.enabled {{ background: #e6f4ea; border-left: 4px solid #1e8e3e; color: #0b6027; }}
-  .pdf-status.disabled {{ background: #fef7e0; border-left: 4px solid #f9ab00; color: #7a5300; }}
-  .pdf-status code {{ background: rgba(0,0,0,0.06); padding: 1px 4px; border-radius: 3px;
-                       font-size: 0.9em; }}
-  .pdf-status a {{ color: inherit; font-weight: 600; }}
   .case-headline .num {{ font-weight: 700; font-size: 1.4em; color: #1a56c4; }}
   .case-headline .pill {{ display: inline-block; padding: 0.15em 0.6em; margin: 0 0.3em;
                           border-radius: 12px; font-size: 0.85em; font-weight: 600; }}
@@ -844,8 +796,6 @@ _CASE_SUMMARY_TEMPLATE = """<!DOCTYPE html>
   <span class="pill insuf">{n_insuf} Insufficient</span>
   &nbsp; | &nbsp; Overall groundedness: <strong>{avg_grounded:.2f}</strong>
 </div>
-
-{pdf_status_html}
 
 <h2>Possible Visualization of Output Report</h2>
 <table class="summary">
