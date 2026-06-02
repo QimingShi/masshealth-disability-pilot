@@ -654,22 +654,27 @@ def render_case_summary_html(
         )
 
     # PDF-link status banner: tells the reviewer whether citations open the
-    # packet PDF or fall back to plain page-number text. The most common
-    # cause of "citations not working" is the local source.pdf missing --
-    # surface this clearly so the reviewer knows the cause and can fix it
-    # by re-running ingest with the matching case_id.
-    if source_pdf_path is not None and source_pdf_path.exists():
+    # packet PDF or fall back to plain page-number text.
+    #
+    # We match cite_link's logic exactly: if source_pdf_path is not None we
+    # generate hrefs (regardless of whether the file already exists -- the
+    # annotated PDF is written AFTER the HTML, so an exists() check would
+    # falsely report "disabled" right after a fresh matcher run). Only None
+    # means citations fall back to inert spans.
+    if source_pdf_path is not None:
         try:
             pdf_href = source_pdf_path.resolve().as_uri()
         except (OSError, ValueError):
             pdf_href = ""
         if pdf_href:
+            file_status = "exists" if source_pdf_path.exists() else \
+                          "will be created at end of matcher run"
             pdf_status_html = (
                 f'<div class="pdf-status enabled">'
                 f'PDF citations: <strong>enabled</strong> &mdash; '
                 f'<a href="{escape(pdf_href)}" target="_blank" rel="noopener">'
                 f'open packet PDF</a> '
-                f'(<code>{escape(str(source_pdf_path))}</code>)'
+                f'(<code>{escape(str(source_pdf_path))}</code> &mdash; {file_status})'
                 f'</div>'
             )
         else:
@@ -678,13 +683,13 @@ def render_case_summary_html(
                 '<strong>not available</strong> &mdash; source PDF path could not be resolved.</div>'
             )
     else:
-        path_str = str(source_pdf_path) if source_pdf_path else "(no path provided)"
         pdf_status_html = (
             f'<div class="pdf-status disabled">'
             f'PDF citations: <strong>not available</strong> &mdash; '
-            f'no source.pdf found at <code>{escape(path_str)}</code>. '
-            f'Citations show page numbers as plain text. '
-            f'Re-run <code>db/ingest_s3_to_db.py</code> for this case_id to generate the PDF locally.'
+            f'no source PDF found for this case locally. '
+            f'Citations show page numbers as plain text only. '
+            f'Re-run <code>py db\\ingest_s3_to_db.py</code> for this case_id to generate '
+            f'<code>_phi/&lt;case_id&gt;/source.pdf</code> locally.'
             f'</div>'
         )
 
