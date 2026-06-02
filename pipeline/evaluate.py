@@ -12,9 +12,13 @@ this file. Authentication uses an SSO profile (env var AWS_PROFILE, default
 from dataclasses import dataclass, asdict
 import json
 import os
+import random
 import re
+import time
 
 import boto3
+from botocore.config import Config
+from botocore.exceptions import ClientError
 
 from .chunks import Listing
 from .retrieve import RetrievedChunk
@@ -37,12 +41,42 @@ AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 # non-trivial; the client is thread-safe so cache it across all leaf calls.
 _bedrock_client = None
 
+# Manual retry layer on top of boto3's adaptive retries. The matcher fires
+# ~35-50 invoke_model calls back-to-back (5 candidates x ~7 leaves), which
+# can outrun the inference profile's rate limit. boto3's adaptive mode +
+# max_attempts=10 handles most throttling; this outer loop covers the tail
+# where Bedrock returns ServiceUnavailableException even after exhausted
+# inner retries.
+_OUTER_RETRY_MAX = 5
+_OUTER_RETRY_BASE_S = 4.0     # 4s, 8s, 16s, 32s, 64s  with jitter
+_RETRYABLE_CODES = {
+    "ServiceUnavailableException",
+    "ThrottlingException",
+    "ModelTimeoutException",
+    "ModelStreamErrorException",
+    "InternalServerException",
+}
+
 
 def _get_bedrock_client():
     global _bedrock_client
     if _bedrock_client is None:
         session = boto3.Session(profile_name=AWS_PROFILE)
-        _bedrock_client = session.client("bedrock-runtime", region_name=AWS_REGION)
+        # Configure aggressive retry for transient Bedrock throttling. The
+        # default boto3 max_attempts=4 isn't enough for our back-to-back
+        # call pattern. Adaptive mode (vs "standard") learns the service's
+        # rate limit and backs off proportionally, which is exactly what
+        # Bedrock's "Too many connections" responses are asking for.
+        config = Config(
+            retries={"max_attempts": 10, "mode": "adaptive"},
+            read_timeout=300,
+            connect_timeout=10,
+        )
+        _bedrock_client = session.client(
+            "bedrock-runtime",
+            region_name=AWS_REGION,
+            config=config,
+        )
     return _bedrock_client
 
 
@@ -190,6 +224,12 @@ def evaluate_leaf(
 def _call_claude(system: str, user: str) -> str:
     """Invoke Claude via Bedrock with the Messages API body shape.
 
+    Retry policy: boto3's adaptive retry handles most transient throttling
+    via the client Config. This function adds an outer retry loop with
+    exponential backoff + jitter for the residual cases where Bedrock
+    returns ServiceUnavailableException even after the inner retries
+    exhausted. Total retry budget worst-case: ~2 minutes (4+8+16+32+64s).
+
     Why no prompt caching: _SYSTEM here is ~250 tokens, well below Sonnet/Opus
     4.x's 4096-token cacheable-prefix minimum, and the user message varies per
     leaf (different criterion + different retrieved chunks). There is no
@@ -210,17 +250,34 @@ def _call_claude(system: str, user: str) -> str:
         "system": system,
         "messages": [{"role": "user", "content": user}],
     }
-    response = client.invoke_model(
-        modelId=BEDROCK_INFERENCE_PROFILE,
-        body=json.dumps(body),
-        contentType="application/json",
-    )
-    result = json.loads(response["body"].read())
-    # Concatenate any text blocks. Bedrock returns content blocks as plain
-    # dicts (not Pydantic objects), so use dict access.
-    return "".join(
-        b.get("text", "") for b in result.get("content", []) if b.get("type") == "text"
-    )
+    body_json = json.dumps(body)
+
+    last_exc: Exception | None = None
+    for attempt in range(_OUTER_RETRY_MAX):
+        try:
+            response = client.invoke_model(
+                modelId=BEDROCK_INFERENCE_PROFILE,
+                body=body_json,
+                contentType="application/json",
+            )
+            result = json.loads(response["body"].read())
+            # Concatenate any text blocks. Bedrock returns content blocks as
+            # plain dicts (not Pydantic objects), so use dict access.
+            return "".join(
+                b.get("text", "") for b in result.get("content", [])
+                if b.get("type") == "text"
+            )
+        except ClientError as exc:
+            code = exc.response.get("Error", {}).get("Code", "")
+            if code not in _RETRYABLE_CODES or attempt == _OUTER_RETRY_MAX - 1:
+                raise
+            last_exc = exc
+            wait = _OUTER_RETRY_BASE_S * (2 ** attempt) + random.uniform(0, 1)
+            print(f"      Bedrock {code}; outer retry {attempt + 1}/"
+                  f"{_OUTER_RETRY_MAX} in {wait:.1f}s...", flush=True)
+            time.sleep(wait)
+    # Defensive — shouldn't be reachable, but mypy / readers
+    raise last_exc if last_exc else RuntimeError("Bedrock retries exhausted")
 
 
 def _parse_response(text: str) -> dict:
