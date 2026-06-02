@@ -6180,27 +6180,42 @@
               "children": [
                 {
                   "path": "A.decline.1",
-                  "criterion": "Disturbance in complex attention, executive function, or processing speed",
+                  "criterion": "Disturbance in complex attention",
                   "keywords": [
-                    "executive dysfunction",
                     "complex attention",
-                    "processing speed",
+                    "divided attention",
+                    "selective attention",
+                    "sustained attention",
+                    "attention deficit",
                     "cognitive slowing"
                   ]
                 },
                 {
                   "path": "A.decline.2",
-                  "criterion": "Memory and learning impairment",
+                  "criterion": "Disturbance in executive function",
+                  "keywords": [
+                    "executive dysfunction",
+                    "executive function",
+                    "planning deficit",
+                    "decision-making impairment",
+                    "cognitive control",
+                    "working memory"
+                  ]
+                },
+                {
+                  "path": "A.decline.3",
+                  "criterion": "Learning and memory impairment",
                   "keywords": [
                     "memory impairment",
                     "memory loss",
                     "amnesia",
                     "short-term memory loss",
-                    "delayed recall"
+                    "delayed recall",
+                    "learning impairment"
                   ]
                 },
                 {
-                  "path": "A.decline.3",
+                  "path": "A.decline.4",
                   "criterion": "Language impairment (expressive or receptive)",
                   "keywords": [
                     "aphasia",
@@ -6211,23 +6226,25 @@
                   ]
                 },
                 {
-                  "path": "A.decline.4",
-                  "criterion": "Visuospatial impairment",
+                  "path": "A.decline.5",
+                  "criterion": "Perceptual-motor (visuospatial) impairment",
                   "keywords": [
                     "visuospatial impairment",
                     "spatial disorientation",
                     "getting lost",
-                    "visual-spatial deficits"
+                    "visual-spatial deficits",
+                    "perceptual-motor deficit"
                   ]
                 },
                 {
-                  "path": "A.decline.5",
+                  "path": "A.decline.6",
                   "criterion": "Disturbances in social cognition (recognizing emotions, behavioral inhibition)",
                   "keywords": [
                     "social cognition",
                     "behavioral changes",
                     "personality change",
-                    "disinhibition"
+                    "disinhibition",
+                    "emotion recognition"
                   ]
                 }
               ]
