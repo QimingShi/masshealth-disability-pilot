@@ -3,31 +3,154 @@
   "title": "Malignant melanoma",
   "body_system": "cancer",
   "version": 1,
-  "summary": "Malignant melanoma with metastases as described (recurrent palpable nodal disease, bones, skin/subcutaneous tissue beyond regional, OR metastases to viscera).",
+  "summary": "Malignant melanoma (skin, ocular, or mucosal) meeting one of: A) recurrent after wide excision (skin) or enucleation (ocular); B) metastases to clinically apparent nodes, 4+ non-apparent nodes, or distant/satellite sites; OR C) mucosal melanoma (any).",
   "synonyms": {
-    "melanoma":                ["malignant melanoma", "cutaneous melanoma", "ocular melanoma", "uveal melanoma", "mucosal melanoma"],
-    "Breslow thickness":       ["Breslow depth"],
-    "Clark level":             ["Clark's level"],
-    "sentinel lymph node":     ["SLN", "sentinel node biopsy", "SLNB"],
-    "metastasis":              ["distant metastases", "regional metastases", "M1 disease", "in-transit metastases", "satellite lesions"],
-    "BRAF":                    ["BRAF mutation", "BRAF V600E"],
-    "biopsy":                  ["punch biopsy", "excisional biopsy", "wide local excision"]
+    "melanoma": [
+      "malignant melanoma",
+      "cutaneous melanoma",
+      "ocular melanoma",
+      "mucosal melanoma",
+      "MM"
+    ],
+    "skin melanoma": [
+      "cutaneous melanoma",
+      "melanoma of skin"
+    ],
+    "ocular melanoma": [
+      "uveal melanoma",
+      "choroidal melanoma",
+      "melanoma of eye"
+    ],
+    "mucosal melanoma": [
+      "nasal melanoma",
+      "oral melanoma",
+      "anorectal melanoma",
+      "vulvovaginal melanoma"
+    ],
+    "wide excision": [
+      "wide local excision",
+      "WLE",
+      "surgical excision"
+    ],
+    "enucleation": [
+      "eye removal",
+      "ocular enucleation"
+    ],
+    "metastases": [
+      "mets",
+      "metastatic disease",
+      "nodal involvement"
+    ],
+    "satellite lesions": [
+      "in-transit metastases",
+      "satellite metastases"
+    ],
+    "lymph nodes": [
+      "clinically apparent nodes",
+      "palpable nodes",
+      "imaging-detected nodes"
+    ]
   },
   "rule_json": {
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "PRECONDITION", "criterion": "Pathology-confirmed malignant melanoma",
-       "keywords": ["malignant melanoma", "melanoma", "biopsy", "Breslow thickness", "Clark level"]},
+      {
+        "path": "PRECONDITION",
+        "criterion": "Pathology-confirmed malignant melanoma (skin, ocular, or mucosal)",
+        "keywords": [
+          "pathology",
+          "biopsy",
+          "melanoma confirmed",
+          "melanoma diagnosis",
+          "histology"
+        ]
+      },
       {
         "logic": "OR",
         "path": "ALTERNATIVES",
-        "criterion": "Recurrent nodal, distant skin/subcutaneous, bones, or visceral metastases",
+        "criterion": "Meet one of A (recurrent), B (metastases), or C (mucosal)",
         "children": [
-          {"path": "A", "criterion": "Recurrent (≥2 episodes) palpable nodal disease (regional lymph node involvement after prior treatment)",
-           "keywords": ["recurrent nodal disease", "palpable lymph nodes", "regional recurrence", "in-transit metastases", "satellite lesions"]},
-          {"path": "B", "criterion": "Metastases to or beyond the regional lymph nodes (distant skin/subcutaneous tissue, lung, liver, bone, brain)",
-           "keywords": ["distant metastases", "M1 disease", "metastatic melanoma", "lung metastases", "bone metastases", "brain metastases", "liver metastases", "subcutaneous metastases"]}
+          {
+            "logic": "OR",
+            "path": "A",
+            "criterion": "Recurrent melanoma following either 1 or 2 (excluding additional primary at different site)",
+            "children": [
+              {
+                "path": "A.1",
+                "criterion": "Recurrent skin melanoma following wide excision",
+                "keywords": [
+                  "recurrent melanoma",
+                  "wide excision",
+                  "WLE",
+                  "skin melanoma recurrence",
+                  "local recurrence"
+                ]
+              },
+              {
+                "path": "A.2",
+                "criterion": "Recurrent ocular melanoma following enucleation of the eye",
+                "keywords": [
+                  "ocular melanoma",
+                  "enucleation",
+                  "uveal melanoma recurrence",
+                  "ocular recurrence"
+                ]
+              }
+            ]
+          },
+          {
+            "logic": "OR",
+            "path": "B",
+            "criterion": "Metastases as described in 1, 2, or 3",
+            "children": [
+              {
+                "path": "B.1",
+                "criterion": "Metastases to one or more clinically apparent nodes (detected by imaging excluding lymphoscintigraphy, OR palpable)",
+                "keywords": [
+                  "clinically apparent nodes",
+                  "palpable lymph node",
+                  "imaging-detected nodes",
+                  "regional lymph node mets"
+                ]
+              },
+              {
+                "path": "B.2",
+                "criterion": "If nodes not clinically apparent, metastases to four or more nodes",
+                "keywords": [
+                  "sentinel lymph node biopsy",
+                  "four or more nodes",
+                  "4 nodes positive",
+                  "occult nodal involvement"
+                ]
+              },
+              {
+                "path": "B.3",
+                "criterion": "Metastases to adjacent skin (satellite lesions) or distant sites (liver, lung, brain, etc.)",
+                "keywords": [
+                  "satellite lesions",
+                  "in-transit metastases",
+                  "liver metastases",
+                  "lung metastases",
+                  "brain metastases",
+                  "distant metastases",
+                  "stage IV melanoma"
+                ]
+              }
+            ]
+          },
+          {
+            "path": "C",
+            "criterion": "Mucosal melanoma (nasal, oral, anorectal, vulvovaginal, etc.) — disabled per se",
+            "keywords": [
+              "mucosal melanoma",
+              "nasal melanoma",
+              "oral melanoma",
+              "anorectal melanoma",
+              "sinonasal melanoma",
+              "vulvovaginal melanoma"
+            ]
+          }
         ]
       }
     ]

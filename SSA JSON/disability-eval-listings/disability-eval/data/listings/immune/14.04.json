@@ -3,38 +3,364 @@
   "title": "Systemic sclerosis (scleroderma)",
   "body_system": "immune",
   "version": 1,
-  "summary": "Systemic sclerosis with one of: severe pulmonary involvement, severe peripheral vascular disease causing finger amputation/ulceration, severe esophageal involvement with weight loss, OR repeated manifestations with constitutional symptoms and marked functional limitation.",
+  "summary": "Systemic sclerosis (scleroderma) meeting one of: A) involvement of 2+ organ systems with moderate severity AND constitutional symptoms; B) toe/finger/limb contractures or atrophy with assistive-device need or inability to use upper extremities; C) Raynaud's phenomenon with gangrene or ischemic ulcerations; OR D) repeated manifestations with constitutional symptoms AND marked functional limitation.",
   "synonyms": {
-    "systemic sclerosis":      ["scleroderma", "SSc", "diffuse scleroderma", "limited scleroderma", "CREST syndrome"],
-    "pulmonary fibrosis":      ["interstitial lung disease", "ILD"],
-    "pulmonary hypertension":  ["pulmonary HTN", "PH"],
-    "Raynaud":                 ["Raynaud's phenomenon", "Raynaud syndrome", "digital ischemia"],
-    "digital ulcer":           ["fingertip ulcer", "digital ulceration", "finger ulcer"],
-    "esophageal dysmotility":  ["esophageal involvement", "GERD", "dysphagia"],
-    "skin tightening":         ["skin thickening", "sclerodactyly"],
-    "ANA":                     ["antinuclear antibody"],
-    "anti-Scl-70":             ["topoisomerase I antibody"],
-    "anticentromere":          ["centromere antibody"]
+    "systemic sclerosis": [
+      "scleroderma",
+      "diffuse scleroderma",
+      "limited scleroderma",
+      "CREST syndrome",
+      "SSc"
+    ],
+    "constitutional symptoms": [
+      "severe fatigue",
+      "fever",
+      "malaise",
+      "involuntary weight loss"
+    ],
+    "contractures": [
+      "fixed deformity",
+      "joint contracture",
+      "flexion contracture"
+    ],
+    "atrophy": [
+      "muscle atrophy",
+      "limb atrophy",
+      "irreversible damage"
+    ],
+    "Raynaud's phenomenon": [
+      "Raynauds",
+      "digital ischemia",
+      "vasospasm"
+    ],
+    "gangrene": [
+      "digital gangrene",
+      "tissue necrosis"
+    ],
+    "ischemic ulcerations": [
+      "digital ulcers",
+      "ischemic ulcers",
+      "fingertip ulcers"
+    ],
+    "assistive device": [
+      "walker",
+      "cane",
+      "crutches",
+      "wheelchair",
+      "rollator"
+    ],
+    "fine and gross movements": [
+      "dexterity",
+      "grip",
+      "manipulation",
+      "hand function"
+    ]
   },
   "rule_json": {
     "logic": "OR",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Severe involvement of two or more organ/body systems with significant documented constitutional symptoms",
-       "keywords": ["scleroderma", "systemic sclerosis", "ILD", "pulmonary hypertension", "renal crisis", "esophageal involvement", "constitutional symptoms"]},
-      {"path": "B", "criterion": "One of: pulmonary fibrosis with persistent imaging changes plus low DLCO, severe peripheral vascular disease with finger amputation/ulceration, severe esophageal involvement with weight loss",
-       "keywords": ["pulmonary fibrosis", "DLCO low", "digital ulcer", "fingertip ulcer", "auto-amputation", "weight loss", "esophageal stricture"]},
       {
         "logic": "AND",
-        "path": "C",
-        "criterion": "Repeated manifestations with constitutional symptoms AND marked limitation in one functional area",
+        "path": "A",
+        "criterion": "Involvement of two or more organs/body systems, with both A.1 and A.2",
         "children": [
-          {"path": "C.1", "criterion": "Repeated manifestations of scleroderma",
-           "keywords": ["repeated manifestations", "active scleroderma", "scleroderma flare"]},
-          {"path": "C.2", "criterion": "At least two constitutional symptoms",
-           "keywords": ["fatigue", "fever", "malaise", "weight loss"]},
-          {"path": "C.3", "criterion": "Marked limitation in ADLs, social functioning, or completing tasks",
-           "keywords": ["ADLs", "social functioning", "concentration", "persistence", "pace"]}
+          {
+            "path": "A.1",
+            "criterion": "One organ/body system involved to at least a moderate level of severity",
+            "keywords": [
+              "multi-organ involvement",
+              "pulmonary fibrosis",
+              "esophageal dysmotility",
+              "renal crisis",
+              "cardiac involvement",
+              "moderate severity"
+            ]
+          },
+          {
+            "path": "A.2",
+            "criterion": "At least two of the constitutional symptoms or signs (severe fatigue, fever, malaise, or involuntary weight loss)",
+            "keywords": [
+              "severe fatigue",
+              "fever",
+              "malaise",
+              "involuntary weight loss",
+              "constitutional symptoms"
+            ]
+          }
+        ]
+      },
+      {
+        "logic": "OR",
+        "path": "B",
+        "criterion": "One of four contracture/atrophy-based functional limitations",
+        "children": [
+          {
+            "logic": "AND",
+            "path": "B.1",
+            "criterion": "Toe contractures or fixed foot deformity AND medical documentation of mobility need",
+            "children": [
+              {
+                "path": "B.1.contractures",
+                "criterion": "Toe contractures or fixed deformity of one or both feet",
+                "keywords": [
+                  "toe contractures",
+                  "foot deformity",
+                  "fixed deformity",
+                  "claw toes"
+                ]
+              },
+              {
+                "logic": "OR",
+                "path": "B.1.medical_need",
+                "criterion": "Medical documentation of mobility need",
+                "children": [
+                  {
+                    "path": "B.1.a",
+                    "criterion": "Documented medical need for walker, bilateral canes or crutches, or wheeled+seated mobility device requiring both hands",
+                    "keywords": [
+                      "walker",
+                      "bilateral canes",
+                      "bilateral crutches",
+                      "wheelchair",
+                      "two-hand device"
+                    ]
+                  },
+                  {
+                    "path": "B.1.b",
+                    "criterion": "Inability to use one upper extremity + documented need for one-handed assistive device using the other UE or wheeled+seated device using one hand",
+                    "keywords": [
+                      "one upper extremity",
+                      "one-handed device",
+                      "assistive device",
+                      "unilateral UE inability"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "logic": "AND",
+            "path": "B.2",
+            "criterion": "Finger contractures or fixed deformity in both hands AND inability to use both upper extremities",
+            "children": [
+              {
+                "path": "B.2.contractures",
+                "criterion": "Finger contractures or fixed deformity in both hands",
+                "keywords": [
+                  "finger contractures",
+                  "hand deformity",
+                  "fixed deformity hands",
+                  "sclerodactyly"
+                ]
+              },
+              {
+                "path": "B.2.inability",
+                "criterion": "Inability to use both upper extremities for fine and gross movements",
+                "keywords": [
+                  "both upper extremities",
+                  "loss of hand function",
+                  "inability to grip",
+                  "fine and gross movements"
+                ]
+              }
+            ]
+          },
+          {
+            "logic": "AND",
+            "path": "B.3",
+            "criterion": "Atrophy with irreversible damage in one or both lower extremities AND medical documentation of mobility need",
+            "children": [
+              {
+                "path": "B.3.atrophy",
+                "criterion": "Atrophy with irreversible damage in one or both lower extremities",
+                "keywords": [
+                  "lower extremity atrophy",
+                  "irreversible damage",
+                  "muscle wasting",
+                  "limb atrophy"
+                ]
+              },
+              {
+                "logic": "OR",
+                "path": "B.3.medical_need",
+                "criterion": "Medical documentation of mobility need (same options as B.1)",
+                "children": [
+                  {
+                    "path": "B.3.a",
+                    "criterion": "Documented medical need for walker, bilateral canes or crutches, or wheeled+seated mobility device requiring both hands",
+                    "keywords": [
+                      "walker",
+                      "bilateral canes",
+                      "bilateral crutches",
+                      "wheelchair",
+                      "two-hand device"
+                    ]
+                  },
+                  {
+                    "path": "B.3.b",
+                    "criterion": "Inability to use one upper extremity + need for one-handed assistive device using the other UE or wheeled+seated device using one hand",
+                    "keywords": [
+                      "one upper extremity",
+                      "one-handed device",
+                      "assistive device"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "logic": "AND",
+            "path": "B.4",
+            "criterion": "Atrophy with irreversible damage in both upper extremities AND inability to use both UEs",
+            "children": [
+              {
+                "path": "B.4.atrophy",
+                "criterion": "Atrophy with irreversible damage in both upper extremities",
+                "keywords": [
+                  "upper extremity atrophy",
+                  "bilateral UE atrophy",
+                  "irreversible damage UE"
+                ]
+              },
+              {
+                "path": "B.4.inability",
+                "criterion": "Inability to use both upper extremities for fine and gross movements",
+                "keywords": [
+                  "both upper extremities",
+                  "loss of hand function",
+                  "fine and gross movements"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "logic": "OR",
+        "path": "C",
+        "criterion": "Raynaud's phenomenon characterized by C.1 or C.2",
+        "children": [
+          {
+            "path": "C.1",
+            "criterion": "Gangrene involving at least two extremities",
+            "keywords": [
+              "gangrene",
+              "digital gangrene",
+              "tissue necrosis",
+              "two extremities"
+            ]
+          },
+          {
+            "logic": "AND",
+            "path": "C.2",
+            "criterion": "Ischemia with ulcerations of toes or fingers AND medical documentation of one of three findings",
+            "children": [
+              {
+                "path": "C.2.ischemia",
+                "criterion": "Ischemia with ulcerations of toes or fingers",
+                "keywords": [
+                  "digital ulcers",
+                  "ischemic ulcerations",
+                  "fingertip ulcers",
+                  "digital ischemia"
+                ]
+              },
+              {
+                "logic": "OR",
+                "path": "C.2.medical_need",
+                "criterion": "Medical documentation of mobility/use need",
+                "children": [
+                  {
+                    "path": "C.2.a",
+                    "criterion": "Documented medical need for walker, bilateral canes or crutches, or wheeled+seated mobility device requiring both hands",
+                    "keywords": [
+                      "walker",
+                      "bilateral canes",
+                      "bilateral crutches",
+                      "wheelchair",
+                      "two-hand device"
+                    ]
+                  },
+                  {
+                    "path": "C.2.b",
+                    "criterion": "Inability to use one upper extremity + need for one-handed assistive device using the other UE or wheeled+seated device using one hand",
+                    "keywords": [
+                      "one upper extremity",
+                      "one-handed device",
+                      "assistive device"
+                    ]
+                  },
+                  {
+                    "path": "C.2.c",
+                    "criterion": "Inability to use both upper extremities for fine and gross movements",
+                    "keywords": [
+                      "both upper extremities",
+                      "loss of hand function",
+                      "fine and gross movements"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "logic": "AND",
+        "path": "D",
+        "criterion": "Repeated manifestations of scleroderma with constitutional symptoms AND marked functional limitation",
+        "children": [
+          {
+            "path": "D.constitutional",
+            "criterion": "Repeated manifestations of scleroderma with at least two constitutional symptoms (severe fatigue, fever, malaise, or involuntary weight loss)",
+            "keywords": [
+              "repeated manifestations",
+              "severe fatigue",
+              "fever",
+              "malaise",
+              "involuntary weight loss"
+            ]
+          },
+          {
+            "logic": "OR",
+            "path": "D.marked",
+            "criterion": "Marked limitation in one of three functional areas",
+            "children": [
+              {
+                "path": "D.1",
+                "criterion": "Marked limitation of activities of daily living",
+                "keywords": [
+                  "marked limitation",
+                  "ADLs",
+                  "activities of daily living",
+                  "self-care"
+                ]
+              },
+              {
+                "path": "D.2",
+                "criterion": "Marked limitation in maintaining social functioning",
+                "keywords": [
+                  "marked limitation",
+                  "social functioning",
+                  "social withdrawal"
+                ]
+              },
+              {
+                "path": "D.3",
+                "criterion": "Marked limitation in completing tasks in a timely manner due to deficiencies in concentration, persistence, or pace",
+                "keywords": [
+                  "marked limitation",
+                  "concentration",
+                  "persistence",
+                  "pace",
+                  "completing tasks"
+                ]
+              }
+            ]
+          }
         ]
       }
     ]

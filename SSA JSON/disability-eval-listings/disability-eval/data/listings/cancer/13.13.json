@@ -3,26 +3,158 @@
   "title": "Nervous system cancer",
   "body_system": "cancer",
   "version": 1,
-  "summary": "Cancer originating in the nervous system (CNS) such as glioblastoma, primary CNS lymphoma, or other malignant brain/spinal cord tumor: highly malignant tumor (glioblastoma, anaplastic astrocytoma, etc.), OR progressive/recurrent malignant CNS tumor.",
+  "summary": "Primary cancers of the central nervous system (brain, spinal cord) or peripheral nerve/spinal root cancers, meeting either: A) CNS primary — highly malignant tumors (glioblastoma, etc.), Grade III/IV cancers, or any primary CNS cancer that is metastatic, progressive, or recurrent; OR B) peripheral nerve/spinal root cancer that is metastatic, progressive, or recurrent.",
   "synonyms": {
-    "glioblastoma":            ["glioblastoma multiforme", "GBM", "high-grade glioma"],
-    "anaplastic astrocytoma":  ["AA", "grade III glioma"],
-    "medulloblastoma":         ["medulloblastoma"],
-    "ependymoma":              ["malignant ependymoma"],
-    "CNS lymphoma":            ["primary CNS lymphoma", "PCNSL"],
-    "MRI brain":               ["brain MRI", "MRI of brain", "MRI with contrast"],
-    "biopsy":                  ["brain biopsy", "stereotactic biopsy"]
+    "CNS cancer": [
+      "brain cancer",
+      "spinal cord cancer",
+      "primary CNS cancer",
+      "central nervous system tumor"
+    ],
+    "glioblastoma": [
+      "GBM",
+      "glioblastoma multiforme",
+      "Grade IV astrocytoma"
+    ],
+    "astrocytoma": [
+      "anaplastic astrocytoma",
+      "Grade III astrocytoma",
+      "Grade IV astrocytoma"
+    ],
+    "PNET": [
+      "primitive neuroectodermal tumor",
+      "medulloblastoma"
+    ],
+    "ependymoma": [
+      "ependymoblastoma",
+      "anaplastic ependymoma"
+    ],
+    "WHO Grade": [
+      "WHO Grade II",
+      "WHO Grade III",
+      "WHO Grade IV",
+      "high-grade tumor"
+    ],
+    "peripheral nerve cancer": [
+      "malignant peripheral nerve sheath tumor",
+      "MPNST",
+      "neurofibrosarcoma"
+    ],
+    "spinal root cancer": [
+      "nerve root tumor",
+      "spinal nerve cancer"
+    ],
+    "metastatic": [
+      "metastases",
+      "mets",
+      "metastatic disease"
+    ],
+    "progressive": [
+      "progression",
+      "tumor progression",
+      "disease progression"
+    ],
+    "recurrent": [
+      "recurrence",
+      "recurrent disease",
+      "relapse"
+    ]
   },
   "rule_json": {
     "logic": "OR",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Highly malignant tumor of CNS (glioblastoma, glioblastoma multiforme, ependymoblastoma, medulloblastoma, anaplastic astrocytoma, CNS lymphoma)",
-       "keywords": ["glioblastoma", "GBM", "glioblastoma multiforme", "ependymoblastoma", "medulloblastoma", "anaplastic astrocytoma", "primary CNS lymphoma", "PCNSL"]},
-      {"path": "B", "criterion": "Progressive or recurrent CNS cancer",
-       "keywords": ["progressive disease", "recurrent CNS cancer", "tumor progression", "recurrent glioma"]},
-      {"path": "C", "criterion": "Metastatic spread of CNS cancer",
-       "keywords": ["leptomeningeal disease", "drop metastases", "spinal metastases"]}
+      {
+        "logic": "OR",
+        "path": "A",
+        "criterion": "Primary central nervous system (CNS; brain and spinal cord) cancers, one of three pathways",
+        "children": [
+          {
+            "path": "A.1",
+            "criterion": "Highly malignant primary CNS cancer: glioblastoma multiforme, ependymoblastoma, diffuse intrinsic brain stem gliomas, or pituitary gland carcinoma (disabled per se)",
+            "keywords": [
+              "glioblastoma multiforme",
+              "GBM",
+              "ependymoblastoma",
+              "diffuse intrinsic brain stem glioma",
+              "DIPG",
+              "pituitary gland carcinoma"
+            ]
+          },
+          {
+            "path": "A.2",
+            "criterion": "Any Grade III or Grade IV CNS cancer including astrocytomas, sarcomas, medulloblastoma, and other primitive neuroectodermal tumors (PNETs)",
+            "keywords": [
+              "Grade III",
+              "Grade IV",
+              "anaplastic astrocytoma",
+              "CNS sarcoma",
+              "medulloblastoma",
+              "PNET",
+              "primitive neuroectodermal tumor",
+              "high-grade glioma"
+            ]
+          },
+          {
+            "logic": "OR",
+            "path": "A.3",
+            "criterion": "Any primary CNS cancer that is metastatic or progressive/recurrent",
+            "children": [
+              {
+                "path": "A.3.a",
+                "criterion": "Primary CNS cancer with metastases",
+                "keywords": [
+                  "CNS cancer",
+                  "metastatic",
+                  "leptomeningeal spread",
+                  "metastases"
+                ]
+              },
+              {
+                "path": "A.3.b",
+                "criterion": "Primary CNS cancer progressive or recurrent following initial anticancer therapy",
+                "keywords": [
+                  "CNS cancer",
+                  "progressive",
+                  "recurrent",
+                  "post-treatment progression",
+                  "tumor recurrence"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "logic": "OR",
+        "path": "B",
+        "criterion": "Primary peripheral nerve or spinal root cancers, one of two findings",
+        "children": [
+          {
+            "path": "B.1",
+            "criterion": "Primary peripheral nerve or spinal root cancer with metastases",
+            "keywords": [
+              "peripheral nerve cancer",
+              "MPNST",
+              "malignant peripheral nerve sheath tumor",
+              "spinal root cancer",
+              "metastatic",
+              "metastases"
+            ]
+          },
+          {
+            "path": "B.2",
+            "criterion": "Primary peripheral nerve or spinal root cancer progressive or recurrent following initial anticancer therapy",
+            "keywords": [
+              "peripheral nerve cancer",
+              "MPNST",
+              "spinal root tumor",
+              "progressive",
+              "recurrent"
+            ]
+          }
+        ]
+      }
     ]
   }
 }

@@ -11215,35 +11215,61 @@
     "title": "Nervous system cancer",
     "body_system": "cancer",
     "version": 1,
-    "summary": "Cancer originating in the nervous system (CNS) such as glioblastoma, primary CNS lymphoma, or other malignant brain/spinal cord tumor: highly malignant tumor (glioblastoma, anaplastic astrocytoma, etc.), OR progressive/recurrent malignant CNS tumor.",
+    "summary": "Primary cancers of the central nervous system (brain, spinal cord) or peripheral nerve/spinal root cancers, meeting either: A) CNS primary — highly malignant tumors (glioblastoma, etc.), Grade III/IV cancers, or any primary CNS cancer that is metastatic, progressive, or recurrent; OR B) peripheral nerve/spinal root cancer that is metastatic, progressive, or recurrent.",
     "synonyms": {
+      "CNS cancer": [
+        "brain cancer",
+        "spinal cord cancer",
+        "primary CNS cancer",
+        "central nervous system tumor"
+      ],
       "glioblastoma": [
-        "glioblastoma multiforme",
         "GBM",
-        "high-grade glioma"
+        "glioblastoma multiforme",
+        "Grade IV astrocytoma"
       ],
-      "anaplastic astrocytoma": [
-        "AA",
-        "grade III glioma"
+      "astrocytoma": [
+        "anaplastic astrocytoma",
+        "Grade III astrocytoma",
+        "Grade IV astrocytoma"
       ],
-      "medulloblastoma": [
+      "PNET": [
+        "primitive neuroectodermal tumor",
         "medulloblastoma"
       ],
       "ependymoma": [
-        "malignant ependymoma"
+        "ependymoblastoma",
+        "anaplastic ependymoma"
       ],
-      "CNS lymphoma": [
-        "primary CNS lymphoma",
-        "PCNSL"
+      "WHO Grade": [
+        "WHO Grade II",
+        "WHO Grade III",
+        "WHO Grade IV",
+        "high-grade tumor"
       ],
-      "MRI brain": [
-        "brain MRI",
-        "MRI of brain",
-        "MRI with contrast"
+      "peripheral nerve cancer": [
+        "malignant peripheral nerve sheath tumor",
+        "MPNST",
+        "neurofibrosarcoma"
       ],
-      "biopsy": [
-        "brain biopsy",
-        "stereotactic biopsy"
+      "spinal root cancer": [
+        "nerve root tumor",
+        "spinal nerve cancer"
+      ],
+      "metastatic": [
+        "metastases",
+        "mets",
+        "metastatic disease"
+      ],
+      "progressive": [
+        "progression",
+        "tumor progression",
+        "disease progression"
+      ],
+      "recurrent": [
+        "recurrence",
+        "recurrent disease",
+        "relapse"
       ]
     },
     "rule_json": {
@@ -11251,36 +11277,94 @@
       "path": "ROOT",
       "children": [
         {
+          "logic": "OR",
           "path": "A",
-          "criterion": "Highly malignant tumor of CNS (glioblastoma, glioblastoma multiforme, ependymoblastoma, medulloblastoma, anaplastic astrocytoma, CNS lymphoma)",
-          "keywords": [
-            "glioblastoma",
-            "GBM",
-            "glioblastoma multiforme",
-            "ependymoblastoma",
-            "medulloblastoma",
-            "anaplastic astrocytoma",
-            "primary CNS lymphoma",
-            "PCNSL"
+          "criterion": "Primary central nervous system (CNS; brain and spinal cord) cancers, one of three pathways",
+          "children": [
+            {
+              "path": "A.1",
+              "criterion": "Highly malignant primary CNS cancer: glioblastoma multiforme, ependymoblastoma, diffuse intrinsic brain stem gliomas, or pituitary gland carcinoma (disabled per se)",
+              "keywords": [
+                "glioblastoma multiforme",
+                "GBM",
+                "ependymoblastoma",
+                "diffuse intrinsic brain stem glioma",
+                "DIPG",
+                "pituitary gland carcinoma"
+              ]
+            },
+            {
+              "path": "A.2",
+              "criterion": "Any Grade III or Grade IV CNS cancer including astrocytomas, sarcomas, medulloblastoma, and other primitive neuroectodermal tumors (PNETs)",
+              "keywords": [
+                "Grade III",
+                "Grade IV",
+                "anaplastic astrocytoma",
+                "CNS sarcoma",
+                "medulloblastoma",
+                "PNET",
+                "primitive neuroectodermal tumor",
+                "high-grade glioma"
+              ]
+            },
+            {
+              "logic": "OR",
+              "path": "A.3",
+              "criterion": "Any primary CNS cancer that is metastatic or progressive/recurrent",
+              "children": [
+                {
+                  "path": "A.3.a",
+                  "criterion": "Primary CNS cancer with metastases",
+                  "keywords": [
+                    "CNS cancer",
+                    "metastatic",
+                    "leptomeningeal spread",
+                    "metastases"
+                  ]
+                },
+                {
+                  "path": "A.3.b",
+                  "criterion": "Primary CNS cancer progressive or recurrent following initial anticancer therapy",
+                  "keywords": [
+                    "CNS cancer",
+                    "progressive",
+                    "recurrent",
+                    "post-treatment progression",
+                    "tumor recurrence"
+                  ]
+                }
+              ]
+            }
           ]
         },
         {
+          "logic": "OR",
           "path": "B",
-          "criterion": "Progressive or recurrent CNS cancer",
-          "keywords": [
-            "progressive disease",
-            "recurrent CNS cancer",
-            "tumor progression",
-            "recurrent glioma"
-          ]
-        },
-        {
-          "path": "C",
-          "criterion": "Metastatic spread of CNS cancer",
-          "keywords": [
-            "leptomeningeal disease",
-            "drop metastases",
-            "spinal metastases"
+          "criterion": "Primary peripheral nerve or spinal root cancers, one of two findings",
+          "children": [
+            {
+              "path": "B.1",
+              "criterion": "Primary peripheral nerve or spinal root cancer with metastases",
+              "keywords": [
+                "peripheral nerve cancer",
+                "MPNST",
+                "malignant peripheral nerve sheath tumor",
+                "spinal root cancer",
+                "metastatic",
+                "metastases"
+              ]
+            },
+            {
+              "path": "B.2",
+              "criterion": "Primary peripheral nerve or spinal root cancer progressive or recurrent following initial anticancer therapy",
+              "keywords": [
+                "peripheral nerve cancer",
+                "MPNST",
+                "spinal root tumor",
+                "progressive",
+                "recurrent"
+              ]
+            }
           ]
         }
       ]
@@ -12005,28 +12089,24 @@
   },
   "13.23": {
     "code": "13.23",
-    "title": "Female genital tract — carcinoma or sarcoma (uterus, ovaries, fallopian tubes, vagina, vulva)",
+    "title": "Cancers of the female genital tract — carcinoma or sarcoma",
     "body_system": "cancer",
     "version": 1,
-    "summary": "Cancer of the female genital tract — vulva/vagina with regional/distant metastases or recurrence; uterus extending beyond uterine corpus or recurrent; fallopian tubes extending beyond fallopian tubes or recurrent; ovaries with persistent/progressive/recurrent disease, distant metastases, OR small cell carcinoma.",
+    "summary": "Cancers of the female genital tract (including primary peritoneal carcinoma): uterus, cervix, vulva/vagina, fallopian tubes, ovaries, or small-cell (oat cell) carcinoma — meeting site-specific extension, metastasis, or recurrence criteria.",
     "synonyms": {
-      "ovarian cancer": [
-        "ovarian carcinoma",
-        "ovarian adenocarcinoma",
-        "epithelial ovarian cancer"
-      ],
       "uterine cancer": [
         "endometrial cancer",
-        "endometrial carcinoma",
+        "uterine corpus carcinoma",
         "uterine sarcoma"
       ],
       "cervical cancer": [
-        "cervical carcinoma",
-        "cervix cancer",
-        "cervical squamous cell carcinoma"
+        "cervix carcinoma",
+        "squamous cell cervical",
+        "adenocarcinoma cervix"
       ],
       "vulvar cancer": [
-        "vulvar carcinoma"
+        "vulva carcinoma",
+        "vulvar SCC"
       ],
       "vaginal cancer": [
         "vaginal carcinoma"
@@ -12034,20 +12114,32 @@
       "fallopian tube cancer": [
         "tubal carcinoma"
       ],
-      "CA-125": [
-        "CA 125",
-        "elevated CA-125"
+      "ovarian cancer": [
+        "ovary carcinoma",
+        "ovarian carcinoma",
+        "epithelial ovarian",
+        "EOC"
       ],
-      "BRCA": [
-        "BRCA1",
-        "BRCA2",
-        "BRCA mutation"
+      "germ-cell cancer": [
+        "germ cell tumor",
+        "dysgerminoma",
+        "yolk sac tumor"
       ],
-      "metastasis": [
-        "distant metastases",
-        "regional metastases",
-        "M1 disease",
-        "peritoneal carcinomatosis"
+      "small-cell carcinoma": [
+        "oat cell carcinoma",
+        "small cell carcinoma",
+        "SCC of cervix"
+      ],
+      "metastases": [
+        "mets",
+        "lymph node involvement",
+        "regional metastasis",
+        "distant metastasis"
+      ],
+      "recurrent": [
+        "recurrence",
+        "persistent disease",
+        "progressive disease"
       ]
     },
     "rule_json": {
@@ -12055,75 +12147,207 @@
       "path": "ROOT",
       "children": [
         {
+          "logic": "OR",
           "path": "A",
-          "criterion": "Carcinoma or sarcoma of vulva or vagina with regional or distant metastases, OR recurrent disease following initial anticancer therapy",
-          "keywords": [
-            "vulvar cancer",
-            "vaginal cancer",
-            "vulvar carcinoma",
-            "vaginal carcinoma",
-            "regional metastases",
-            "distant metastases",
-            "recurrent disease"
+          "criterion": "Uterus (corpus): one of three findings",
+          "children": [
+            {
+              "path": "A.1",
+              "criterion": "Uterine cancer invading adjoining organs",
+              "keywords": [
+                "uterine cancer",
+                "endometrial cancer",
+                "uterine corpus",
+                "invading adjoining organs",
+                "extension"
+              ]
+            },
+            {
+              "path": "A.2",
+              "criterion": "Uterine cancer with metastases to or beyond regional lymph nodes",
+              "keywords": [
+                "uterine cancer",
+                "metastases",
+                "pelvic lymph nodes",
+                "para-aortic",
+                "nodal metastases"
+              ]
+            },
+            {
+              "path": "A.3",
+              "criterion": "Uterine cancer persistent or recurrent following initial anticancer therapy",
+              "keywords": [
+                "uterine cancer",
+                "recurrent",
+                "persistent disease",
+                "after chemotherapy",
+                "after radiation"
+              ]
+            }
           ]
         },
         {
+          "logic": "OR",
           "path": "B",
-          "criterion": "Carcinoma of uterus extending to surrounding organs OR involving 1+ regional lymph nodes, OR recurrent disease after initial anticancer therapy",
-          "keywords": [
-            "uterine cancer",
-            "endometrial cancer",
-            "uterine sarcoma",
-            "extension to surrounding organs",
-            "regional lymph node involvement",
-            "recurrent uterine cancer"
+          "criterion": "Uterine cervix: one of three findings",
+          "children": [
+            {
+              "path": "B.1",
+              "criterion": "Cervical cancer extending to pelvic wall, lower vagina, or adjacent/distant organs",
+              "keywords": [
+                "cervical cancer",
+                "extension to pelvic wall",
+                "vaginal extension",
+                "bladder invasion",
+                "rectal invasion"
+              ]
+            },
+            {
+              "path": "B.2",
+              "criterion": "Cervical cancer persistent or recurrent following initial anticancer therapy",
+              "keywords": [
+                "cervical cancer",
+                "recurrent",
+                "persistent disease",
+                "after chemoradiation"
+              ]
+            },
+            {
+              "path": "B.3",
+              "criterion": "Cervical cancer with metastases to distant lymph nodes (para-aortic, supraclavicular)",
+              "keywords": [
+                "cervical cancer",
+                "para-aortic lymph nodes",
+                "supraclavicular",
+                "distant lymph node metastases"
+              ]
+            }
           ]
         },
         {
+          "logic": "OR",
           "path": "C",
-          "criterion": "Carcinoma of fallopian tubes extending to serosa or beyond, OR recurrent disease after initial anticancer therapy",
-          "keywords": [
-            "fallopian tube cancer",
-            "tubal carcinoma",
-            "serosal extension",
-            "recurrent fallopian tube cancer"
+          "criterion": "Vulva or vagina: one of three findings",
+          "children": [
+            {
+              "path": "C.1",
+              "criterion": "Vulvar or vaginal cancer invading adjoining organs",
+              "keywords": [
+                "vulvar cancer",
+                "vaginal cancer",
+                "invading adjoining organs"
+              ]
+            },
+            {
+              "path": "C.2",
+              "criterion": "Vulvar or vaginal cancer with metastases to or beyond regional lymph nodes",
+              "keywords": [
+                "vulvar cancer",
+                "vaginal cancer",
+                "inguinal lymph nodes",
+                "regional metastases"
+              ]
+            },
+            {
+              "path": "C.3",
+              "criterion": "Vulvar or vaginal cancer persistent or recurrent following initial anticancer therapy",
+              "keywords": [
+                "vulvar cancer",
+                "vaginal cancer",
+                "recurrent",
+                "persistent disease"
+              ]
+            }
           ]
         },
         {
           "logic": "OR",
           "path": "D",
-          "criterion": "Ovarian cancer: persistent/progressive/recurrent disease following anticancer therapy, OR distant metastases, OR small cell carcinoma",
+          "criterion": "Fallopian tubes: one of two findings",
           "children": [
             {
               "path": "D.1",
-              "criterion": "Carcinoma of ovaries with persistent or progressive disease following initial anticancer therapy, OR with recurrent disease",
+              "criterion": "Fallopian tube cancer extending to serosa or beyond",
               "keywords": [
-                "ovarian cancer",
-                "ovarian carcinoma",
-                "epithelial ovarian cancer",
-                "persistent disease",
-                "progressive disease",
-                "recurrent ovarian cancer",
-                "platinum-resistant"
+                "fallopian tube cancer",
+                "tubal carcinoma",
+                "serosal extension"
               ]
             },
             {
               "path": "D.2",
-              "criterion": "Distant metastases of ovarian cancer (beyond pelvic peritoneum)",
+              "criterion": "Fallopian tube cancer persistent or recurrent following initial anticancer therapy",
               "keywords": [
-                "distant metastases",
-                "extra-pelvic disease",
-                "liver metastases"
+                "fallopian tube cancer",
+                "recurrent",
+                "persistent disease"
+              ]
+            }
+          ]
+        },
+        {
+          "logic": "OR",
+          "path": "E",
+          "criterion": "Ovaries: one of two findings",
+          "children": [
+            {
+              "logic": "OR",
+              "path": "E.1",
+              "criterion": "Ovarian cancer (except germ-cell), with one of three findings",
+              "children": [
+                {
+                  "path": "E.1.a",
+                  "criterion": "Ovarian cancer with extension beyond the pelvis (peritoneal implants, omental or bowel surfaces)",
+                  "keywords": [
+                    "ovarian cancer",
+                    "extension beyond pelvis",
+                    "peritoneal implants",
+                    "omental metastases",
+                    "bowel surface implants"
+                  ]
+                },
+                {
+                  "path": "E.1.b",
+                  "criterion": "Ovarian cancer with metastases to or beyond regional lymph nodes",
+                  "keywords": [
+                    "ovarian cancer",
+                    "lymph node metastases",
+                    "regional metastases"
+                  ]
+                },
+                {
+                  "path": "E.1.c",
+                  "criterion": "Ovarian cancer recurrent following initial anticancer therapy",
+                  "keywords": [
+                    "ovarian cancer",
+                    "recurrent",
+                    "after chemotherapy",
+                    "platinum-resistant"
+                  ]
+                }
               ]
             },
             {
-              "path": "D.3",
-              "criterion": "Small cell (oat cell) carcinoma of ovary",
+              "path": "E.2",
+              "criterion": "Germ-cell ovarian cancers progressive or recurrent following initial anticancer therapy",
               "keywords": [
-                "small cell carcinoma of ovary",
-                "small cell ovarian cancer"
+                "germ-cell tumor",
+                "dysgerminoma",
+                "yolk sac tumor",
+                "progressive disease",
+                "recurrent germ cell"
               ]
             }
+          ]
+        },
+        {
+          "path": "F",
+          "criterion": "Small-cell (oat cell) carcinoma of the female genital tract",
+          "keywords": [
+            "small-cell carcinoma",
+            "oat cell carcinoma",
+            "small cell cervical cancer",
+            "SCC genital tract"
           ]
         }
       ]
@@ -12469,41 +12693,52 @@
     "title": "Malignant melanoma",
     "body_system": "cancer",
     "version": 1,
-    "summary": "Malignant melanoma with metastases as described (recurrent palpable nodal disease, bones, skin/subcutaneous tissue beyond regional, OR metastases to viscera).",
+    "summary": "Malignant melanoma (skin, ocular, or mucosal) meeting one of: A) recurrent after wide excision (skin) or enucleation (ocular); B) metastases to clinically apparent nodes, 4+ non-apparent nodes, or distant/satellite sites; OR C) mucosal melanoma (any).",
     "synonyms": {
       "melanoma": [
         "malignant melanoma",
         "cutaneous melanoma",
         "ocular melanoma",
+        "mucosal melanoma",
+        "MM"
+      ],
+      "skin melanoma": [
+        "cutaneous melanoma",
+        "melanoma of skin"
+      ],
+      "ocular melanoma": [
         "uveal melanoma",
-        "mucosal melanoma"
+        "choroidal melanoma",
+        "melanoma of eye"
       ],
-      "Breslow thickness": [
-        "Breslow depth"
+      "mucosal melanoma": [
+        "nasal melanoma",
+        "oral melanoma",
+        "anorectal melanoma",
+        "vulvovaginal melanoma"
       ],
-      "Clark level": [
-        "Clark's level"
+      "wide excision": [
+        "wide local excision",
+        "WLE",
+        "surgical excision"
       ],
-      "sentinel lymph node": [
-        "SLN",
-        "sentinel node biopsy",
-        "SLNB"
+      "enucleation": [
+        "eye removal",
+        "ocular enucleation"
       ],
-      "metastasis": [
-        "distant metastases",
-        "regional metastases",
-        "M1 disease",
+      "metastases": [
+        "mets",
+        "metastatic disease",
+        "nodal involvement"
+      ],
+      "satellite lesions": [
         "in-transit metastases",
-        "satellite lesions"
+        "satellite metastases"
       ],
-      "BRAF": [
-        "BRAF mutation",
-        "BRAF V600E"
-      ],
-      "biopsy": [
-        "punch biopsy",
-        "excisional biopsy",
-        "wide local excision"
+      "lymph nodes": [
+        "clinically apparent nodes",
+        "palpable nodes",
+        "imaging-detected nodes"
       ]
     },
     "rule_json": {
@@ -12512,43 +12747,98 @@
       "children": [
         {
           "path": "PRECONDITION",
-          "criterion": "Pathology-confirmed malignant melanoma",
+          "criterion": "Pathology-confirmed malignant melanoma (skin, ocular, or mucosal)",
           "keywords": [
-            "malignant melanoma",
-            "melanoma",
+            "pathology",
             "biopsy",
-            "Breslow thickness",
-            "Clark level"
+            "melanoma confirmed",
+            "melanoma diagnosis",
+            "histology"
           ]
         },
         {
           "logic": "OR",
           "path": "ALTERNATIVES",
-          "criterion": "Recurrent nodal, distant skin/subcutaneous, bones, or visceral metastases",
+          "criterion": "Meet one of A (recurrent), B (metastases), or C (mucosal)",
           "children": [
             {
+              "logic": "OR",
               "path": "A",
-              "criterion": "Recurrent (≥2 episodes) palpable nodal disease (regional lymph node involvement after prior treatment)",
-              "keywords": [
-                "recurrent nodal disease",
-                "palpable lymph nodes",
-                "regional recurrence",
-                "in-transit metastases",
-                "satellite lesions"
+              "criterion": "Recurrent melanoma following either 1 or 2 (excluding additional primary at different site)",
+              "children": [
+                {
+                  "path": "A.1",
+                  "criterion": "Recurrent skin melanoma following wide excision",
+                  "keywords": [
+                    "recurrent melanoma",
+                    "wide excision",
+                    "WLE",
+                    "skin melanoma recurrence",
+                    "local recurrence"
+                  ]
+                },
+                {
+                  "path": "A.2",
+                  "criterion": "Recurrent ocular melanoma following enucleation of the eye",
+                  "keywords": [
+                    "ocular melanoma",
+                    "enucleation",
+                    "uveal melanoma recurrence",
+                    "ocular recurrence"
+                  ]
+                }
               ]
             },
             {
+              "logic": "OR",
               "path": "B",
-              "criterion": "Metastases to or beyond the regional lymph nodes (distant skin/subcutaneous tissue, lung, liver, bone, brain)",
+              "criterion": "Metastases as described in 1, 2, or 3",
+              "children": [
+                {
+                  "path": "B.1",
+                  "criterion": "Metastases to one or more clinically apparent nodes (detected by imaging excluding lymphoscintigraphy, OR palpable)",
+                  "keywords": [
+                    "clinically apparent nodes",
+                    "palpable lymph node",
+                    "imaging-detected nodes",
+                    "regional lymph node mets"
+                  ]
+                },
+                {
+                  "path": "B.2",
+                  "criterion": "If nodes not clinically apparent, metastases to four or more nodes",
+                  "keywords": [
+                    "sentinel lymph node biopsy",
+                    "four or more nodes",
+                    "4 nodes positive",
+                    "occult nodal involvement"
+                  ]
+                },
+                {
+                  "path": "B.3",
+                  "criterion": "Metastases to adjacent skin (satellite lesions) or distant sites (liver, lung, brain, etc.)",
+                  "keywords": [
+                    "satellite lesions",
+                    "in-transit metastases",
+                    "liver metastases",
+                    "lung metastases",
+                    "brain metastases",
+                    "distant metastases",
+                    "stage IV melanoma"
+                  ]
+                }
+              ]
+            },
+            {
+              "path": "C",
+              "criterion": "Mucosal melanoma (nasal, oral, anorectal, vulvovaginal, etc.) — disabled per se",
               "keywords": [
-                "distant metastases",
-                "M1 disease",
-                "metastatic melanoma",
-                "lung metastases",
-                "bone metastases",
-                "brain metastases",
-                "liver metastases",
-                "subcutaneous metastases"
+                "mucosal melanoma",
+                "nasal melanoma",
+                "oral melanoma",
+                "anorectal melanoma",
+                "sinonasal melanoma",
+                "vulvovaginal melanoma"
               ]
             }
           ]
@@ -12899,50 +13189,57 @@
     "title": "Systemic sclerosis (scleroderma)",
     "body_system": "immune",
     "version": 1,
-    "summary": "Systemic sclerosis with one of: severe pulmonary involvement, severe peripheral vascular disease causing finger amputation/ulceration, severe esophageal involvement with weight loss, OR repeated manifestations with constitutional symptoms and marked functional limitation.",
+    "summary": "Systemic sclerosis (scleroderma) meeting one of: A) involvement of 2+ organ systems with moderate severity AND constitutional symptoms; B) toe/finger/limb contractures or atrophy with assistive-device need or inability to use upper extremities; C) Raynaud's phenomenon with gangrene or ischemic ulcerations; OR D) repeated manifestations with constitutional symptoms AND marked functional limitation.",
     "synonyms": {
       "systemic sclerosis": [
         "scleroderma",
-        "SSc",
         "diffuse scleroderma",
         "limited scleroderma",
-        "CREST syndrome"
+        "CREST syndrome",
+        "SSc"
       ],
-      "pulmonary fibrosis": [
-        "interstitial lung disease",
-        "ILD"
+      "constitutional symptoms": [
+        "severe fatigue",
+        "fever",
+        "malaise",
+        "involuntary weight loss"
       ],
-      "pulmonary hypertension": [
-        "pulmonary HTN",
-        "PH"
+      "contractures": [
+        "fixed deformity",
+        "joint contracture",
+        "flexion contracture"
       ],
-      "Raynaud": [
-        "Raynaud's phenomenon",
-        "Raynaud syndrome",
-        "digital ischemia"
+      "atrophy": [
+        "muscle atrophy",
+        "limb atrophy",
+        "irreversible damage"
       ],
-      "digital ulcer": [
-        "fingertip ulcer",
-        "digital ulceration",
-        "finger ulcer"
+      "Raynaud's phenomenon": [
+        "Raynauds",
+        "digital ischemia",
+        "vasospasm"
       ],
-      "esophageal dysmotility": [
-        "esophageal involvement",
-        "GERD",
-        "dysphagia"
+      "gangrene": [
+        "digital gangrene",
+        "tissue necrosis"
       ],
-      "skin tightening": [
-        "skin thickening",
-        "sclerodactyly"
+      "ischemic ulcerations": [
+        "digital ulcers",
+        "ischemic ulcers",
+        "fingertip ulcers"
       ],
-      "ANA": [
-        "antinuclear antibody"
+      "assistive device": [
+        "walker",
+        "cane",
+        "crutches",
+        "wheelchair",
+        "rollator"
       ],
-      "anti-Scl-70": [
-        "topoisomerase I antibody"
-      ],
-      "anticentromere": [
-        "centromere antibody"
+      "fine and gross movements": [
+        "dexterity",
+        "grip",
+        "manipulation",
+        "hand function"
       ]
     },
     "rule_json": {
@@ -12950,64 +13247,304 @@
       "path": "ROOT",
       "children": [
         {
+          "logic": "AND",
           "path": "A",
-          "criterion": "Severe involvement of two or more organ/body systems with significant documented constitutional symptoms",
-          "keywords": [
-            "scleroderma",
-            "systemic sclerosis",
-            "ILD",
-            "pulmonary hypertension",
-            "renal crisis",
-            "esophageal involvement",
-            "constitutional symptoms"
+          "criterion": "Involvement of two or more organs/body systems, with both A.1 and A.2",
+          "children": [
+            {
+              "path": "A.1",
+              "criterion": "One organ/body system involved to at least a moderate level of severity",
+              "keywords": [
+                "multi-organ involvement",
+                "pulmonary fibrosis",
+                "esophageal dysmotility",
+                "renal crisis",
+                "cardiac involvement",
+                "moderate severity"
+              ]
+            },
+            {
+              "path": "A.2",
+              "criterion": "At least two of the constitutional symptoms or signs (severe fatigue, fever, malaise, or involuntary weight loss)",
+              "keywords": [
+                "severe fatigue",
+                "fever",
+                "malaise",
+                "involuntary weight loss",
+                "constitutional symptoms"
+              ]
+            }
           ]
         },
         {
+          "logic": "OR",
           "path": "B",
-          "criterion": "One of: pulmonary fibrosis with persistent imaging changes plus low DLCO, severe peripheral vascular disease with finger amputation/ulceration, severe esophageal involvement with weight loss",
-          "keywords": [
-            "pulmonary fibrosis",
-            "DLCO low",
-            "digital ulcer",
-            "fingertip ulcer",
-            "auto-amputation",
-            "weight loss",
-            "esophageal stricture"
+          "criterion": "One of four contracture/atrophy-based functional limitations",
+          "children": [
+            {
+              "logic": "AND",
+              "path": "B.1",
+              "criterion": "Toe contractures or fixed foot deformity AND medical documentation of mobility need",
+              "children": [
+                {
+                  "path": "B.1.contractures",
+                  "criterion": "Toe contractures or fixed deformity of one or both feet",
+                  "keywords": [
+                    "toe contractures",
+                    "foot deformity",
+                    "fixed deformity",
+                    "claw toes"
+                  ]
+                },
+                {
+                  "logic": "OR",
+                  "path": "B.1.medical_need",
+                  "criterion": "Medical documentation of mobility need",
+                  "children": [
+                    {
+                      "path": "B.1.a",
+                      "criterion": "Documented medical need for walker, bilateral canes or crutches, or wheeled+seated mobility device requiring both hands",
+                      "keywords": [
+                        "walker",
+                        "bilateral canes",
+                        "bilateral crutches",
+                        "wheelchair",
+                        "two-hand device"
+                      ]
+                    },
+                    {
+                      "path": "B.1.b",
+                      "criterion": "Inability to use one upper extremity + documented need for one-handed assistive device using the other UE or wheeled+seated device using one hand",
+                      "keywords": [
+                        "one upper extremity",
+                        "one-handed device",
+                        "assistive device",
+                        "unilateral UE inability"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "logic": "AND",
+              "path": "B.2",
+              "criterion": "Finger contractures or fixed deformity in both hands AND inability to use both upper extremities",
+              "children": [
+                {
+                  "path": "B.2.contractures",
+                  "criterion": "Finger contractures or fixed deformity in both hands",
+                  "keywords": [
+                    "finger contractures",
+                    "hand deformity",
+                    "fixed deformity hands",
+                    "sclerodactyly"
+                  ]
+                },
+                {
+                  "path": "B.2.inability",
+                  "criterion": "Inability to use both upper extremities for fine and gross movements",
+                  "keywords": [
+                    "both upper extremities",
+                    "loss of hand function",
+                    "inability to grip",
+                    "fine and gross movements"
+                  ]
+                }
+              ]
+            },
+            {
+              "logic": "AND",
+              "path": "B.3",
+              "criterion": "Atrophy with irreversible damage in one or both lower extremities AND medical documentation of mobility need",
+              "children": [
+                {
+                  "path": "B.3.atrophy",
+                  "criterion": "Atrophy with irreversible damage in one or both lower extremities",
+                  "keywords": [
+                    "lower extremity atrophy",
+                    "irreversible damage",
+                    "muscle wasting",
+                    "limb atrophy"
+                  ]
+                },
+                {
+                  "logic": "OR",
+                  "path": "B.3.medical_need",
+                  "criterion": "Medical documentation of mobility need (same options as B.1)",
+                  "children": [
+                    {
+                      "path": "B.3.a",
+                      "criterion": "Documented medical need for walker, bilateral canes or crutches, or wheeled+seated mobility device requiring both hands",
+                      "keywords": [
+                        "walker",
+                        "bilateral canes",
+                        "bilateral crutches",
+                        "wheelchair",
+                        "two-hand device"
+                      ]
+                    },
+                    {
+                      "path": "B.3.b",
+                      "criterion": "Inability to use one upper extremity + need for one-handed assistive device using the other UE or wheeled+seated device using one hand",
+                      "keywords": [
+                        "one upper extremity",
+                        "one-handed device",
+                        "assistive device"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "logic": "AND",
+              "path": "B.4",
+              "criterion": "Atrophy with irreversible damage in both upper extremities AND inability to use both UEs",
+              "children": [
+                {
+                  "path": "B.4.atrophy",
+                  "criterion": "Atrophy with irreversible damage in both upper extremities",
+                  "keywords": [
+                    "upper extremity atrophy",
+                    "bilateral UE atrophy",
+                    "irreversible damage UE"
+                  ]
+                },
+                {
+                  "path": "B.4.inability",
+                  "criterion": "Inability to use both upper extremities for fine and gross movements",
+                  "keywords": [
+                    "both upper extremities",
+                    "loss of hand function",
+                    "fine and gross movements"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "logic": "OR",
+          "path": "C",
+          "criterion": "Raynaud's phenomenon characterized by C.1 or C.2",
+          "children": [
+            {
+              "path": "C.1",
+              "criterion": "Gangrene involving at least two extremities",
+              "keywords": [
+                "gangrene",
+                "digital gangrene",
+                "tissue necrosis",
+                "two extremities"
+              ]
+            },
+            {
+              "logic": "AND",
+              "path": "C.2",
+              "criterion": "Ischemia with ulcerations of toes or fingers AND medical documentation of one of three findings",
+              "children": [
+                {
+                  "path": "C.2.ischemia",
+                  "criterion": "Ischemia with ulcerations of toes or fingers",
+                  "keywords": [
+                    "digital ulcers",
+                    "ischemic ulcerations",
+                    "fingertip ulcers",
+                    "digital ischemia"
+                  ]
+                },
+                {
+                  "logic": "OR",
+                  "path": "C.2.medical_need",
+                  "criterion": "Medical documentation of mobility/use need",
+                  "children": [
+                    {
+                      "path": "C.2.a",
+                      "criterion": "Documented medical need for walker, bilateral canes or crutches, or wheeled+seated mobility device requiring both hands",
+                      "keywords": [
+                        "walker",
+                        "bilateral canes",
+                        "bilateral crutches",
+                        "wheelchair",
+                        "two-hand device"
+                      ]
+                    },
+                    {
+                      "path": "C.2.b",
+                      "criterion": "Inability to use one upper extremity + need for one-handed assistive device using the other UE or wheeled+seated device using one hand",
+                      "keywords": [
+                        "one upper extremity",
+                        "one-handed device",
+                        "assistive device"
+                      ]
+                    },
+                    {
+                      "path": "C.2.c",
+                      "criterion": "Inability to use both upper extremities for fine and gross movements",
+                      "keywords": [
+                        "both upper extremities",
+                        "loss of hand function",
+                        "fine and gross movements"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
           ]
         },
         {
           "logic": "AND",
-          "path": "C",
-          "criterion": "Repeated manifestations with constitutional symptoms AND marked limitation in one functional area",
+          "path": "D",
+          "criterion": "Repeated manifestations of scleroderma with constitutional symptoms AND marked functional limitation",
           "children": [
             {
-              "path": "C.1",
-              "criterion": "Repeated manifestations of scleroderma",
+              "path": "D.constitutional",
+              "criterion": "Repeated manifestations of scleroderma with at least two constitutional symptoms (severe fatigue, fever, malaise, or involuntary weight loss)",
               "keywords": [
                 "repeated manifestations",
-                "active scleroderma",
-                "scleroderma flare"
-              ]
-            },
-            {
-              "path": "C.2",
-              "criterion": "At least two constitutional symptoms",
-              "keywords": [
-                "fatigue",
+                "severe fatigue",
                 "fever",
                 "malaise",
-                "weight loss"
+                "involuntary weight loss"
               ]
             },
             {
-              "path": "C.3",
-              "criterion": "Marked limitation in ADLs, social functioning, or completing tasks",
-              "keywords": [
-                "ADLs",
-                "social functioning",
-                "concentration",
-                "persistence",
-                "pace"
+              "logic": "OR",
+              "path": "D.marked",
+              "criterion": "Marked limitation in one of three functional areas",
+              "children": [
+                {
+                  "path": "D.1",
+                  "criterion": "Marked limitation of activities of daily living",
+                  "keywords": [
+                    "marked limitation",
+                    "ADLs",
+                    "activities of daily living",
+                    "self-care"
+                  ]
+                },
+                {
+                  "path": "D.2",
+                  "criterion": "Marked limitation in maintaining social functioning",
+                  "keywords": [
+                    "marked limitation",
+                    "social functioning",
+                    "social withdrawal"
+                  ]
+                },
+                {
+                  "path": "D.3",
+                  "criterion": "Marked limitation in completing tasks in a timely manner due to deficiencies in concentration, persistence, or pace",
+                  "keywords": [
+                    "marked limitation",
+                    "concentration",
+                    "persistence",
+                    "pace",
+                    "completing tasks"
+                  ]
+                }
               ]
             }
           ]
