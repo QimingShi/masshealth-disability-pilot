@@ -1,26 +1,125 @@
 {
   "code": "6.06",
-  "title": "Complications of chronic kidney disease",
+  "title": "Nephrotic syndrome",
   "body_system": "genitourinary",
   "version": 1,
-  "summary": "Chronic kidney disease (not requiring dialysis) with three hospitalizations in 12 months for complications such as anemia, osteodystrophy, neuropathy, fluid overload, or atherosclerotic renovascular disease, with each hospitalization ≥48 hours and 30 days apart.",
+  "summary": "Nephrotic syndrome with laboratory findings of heavy proteinuria (either >=10 g/24h OR >=3.5 g/24h with low serum albumin), AND anasarca persisting at least 90 days despite prescribed treatment.",
   "synonyms": {
-    "chronic kidney disease":  ["CKD", "kidney disease"],
-    "renal anemia":            ["anemia of chronic kidney disease", "EPO deficiency"],
-    "renal osteodystrophy":    ["secondary hyperparathyroidism", "PTH elevated", "CKD-MBD"],
-    "uremic neuropathy":       ["uremic neuropathy", "peripheral neuropathy"],
-    "fluid overload":          ["volume overload", "edema", "pulmonary edema"],
-    "atherosclerotic renovascular disease": ["renovascular disease", "renal artery stenosis", "ischemic nephropathy"]
+    "nephrotic syndrome": [
+      "nephrosis",
+      "NS",
+      "minimal change disease",
+      "membranous nephropathy",
+      "FSGS",
+      "focal segmental glomerulosclerosis",
+      "lupus nephritis",
+      "diabetic nephropathy"
+    ],
+    "proteinuria": [
+      "heavy proteinuria",
+      "massive proteinuria",
+      "albuminuria",
+      "24-hour urine protein",
+      "nephrotic range proteinuria"
+    ],
+    "serum albumin": [
+      "low albumin",
+      "hypoalbuminemia"
+    ],
+    "UPCR": [
+      "urine protein-to-creatinine ratio",
+      "urinary protein creatinine ratio",
+      "spot urine ratio"
+    ],
+    "anasarca": [
+      "generalized edema",
+      "massive edema",
+      "peripheral edema",
+      "ascites",
+      "pleural effusion",
+      "pitting edema"
+    ]
   },
   "rule_json": {
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Chronic kidney disease (not requiring chronic dialysis)",
-       "keywords": ["chronic kidney disease", "CKD", "stage 4 CKD", "stage 5 CKD"]},
-      {"path": "B", "criterion": "Three hospitalizations within 12 months for CKD complications, each lasting ≥48 hours, with at least 30 days between hospitalizations",
-       "keywords": ["three hospitalizations", "CKD complications", "fluid overload", "uremic encephalopathy", "hyperkalemia", "metabolic acidosis", "48 hours", "30 days apart"],
-       "duration_months_required": 12}
+      {
+        "logic": "OR",
+        "path": "A",
+        "criterion": "Laboratory findings supporting nephrotic syndrome, documented on at least two occasions >=90 days apart within a 12-month period",
+        "children": [
+          {
+            "path": "A.1",
+            "criterion": "Proteinuria of 10.0 g or greater per 24 hours",
+            "keywords": [
+              "proteinuria 10 g",
+              "heavy proteinuria",
+              "24-hour urine protein",
+              "massive proteinuria"
+            ],
+            "duration_months_required": 12
+          },
+          {
+            "logic": "AND",
+            "path": "A.2",
+            "criterion": "Serum albumin <=3.0 g/dL with proteinuria >=3.5 g/24h or UPCR >=3.5",
+            "children": [
+              {
+                "path": "A.2.albumin",
+                "criterion": "Serum albumin of 3.0 g/dL or less",
+                "keywords": [
+                  "serum albumin",
+                  "low albumin",
+                  "hypoalbuminemia",
+                  "albumin 3.0"
+                ]
+              },
+              {
+                "logic": "OR",
+                "path": "A.2.urine",
+                "criterion": "Heavy urinary protein loss",
+                "children": [
+                  {
+                    "path": "A.2.a",
+                    "criterion": "Proteinuria of 3.5 g or greater per 24 hours",
+                    "keywords": [
+                      "proteinuria 3.5 g",
+                      "nephrotic range proteinuria",
+                      "24-hour urine protein"
+                    ]
+                  },
+                  {
+                    "path": "A.2.b",
+                    "criterion": "Urine total-protein-to-creatinine ratio of 3.5 or greater",
+                    "keywords": [
+                      "UPCR",
+                      "urine protein-to-creatinine ratio",
+                      "urinary protein creatinine ratio",
+                      "spot urine ratio"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "B",
+        "criterion": "Anasarca persisting for at least 90 days despite prescribed treatment",
+        "keywords": [
+          "anasarca",
+          "generalized edema",
+          "massive edema",
+          "peripheral edema",
+          "ascites",
+          "pleural effusion",
+          "pitting edema",
+          "90 days",
+          "3 months"
+        ]
+      }
     ]
   }
 }

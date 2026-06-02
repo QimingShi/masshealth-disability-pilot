@@ -1,0 +1,120 @@
+{
+  "code": "8.09",
+  "title": "Chronic conditions of the skin or mucous membranes",
+  "body_system": "skin",
+  "version": 1,
+  "summary": "Chronic skin lesions or contractures persisting despite >=3 months of prescribed treatment AND causing impairment-related functional limitations (loss of use of upper extremities, inability to stand, or inability to maintain upright posture).",
+  "synonyms": {
+    "chronic skin lesions": [
+      "chronic skin condition",
+      "persistent skin lesions",
+      "chronic ulceration",
+      "non-healing lesions"
+    ],
+    "contractures": [
+      "scar contracture",
+      "joint contracture",
+      "burn contracture",
+      "skin contracture"
+    ],
+    "functional limitations": [
+      "impairment",
+      "ADL limitation",
+      "loss of use",
+      "disability"
+    ],
+    "fine and gross movements": [
+      "dexterity",
+      "manual function",
+      "grip",
+      "manipulation",
+      "hand function"
+    ],
+    "assistive device": [
+      "walker",
+      "cane",
+      "crutches",
+      "wheelchair",
+      "rollator",
+      "ambulatory aid"
+    ]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Chronic skin lesions or contractures causing chronic pain or other physical limitation(s) that persist despite adherence to prescribed medical treatment for at least 3 months",
+        "keywords": [
+          "chronic skin lesions",
+          "contractures",
+          "scar contracture",
+          "persistent lesions",
+          "chronic pain",
+          "3 months",
+          "despite treatment",
+          "refractory"
+        ]
+      },
+      {
+        "logic": "OR",
+        "path": "B",
+        "criterion": "Impairment-related functional limitations demonstrated by one of B.1-B.4",
+        "children": [
+          {
+            "path": "B.1",
+            "criterion": "Inability to use both upper extremities for fine and gross movements due to chronic skin lesions or contractures",
+            "keywords": [
+              "both upper extremities",
+              "loss of hand function",
+              "bilateral upper extremity",
+              "inability to grip",
+              "bilateral contractures",
+              "fine motor",
+              "gross motor"
+            ]
+          },
+          {
+            "path": "B.2",
+            "criterion": "Inability to use one upper extremity due to lesions/contractures, plus documented need for assistive device requiring the other upper extremity",
+            "keywords": [
+              "one upper extremity",
+              "unilateral contracture",
+              "assistive device",
+              "walker",
+              "crutches",
+              "cane",
+              "rollator"
+            ]
+          },
+          {
+            "path": "B.3",
+            "criterion": "Inability to stand up from a seated position and maintain upright position due to skin lesions/contractures in at least two extremities (including perineum/inguinal involvement)",
+            "keywords": [
+              "inability to stand",
+              "inability to rise from seated",
+              "perineum involvement",
+              "inguinal involvement",
+              "two extremities",
+              "lower extremity contractures"
+            ]
+          },
+          {
+            "path": "B.4",
+            "criterion": "Inability to maintain upright position while standing or walking due to lesions/contractures in both lower extremities (including perineum/inguinal involvement)",
+            "keywords": [
+              "inability to walk",
+              "inability to stand",
+              "both lower extremities",
+              "bilateral lower extremity",
+              "perineum",
+              "inguinal",
+              "ambulation"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

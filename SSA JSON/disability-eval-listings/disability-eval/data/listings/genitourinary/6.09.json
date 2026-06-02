@@ -1,22 +1,68 @@
 {
   "code": "6.09",
-  "title": "Kidney transplant",
+  "title": "Complications of chronic kidney disease",
   "body_system": "genitourinary",
   "version": 1,
-  "summary": "Kidney transplantation; considered disabled for 1 year following the date of transplantation.",
+  "summary": "Chronic kidney disease (not requiring chronic dialysis) with three hospitalizations within a 12-month period for CKD complications, each lasting at least 48 hours, occurring at least 30 days apart.",
   "synonyms": {
-    "kidney transplant":       ["renal transplant", "kidney transplantation", "renal transplantation"],
-    "operative report":        ["op report", "transplant report"]
+    "chronic kidney disease": [
+      "CKD",
+      "stage 4 CKD",
+      "stage 5 CKD",
+      "renal insufficiency"
+    ],
+    "hospitalization": [
+      "inpatient admission",
+      "hospital stay",
+      "hospital admission",
+      "admission"
+    ],
+    "CKD complications": [
+      "uremic encephalopathy",
+      "hyperkalemia",
+      "fluid overload",
+      "metabolic acidosis",
+      "uremia",
+      "hypertensive crisis",
+      "acute kidney failure",
+      "congestive heart failure",
+      "stroke"
+    ]
   },
   "rule_json": {
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Kidney transplantation documented by operative report or transplant center records",
-       "keywords": ["kidney transplant", "renal transplant", "kidney transplantation", "operative report"]},
-      {"path": "B", "criterion": "Within 1 year of transplant date (claimant considered disabled for 1 year post-transplant)",
-       "keywords": ["1 year", "transplant date", "post-transplant"],
-       "duration_months_required": 12}
+      {
+        "path": "A",
+        "criterion": "Chronic kidney disease (not requiring chronic dialysis)",
+        "keywords": [
+          "chronic kidney disease",
+          "CKD",
+          "stage 4 CKD",
+          "stage 5 CKD",
+          "renal insufficiency"
+        ]
+      },
+      {
+        "path": "B",
+        "criterion": "Three hospitalizations within 12 months for CKD complications, each lasting >=48 hours, with at least 30 days between hospitalizations",
+        "keywords": [
+          "three hospitalizations",
+          "CKD complications",
+          "fluid overload",
+          "uremic encephalopathy",
+          "hyperkalemia",
+          "metabolic acidosis",
+          "stroke",
+          "congestive heart failure",
+          "hypertensive crisis",
+          "acute kidney failure",
+          "48 hours",
+          "30 days apart"
+        ],
+        "duration_months_required": 12
+      }
     ]
   }
 }

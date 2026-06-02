@@ -1,23 +1,126 @@
 {
   "code": "5.07",
-  "title": "Short bowel syndrome (SBS)",
+  "title": "Intestinal failure",
   "body_system": "digestive",
   "version": 1,
-  "summary": "Short bowel syndrome due to surgical resection of more than half of small intestine, with dependence on daily parenteral nutrition via central venous catheter.",
+  "summary": "Intestinal failure due to short bowel syndrome, chronic motility disorders, or extensive small bowel mucosal disease, resulting in dependence on daily parenteral nutrition via a central venous catheter for at least 12 months.",
   "synonyms": {
-    "short bowel syndrome":    ["SBS", "short gut syndrome", "intestinal failure"],
-    "small bowel resection":   ["bowel resection", "intestinal resection", "small intestine resection"],
-    "TPN":                     ["total parenteral nutrition", "parenteral nutrition", "PN", "central line nutrition"],
-    "central venous catheter": ["CVC", "central line", "Hickman", "PICC", "port-a-cath"]
+    "intestinal failure": [
+      "intestinal insufficiency",
+      "gut failure"
+    ],
+    "short bowel syndrome": [
+      "SBS",
+      "small bowel resection",
+      "post-resection"
+    ],
+    "chronic motility disorder": [
+      "chronic intestinal pseudo-obstruction",
+      "CIPO",
+      "motility disorder",
+      "intestinal dysmotility"
+    ],
+    "mucosal disease": [
+      "enteropathy",
+      "villous atrophy",
+      "small bowel mucosal injury"
+    ],
+    "parenteral nutrition": [
+      "TPN",
+      "total parenteral nutrition",
+      "PN",
+      "daily PN",
+      "HPN",
+      "home parenteral nutrition"
+    ],
+    "central venous catheter": [
+      "central line",
+      "Hickman",
+      "Broviac",
+      "PICC line",
+      "tunneled catheter",
+      "port"
+    ],
+    "12 months": [
+      "1 year",
+      "one year",
+      "twelve months",
+      "ongoing"
+    ]
   },
   "rule_json": {
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Surgical resection of more than half of the small intestine",
-       "keywords": ["small bowel resection", "intestinal resection", "more than half resected", "operative report"]},
-      {"path": "B", "criterion": "Dependence on daily parenteral nutrition via central venous catheter",
-       "keywords": ["TPN", "total parenteral nutrition", "central venous catheter", "central line", "Hickman", "PICC", "daily PN"]}
+      {
+        "logic": "OR",
+        "path": "A",
+        "criterion": "Intestinal failure due to one of three underlying conditions",
+        "children": [
+          {
+            "path": "A.1",
+            "criterion": "Short bowel syndrome",
+            "keywords": [
+              "short bowel syndrome",
+              "SBS",
+              "small bowel resection",
+              "more than half resected",
+              "operative report"
+            ]
+          },
+          {
+            "path": "A.2",
+            "criterion": "Chronic motility disorder",
+            "keywords": [
+              "chronic intestinal pseudo-obstruction",
+              "CIPO",
+              "motility disorder",
+              "intestinal dysmotility",
+              "gastroparesis",
+              "small bowel dysmotility"
+            ]
+          },
+          {
+            "path": "A.3",
+            "criterion": "Extensive small bowel mucosal disease",
+            "keywords": [
+              "mucosal disease",
+              "enteropathy",
+              "villous atrophy",
+              "extensive Crohn's",
+              "radiation enteropathy",
+              "mucosal injury"
+            ]
+          }
+        ]
+      },
+      {
+        "path": "B",
+        "criterion": "Dependence on daily parenteral nutrition via a central venous catheter",
+        "keywords": [
+          "TPN",
+          "total parenteral nutrition",
+          "daily PN",
+          "central venous catheter",
+          "central line",
+          "Hickman",
+          "PICC",
+          "home parenteral nutrition",
+          "HPN"
+        ]
+      },
+      {
+        "path": "C",
+        "criterion": "Parenteral nutrition dependence lasting at least 12 months",
+        "keywords": [
+          "12 months",
+          "1 year",
+          "twelve months",
+          "ongoing",
+          "chronic dependence"
+        ],
+        "duration_months_required": 12
+      }
     ]
   }
 }

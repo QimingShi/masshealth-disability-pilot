@@ -1,0 +1,46 @@
+{
+  "code": "5.11",
+  "title": "Small intestine transplantation",
+  "body_system": "digestive",
+  "version": 1,
+  "summary": "Small intestine transplantation; considered disabled for 1 year from the date of transplant, after which residual impairment is evaluated.",
+  "synonyms": {
+    "small intestine transplant": [
+      "small bowel transplant",
+      "intestinal transplant",
+      "isolated intestinal transplant"
+    ],
+    "transplant": [
+      "transplantation",
+      "operative report"
+    ]
+  },
+  "rule_json": {
+    "logic": "AND",
+    "path": "ROOT",
+    "children": [
+      {
+        "path": "A",
+        "criterion": "Small intestine transplantation documented by operative report or transplant center records",
+        "keywords": [
+          "small intestine transplant",
+          "small bowel transplant",
+          "intestinal transplant",
+          "isolated intestinal transplantation",
+          "operative report"
+        ]
+      },
+      {
+        "path": "B",
+        "criterion": "Within 1 year of transplant date (claimant considered disabled for 1 year post-transplant)",
+        "keywords": [
+          "1 year",
+          "12 months",
+          "transplant date",
+          "post-transplant"
+        ],
+        "duration_months_required": 12
+      }
+    ]
+  }
+}

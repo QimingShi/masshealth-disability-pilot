@@ -1,24 +1,49 @@
 {
   "code": "6.04",
-  "title": "Chronic kidney disease with chronic peritoneal dialysis",
+  "title": "Chronic kidney disease with kidney transplant",
   "body_system": "genitourinary",
   "version": 1,
-  "summary": "Chronic kidney disease with chronic peritoneal dialysis lasting or expected to last for 12 continuous months.",
+  "summary": "Chronic kidney disease with kidney transplantation; claimant considered disabled for 1 year following the date of transplant, after which residual impairment is evaluated.",
   "synonyms": {
-    "peritoneal dialysis":     ["PD", "CAPD", "continuous ambulatory peritoneal dialysis", "CCPD", "continuous cycler peritoneal dialysis", "APD"],
-    "ESRD":                    ["end-stage renal disease", "ESKD", "kidney failure"],
-    "PD catheter":             ["peritoneal dialysis catheter", "Tenckhoff catheter"],
-    "12 months":               ["1 year", "one year", "ongoing", "chronic"]
+    "kidney transplant": [
+      "renal transplant",
+      "kidney transplantation",
+      "deceased donor transplant",
+      "living donor transplant",
+      "KT"
+    ],
+    "transplant": [
+      "transplantation",
+      "operative report"
+    ]
   },
   "rule_json": {
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Chronic kidney disease requiring chronic peritoneal dialysis",
-       "keywords": ["peritoneal dialysis", "PD", "CAPD", "CCPD", "Tenckhoff catheter", "ESRD"]},
-      {"path": "B", "criterion": "Peritoneal dialysis lasting or expected to last 12 continuous months",
-       "keywords": ["12 months", "1 year", "chronic", "ongoing"],
-       "duration_months_required": 12}
+      {
+        "path": "A",
+        "criterion": "Kidney transplantation documented by operative report or transplant center records",
+        "keywords": [
+          "kidney transplant",
+          "renal transplant",
+          "kidney transplantation",
+          "deceased donor transplant",
+          "living donor transplant",
+          "operative report"
+        ]
+      },
+      {
+        "path": "B",
+        "criterion": "Within 1 year of transplant date (claimant considered disabled for 1 year post-transplant)",
+        "keywords": [
+          "1 year",
+          "12 months",
+          "transplant date",
+          "post-transplant"
+        ],
+        "duration_months_required": 12
+      }
     ]
   }
 }
