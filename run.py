@@ -31,7 +31,7 @@ from pipeline.candidates import identify_candidates
 from pipeline.retrieve import retrieve_for_leaf
 from pipeline.evaluate import evaluate_leaf, LeafResult
 from pipeline.consolidate import consolidate, form_verdict, load_bearing_leaf_paths
-from pipeline.output import render_form, render_form_html, write_form
+from pipeline.output import render_form, render_form_html, render_case_summary_html, write_form
 from pipeline.annotate_pdf import annotate_pdf, collect_cited_chunk_ids
 
 
@@ -317,6 +317,9 @@ def run_from_db(case_id_str: str) -> int:
         leaf_results_by_listing: dict[str, dict[str, LeafResult]] = {}
         # Per-listing rollups for Layer 3 (case_summaries)
         listing_outcomes: list[dict] = []
+        # listing.code -> Listing dataclass / NodeVerdict  (for case-summary HTML)
+        listings_by_code: dict[str, Listing] = {}
+        root_verdicts_by_code: dict[str, "NodeVerdict"] = {}
 
         for cand in candidates:
             listing_pk = cand.listing_pk
@@ -473,6 +476,8 @@ def run_from_db(case_id_str: str) -> int:
             print(f"      -> {html_path}")
 
             leaf_results_by_listing[listing.code] = leaf_results
+            listings_by_code[listing.code] = listing
+            root_verdicts_by_code[listing.code] = root
 
         # Persist all retrieved chunks for this case's matcher run. Idempotent
         # (DELETE WHERE case_id then INSERT) so re-runs replace, never append.
@@ -500,6 +505,25 @@ def run_from_db(case_id_str: str) -> int:
         )
         print(f"\nCase summary: {case_text}")
         print(f"Overall groundedness: {overall_g:.2f}  (elapsed {elapsed_total:.1f}s)")
+
+        # ---- Reviewer-facing case-summary HTML (3-column top table + all forms) ----
+        # Single document the reviewer opens to navigate the entire case. The
+        # top table maps allegations -> medical evidence -> SSI listing met;
+        # detail sections below mirror the per-listing forms with anchor links.
+        summary_html = render_case_summary_html(
+            case_id=case_id_str,
+            allegations=allegation_rows,
+            candidates=candidates,
+            leaf_results_by_listing=leaf_results_by_listing,
+            listing_outcomes=listing_outcomes,
+            chunks_by_id=chunks_by_id,
+            listings_by_code=listings_by_code,
+            root_verdicts_by_code=root_verdicts_by_code,
+            source_pdf_path=html_pdf_target,
+        )
+        summary_path = out_dir / "0_CASE_SUMMARY.html"
+        write_form(summary_path, summary_html)
+        print(f"\nCase-summary HTML: {summary_path}")
 
         # Optional: annotate the local source PDF with cited-chunk bboxes
         if annotated_pdf_path and bbox_sidecar_path and source_pdf_path:

@@ -382,6 +382,366 @@ def _checkbox_html(verdict: str) -> str:
     }.get(verdict, '<span class="box">?</span>')
 
 
+# =============================================================================
+# Case-level summary HTML — one document aggregating all listings
+# =============================================================================
+#
+# Output: a single 0_CASE_SUMMARY.html per case containing:
+#   1. Headline summary (overall verdict, groundedness, candidate count)
+#   2. 3-column table: Impairment Alleged | Medical Evidence Found | SSI Listing Met
+#      (one row per allegation; cell content links to the detailed listing section)
+#   3. Concatenated per-listing detail sections, prefixed with anchor IDs so
+#      table links jump to the right form
+#
+# Designed to be the reviewer's single-page entry point — they open this one
+# file, scan the table, then click into the per-listing details below.
+
+
+def render_case_summary_html(
+    case_id: str,
+    allegations: list[dict],
+    candidates: list,                              # list[DBCandidate]
+    leaf_results_by_listing: dict[str, dict[str, LeafResult]],
+    listing_outcomes: list[dict],
+    chunks_by_id: dict[str, Chunk],
+    listings_by_code: dict[str, Listing],
+    root_verdicts_by_code: dict[str, NodeVerdict],
+    source_pdf_path: Path | None = None,
+) -> str:
+    """Render a single HTML document with summary table + all listing forms.
+
+    Args:
+        case_id: human-readable case ID (e.g. '2181878')
+        allegations: list of {text, source_chunk_pk, source_chunk_id, ...}
+            from get_allegations_for_case() or run_from_db's allegation_rows.
+        candidates: list of DBCandidate objects from find_candidates_sql.
+            We use candidate.reasoning bits to map allegations -> listings.
+        leaf_results_by_listing: {listing_code: {leaf_path: LeafResult}}
+            from the matcher's run.
+        listing_outcomes: list of {listing_pk, listing_code, listing_title,
+            form_verdict, groundedness_score, candidate_rank}.
+        chunks_by_id: {chunk_id_str: Chunk} for citation rendering.
+        listings_by_code: {listing_code: Listing} so we can pass each into
+            render_form_html for the detail sections.
+        root_verdicts_by_code: {listing_code: NodeVerdict} (consolidated root)
+        source_pdf_path: optional, enables clickable citations.
+    """
+    # --- Build allegation -> listing mapping by parsing candidate.reasoning ---
+    # Each candidate.reasoning entry looks like:
+    #   "Lung cancer ~ summary (0.78)"
+    # We match the leading allegation text against each allegation in our
+    # list to attribute the candidate.
+    alleg_to_candidates: dict[int, list] = {}      # alleg index -> list of candidates
+    unmatched_candidates: list = []
+    for cand in candidates:
+        attributed = False
+        for bit in cand.reasoning or []:
+            # Split at " ~ summary" to get the allegation prefix
+            alleg_prefix = bit.split(" ~ summary")[0].strip()
+            for i, alleg in enumerate(allegations):
+                if alleg_prefix.lower() in alleg["text"].lower() or \
+                        alleg["text"].lower() in alleg_prefix.lower():
+                    alleg_to_candidates.setdefault(i, []).append(cand)
+                    attributed = True
+                    break
+            if attributed:
+                break
+        if not attributed:
+            unmatched_candidates.append(cand)
+
+    # --- For each (allegation, candidate) row, pick the strongest evidence ---
+    def best_evidence_for_listing(listing_code: str) -> tuple[Chunk | None, str, str]:
+        """Pick the single most authoritative cited chunk + its quote.
+        Returns (chunk, quote, leaf_path) or (None, '', '')."""
+        leaf_results = leaf_results_by_listing.get(listing_code, {})
+        # Prefer leaves with verdict='met', then evidence_strength logic,
+        # then by chunk's encounter_date / page recency. Simplest heuristic:
+        # take the first leaf with verdict=met and at least one evidence item.
+        best_chunk = None
+        best_quote = ""
+        best_leaf_path = ""
+        # Pass 1: any met-verdict leaf with evidence
+        for path, lr in leaf_results.items():
+            if lr.verdict == "met" and lr.evidence:
+                ev = lr.evidence[0]
+                chunk = chunks_by_id.get(ev.chunk_id)
+                if chunk:
+                    return chunk, ev.quote, path
+        # Pass 2: any not_met-verdict leaf with evidence
+        for path, lr in leaf_results.items():
+            if lr.verdict == "not_met" and lr.evidence:
+                ev = lr.evidence[0]
+                chunk = chunks_by_id.get(ev.chunk_id)
+                if chunk:
+                    return chunk, ev.quote, path
+        # Pass 3: any leaf with any evidence (insufficient with cited chunks)
+        for path, lr in leaf_results.items():
+            if lr.evidence:
+                ev = lr.evidence[0]
+                chunk = chunks_by_id.get(ev.chunk_id)
+                if chunk:
+                    return chunk, ev.quote, path
+        return None, "", ""
+
+    # --- Build the summary table rows ---
+    outcomes_by_code = {o["listing_code"]: o for o in listing_outcomes}
+
+    def render_evidence_cell(chunk: Chunk | None, quote: str) -> str:
+        if not chunk:
+            return '<em style="color: #888;">No chart evidence found</em>'
+        provider = chunk.doc_title or chunk.doc_type or "?"
+        # Strip leading e.g. "doc-04 — " prefix from doc_title if present
+        if " — " in provider:
+            provider = provider.split(" — ", 1)[1].strip()
+        date = chunk.encounter_date or "?"
+        page = chunk.page_start or 0
+        section = chunk.section or "?"
+        href = _pdf_page_link(source_pdf_path, page) if page else None
+        link_html = (
+            f'<a href="{escape(href)}" target="_blank" rel="noopener">'
+            f'page {page}</a>'
+        ) if href else f'page {page}'
+        quote_short = quote[:200] + "..." if len(quote) > 200 else quote
+        return (
+            f'<div class="ev-meta">'
+            f'<strong>Provider:</strong> {escape(provider)}<br>'
+            f'<strong>Date of Service:</strong> {escape(date)}<br>'
+            f'<strong>Section:</strong> {escape(section)} ({link_html})'
+            f'</div>'
+            f'<div class="ev-quote">"<em>{escape(quote_short)}</em>"</div>'
+        )
+
+    def render_listing_cell(listing_code: str) -> str:
+        outcome = outcomes_by_code.get(listing_code, {})
+        title = outcome.get("listing_title", "")
+        verdict = outcome.get("form_verdict", "")
+        grounded = outcome.get("groundedness_score", 0)
+        verdict_class = {
+            "Meets": "v-met",
+            "Does not meet/equal": "v-not_met",
+        }.get(verdict, "v-insufficient")
+        anchor = f"listing-{listing_code.replace('.', '-')}"
+        return (
+            f'<a href="#{anchor}" class="listing-link">'
+            f'<strong>{escape(listing_code)}</strong> {escape(title)}</a><br>'
+            f'<span class="cell-verdict {verdict_class}">{escape(verdict)}</span> '
+            f'<span class="cell-grounded">groundedness {grounded:.2f}</span>'
+        )
+
+    table_rows = []
+    for i, alleg in enumerate(allegations):
+        alleg_text = escape(alleg.get("text", ""))
+        cands = alleg_to_candidates.get(i, [])
+        if not cands:
+            # Allegation didn't surface any listing
+            table_rows.append(
+                f'<tr><td>{alleg_text}</td>'
+                f'<td><em style="color:#888;">No medical evidence retrieved for this allegation</em></td>'
+                f'<td><em style="color:#888;">No listing matched above threshold</em></td></tr>'
+            )
+            continue
+        # Render one row per (allegation, candidate) pair
+        for cand in cands:
+            code = cand.listing.code
+            chunk, quote, _leaf_path = best_evidence_for_listing(code)
+            ev_cell = render_evidence_cell(chunk, quote)
+            listing_cell = render_listing_cell(code)
+            table_rows.append(
+                f'<tr><td>{alleg_text}</td><td>{ev_cell}</td><td>{listing_cell}</td></tr>'
+            )
+
+    # Note any candidates that didn't get attributed to an allegation
+    if unmatched_candidates:
+        for cand in unmatched_candidates:
+            code = cand.listing.code
+            chunk, quote, _leaf_path = best_evidence_for_listing(code)
+            ev_cell = render_evidence_cell(chunk, quote)
+            listing_cell = render_listing_cell(code)
+            table_rows.append(
+                f'<tr><td><em style="color:#888;">(listing surfaced from combined allegations)</em></td>'
+                f'<td>{ev_cell}</td><td>{listing_cell}</td></tr>'
+            )
+
+    rows_html = "\n".join(table_rows) or \
+                '<tr><td colspan="3"><em>No allegations to summarize.</em></td></tr>'
+
+    # --- Headline summary ---
+    n_meets = sum(1 for o in listing_outcomes if o["form_verdict"] == "Meets")
+    n_dnm = sum(1 for o in listing_outcomes if o["form_verdict"] == "Does not meet/equal")
+    n_insuf = sum(1 for o in listing_outcomes if "Insufficient" in o["form_verdict"])
+    avg_grounded = (
+        sum(o.get("groundedness_score") or 0 for o in listing_outcomes)
+        / max(1, len(listing_outcomes))
+    )
+
+    # --- Detail sections (one per listing) ---
+    detail_sections = []
+    # Order: candidate_rank ascending (best-first)
+    ordered_codes = sorted(
+        outcomes_by_code.keys(),
+        key=lambda c: outcomes_by_code[c].get("candidate_rank", 99),
+    )
+    for code in ordered_codes:
+        listing = listings_by_code.get(code)
+        root = root_verdicts_by_code.get(code)
+        leaf_results = leaf_results_by_listing.get(code, {})
+        if not listing or not root:
+            continue
+        # Reuse render_form_html for the full per-listing form
+        form_html = render_form_html(
+            listing=listing,
+            root_verdict=root,
+            leaf_results=leaf_results,
+            case_id=case_id,
+            chunks_by_id=chunks_by_id,
+            source_pdf_path=source_pdf_path,
+        )
+        # Extract just the <body> contents from the rendered form — we don't
+        # want a full <html> nested inside our own. Slice from after <body>
+        # to before </body>.
+        body_start = form_html.find("<body>")
+        body_end = form_html.rfind("</body>")
+        inner = form_html[body_start + 6:body_end] if body_start >= 0 else form_html
+        anchor = f"listing-{code.replace('.', '-')}"
+        detail_sections.append(
+            f'<section id="{anchor}" class="listing-detail">'
+            f'<div class="back-to-top"><a href="#top">↑ Back to summary table</a></div>'
+            f'{inner}</section>'
+        )
+
+    return _CASE_SUMMARY_TEMPLATE.format(
+        case_id=escape(case_id),
+        n_meets=n_meets,
+        n_dnm=n_dnm,
+        n_insuf=n_insuf,
+        n_total=len(listing_outcomes),
+        avg_grounded=avg_grounded,
+        table_rows=rows_html,
+        detail_sections="\n\n".join(detail_sections),
+    )
+
+
+_CASE_SUMMARY_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Case {case_id} — Disability Review Summary</title>
+<style>
+  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 1100px; margin: 2em auto; padding: 0 1em; line-height: 1.5; color: #1a1a1a; }}
+  h1, h2, h3, h4 {{ color: #0a0a0a; }}
+  h1 {{ font-size: 1.6em; margin-bottom: 0; }}
+  .org {{ color: #555; font-size: 0.95em; margin-top: 0.3em; margin-bottom: 1.5em; }}
+  .case-headline {{ background: #f5f5f5; padding: 1em 1.5em; border-radius: 6px;
+                    margin: 1em 0 2em 0; font-size: 1.05em; }}
+  .case-headline .num {{ font-weight: 700; font-size: 1.4em; color: #1a56c4; }}
+  .case-headline .pill {{ display: inline-block; padding: 0.15em 0.6em; margin: 0 0.3em;
+                          border-radius: 12px; font-size: 0.85em; font-weight: 600; }}
+  .pill.met {{ background: #e6f4ea; color: #0b6027; border: 1px solid #1e8e3e; }}
+  .pill.dnm {{ background: #fce8e6; color: #8c1d18; border: 1px solid #d93025; }}
+  .pill.insuf {{ background: #fef7e0; color: #7a5300; border: 1px solid #f9ab00; }}
+  table.summary {{ width: 100%; border-collapse: collapse; margin: 1em 0 2em 0; }}
+  table.summary th {{ background: #1a3a5c; color: #fff; padding: 0.8em 1em;
+                       text-align: left; font-size: 0.95em; vertical-align: top; }}
+  table.summary td {{ padding: 0.8em 1em; border: 1px solid #d0d4d9;
+                       vertical-align: top; font-size: 0.92em; }}
+  table.summary tr:nth-child(even) td {{ background: #f8f9fa; }}
+  .ev-meta {{ font-size: 0.88em; line-height: 1.45; margin-bottom: 0.4em; }}
+  .ev-quote {{ background: #fafafa; padding: 0.4em 0.6em;
+                border-left: 3px solid #aac4f5; font-size: 0.88em; }}
+  .listing-link {{ color: #1a56c4; text-decoration: none; }}
+  .listing-link:hover {{ text-decoration: underline; }}
+  .cell-verdict {{ display: inline-block; padding: 0.1em 0.55em; margin-top: 0.3em;
+                    border-radius: 10px; font-size: 0.82em; font-weight: 600; }}
+  .cell-verdict.v-met {{ background: #e6f4ea; color: #0b6027; }}
+  .cell-verdict.v-not_met {{ background: #fce8e6; color: #8c1d18; }}
+  .cell-verdict.v-insufficient {{ background: #fef7e0; color: #7a5300; }}
+  .cell-grounded {{ color: #555; font-size: 0.82em; }}
+  .listing-detail {{ border-top: 3px solid #1a3a5c; padding-top: 1em; margin-top: 3em; }}
+  .back-to-top {{ font-size: 0.85em; margin-bottom: 0.5em; }}
+  .back-to-top a {{ color: #1a56c4; text-decoration: none; }}
+  /* Inherit per-listing form styles from render_form_html — these mirror what's there */
+  .meta {{ background: #f5f5f5; padding: 0.5em 1em; border-left: 4px solid #888;
+          margin: 1em 0; font-size: 0.95em; }}
+  .verdict {{ font-size: 1.3em; padding: 0.6em 1em; margin: 1.5em 0;
+             border: 2px solid; border-radius: 6px; }}
+  .verdict.v-met        {{ background: #e6f4ea; border-color: #1e8e3e; color: #0b6027; }}
+  .verdict.v-not_met    {{ background: #fce8e6; border-color: #d93025; color: #8c1d18; }}
+  .verdict.v-insufficient {{ background: #fef7e0; border-color: #f9ab00; color: #7a5300; }}
+  .box {{ font-size: 1.1em; padding: 0 0.2em; }}
+  .box.met {{ color: #1e8e3e; }}
+  .box.not_met {{ color: #888; }}
+  .box.insufficient {{ color: #f9ab00; }}
+  .leaf, .internal {{ margin: 0.6em 0; padding: 0.4em 0.6em; border-left: 3px solid #ccc; }}
+  .leaf.v-met        {{ border-left-color: #1e8e3e; background: #f4fbf6; }}
+  .leaf.v-not_met    {{ border-left-color: #d93025; background: #fdf3f2; }}
+  .leaf.v-insufficient {{ border-left-color: #f9ab00; background: #fef9eb; }}
+  .leaf-path {{ font-weight: 600; font-family: ui-monospace, monospace; }}
+  .leaf-crit {{ color: #333; }}
+  .rationale {{ margin-top: 0.3em; color: #444; }}
+  .evidence {{ list-style: none; padding-left: 0; margin: 0.4em 0; }}
+  .evidence li {{ margin: 0.35em 0; padding: 0.25em 0.5em;
+                  background: #fff; border-left: 2px solid #ccd; }}
+  a.cite {{ display: inline-block; padding: 0 0.35em; background: #e8f0fe;
+            border: 1px solid #aac4f5; border-radius: 4px; color: #1a56c4;
+            text-decoration: none; font-size: 0.85em; font-weight: 600; }}
+  a.cite:hover {{ background: #d0dffb; }}
+  .cite-label {{ color: #555; font-style: italic; font-size: 0.9em; }}
+  .quote {{ color: #1a1a1a; }}
+  blockquote.quote {{ margin: 0.3em 0 0.6em 1.5em; padding: 0.3em 0.6em;
+                      border-left: 3px solid #aac4f5; color: #222; font-style: italic; }}
+  .citations code {{ font-size: 0.85em; background: #f0f0f0;
+                     padding: 1px 4px; border-radius: 3px; }}
+  hr.section {{ border: none; border-top: 1px solid #ddd; margin: 2em 0; }}
+  .disclaimer {{ font-size: 0.85em; color: #666; margin-top: 2em;
+                  border-top: 1px solid #ddd; padding-top: 1em; }}
+</style>
+</head>
+<body id="top">
+
+<h1>Case {case_id} — Disability Review Summary</h1>
+<p class="org">UMass Chan Medical School — Disability Evaluation Services — SSI Listings (Adult)</p>
+
+<div class="case-headline">
+  <span class="num">{n_total}</span> candidate listing(s) evaluated:
+  <span class="pill met">{n_meets} Meets</span>
+  <span class="pill dnm">{n_dnm} Does not meet</span>
+  <span class="pill insuf">{n_insuf} Insufficient</span>
+  &nbsp; | &nbsp; Overall groundedness: <strong>{avg_grounded:.2f}</strong>
+</div>
+
+<h2>Possible Visualization of Output Report</h2>
+<table class="summary">
+  <thead>
+    <tr>
+      <th style="width: 22%;">1. List of Impairments Alleged in Supplement</th>
+      <th style="width: 43%;">2. Medical Evidence Found</th>
+      <th style="width: 35%;">3. SSI Listing Met<br>(blue book or "Cheat Sheet")</th>
+    </tr>
+  </thead>
+  <tbody>
+{table_rows}
+  </tbody>
+</table>
+
+<hr class="section">
+<h2>Detailed Listing Evaluations</h2>
+<p style="color:#555; font-size:0.9em;">Click any listing in the table above to jump to its
+detailed form below. Each form shows the AND/OR criterion tree, per-leaf verdicts, and
+chart citations.</p>
+
+{detail_sections}
+
+<p class="disclaimer">
+  Auto-generated by the MassHealth Disability Reviewer Assistant. Reviewer must verify
+  all citations against the source PDF before signing.
+</p>
+
+</body>
+</html>
+"""
+
+
 _HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
