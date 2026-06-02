@@ -528,19 +528,18 @@ def render_case_summary_html(
             f'<span class="cell-grounded">groundedness {grounded:.2f}</span>'
         )
 
+    # Build table rows. ONLY include rows where an allegation cleanly maps to
+    # a candidate listing -- per the user's spec, the summary table is the
+    # "primary findings" view, not an exhaustive log. Allegations with no
+    # candidate (and candidates with no allegation attribution) are dropped
+    # from the table; both are still represented in the detail sections and
+    # the sidebar navigation, so nothing is hidden.
     table_rows = []
     for i, alleg in enumerate(allegations):
-        alleg_text = escape(alleg.get("text", ""))
         cands = alleg_to_candidates.get(i, [])
         if not cands:
-            # Allegation didn't surface any listing
-            table_rows.append(
-                f'<tr><td>{alleg_text}</td>'
-                f'<td><em style="color:#888;">No medical evidence retrieved for this allegation</em></td>'
-                f'<td><em style="color:#888;">No listing matched above threshold</em></td></tr>'
-            )
-            continue
-        # Render one row per (allegation, candidate) pair
+            continue   # skip allegations without a matched listing
+        alleg_text = escape(alleg.get("text", ""))
         for cand in cands:
             code = cand.listing.code
             chunk, quote, _leaf_path = best_evidence_for_listing(code)
@@ -550,20 +549,9 @@ def render_case_summary_html(
                 f'<tr><td>{alleg_text}</td><td>{ev_cell}</td><td>{listing_cell}</td></tr>'
             )
 
-    # Note any candidates that didn't get attributed to an allegation
-    if unmatched_candidates:
-        for cand in unmatched_candidates:
-            code = cand.listing.code
-            chunk, quote, _leaf_path = best_evidence_for_listing(code)
-            ev_cell = render_evidence_cell(chunk, quote)
-            listing_cell = render_listing_cell(code)
-            table_rows.append(
-                f'<tr><td><em style="color:#888;">(listing surfaced from combined allegations)</em></td>'
-                f'<td>{ev_cell}</td><td>{listing_cell}</td></tr>'
-            )
-
     rows_html = "\n".join(table_rows) or \
-                '<tr><td colspan="3"><em>No allegations to summarize.</em></td></tr>'
+                '<tr><td colspan="3"><em>No allegations cleanly mapped to a candidate listing. ' \
+                'See sidebar for all candidate listings the matcher surfaced.</em></td></tr>'
 
     # --- Headline summary ---
     n_meets = sum(1 for o in listing_outcomes if o["form_verdict"] == "Meets")
@@ -665,6 +653,41 @@ def render_case_summary_html(
             f'{inner}</section>'
         )
 
+    # PDF-link status banner: tells the reviewer whether citations open the
+    # packet PDF or fall back to plain page-number text. The most common
+    # cause of "citations not working" is the local source.pdf missing --
+    # surface this clearly so the reviewer knows the cause and can fix it
+    # by re-running ingest with the matching case_id.
+    if source_pdf_path is not None and source_pdf_path.exists():
+        try:
+            pdf_href = source_pdf_path.resolve().as_uri()
+        except (OSError, ValueError):
+            pdf_href = ""
+        if pdf_href:
+            pdf_status_html = (
+                f'<div class="pdf-status enabled">'
+                f'PDF citations: <strong>enabled</strong> &mdash; '
+                f'<a href="{escape(pdf_href)}" target="_blank" rel="noopener">'
+                f'open packet PDF</a> '
+                f'(<code>{escape(str(source_pdf_path))}</code>)'
+                f'</div>'
+            )
+        else:
+            pdf_status_html = (
+                '<div class="pdf-status disabled">PDF citations: '
+                '<strong>not available</strong> &mdash; source PDF path could not be resolved.</div>'
+            )
+    else:
+        path_str = str(source_pdf_path) if source_pdf_path else "(no path provided)"
+        pdf_status_html = (
+            f'<div class="pdf-status disabled">'
+            f'PDF citations: <strong>not available</strong> &mdash; '
+            f'no source.pdf found at <code>{escape(path_str)}</code>. '
+            f'Citations show page numbers as plain text. '
+            f'Re-run <code>db/ingest_s3_to_db.py</code> for this case_id to generate the PDF locally.'
+            f'</div>'
+        )
+
     return _CASE_SUMMARY_TEMPLATE.format(
         case_id=escape(case_id),
         n_meets=n_meets,
@@ -672,6 +695,7 @@ def render_case_summary_html(
         n_insuf=n_insuf,
         n_total=len(listing_outcomes),
         avg_grounded=avg_grounded,
+        pdf_status_html=pdf_status_html,
         sidebar_html=sidebar_html,
         table_rows=rows_html,
         detail_sections="\n\n".join(detail_sections),
@@ -726,6 +750,13 @@ _CASE_SUMMARY_TEMPLATE = """<!DOCTYPE html>
   .org {{ color: #555; font-size: 0.95em; margin-top: 0.3em; margin-bottom: 1.5em; }}
   .case-headline {{ background: #f5f5f5; padding: 1em 1.5em; border-radius: 6px;
                     margin: 1em 0 2em 0; font-size: 1.05em; }}
+  .pdf-status {{ padding: 0.6em 1em; border-radius: 4px; margin: 1em 0;
+                  font-size: 0.92em; line-height: 1.4; }}
+  .pdf-status.enabled {{ background: #e6f4ea; border-left: 4px solid #1e8e3e; color: #0b6027; }}
+  .pdf-status.disabled {{ background: #fef7e0; border-left: 4px solid #f9ab00; color: #7a5300; }}
+  .pdf-status code {{ background: rgba(0,0,0,0.06); padding: 1px 4px; border-radius: 3px;
+                       font-size: 0.9em; }}
+  .pdf-status a {{ color: inherit; font-weight: 600; }}
   .case-headline .num {{ font-weight: 700; font-size: 1.4em; color: #1a56c4; }}
   .case-headline .pill {{ display: inline-block; padding: 0.15em 0.6em; margin: 0 0.3em;
                           border-radius: 12px; font-size: 0.85em; font-weight: 600; }}
@@ -808,6 +839,8 @@ _CASE_SUMMARY_TEMPLATE = """<!DOCTYPE html>
   <span class="pill insuf">{n_insuf} Insufficient</span>
   &nbsp; | &nbsp; Overall groundedness: <strong>{avg_grounded:.2f}</strong>
 </div>
+
+{pdf_status_html}
 
 <h2>Possible Visualization of Output Report</h2>
 <table class="summary">
