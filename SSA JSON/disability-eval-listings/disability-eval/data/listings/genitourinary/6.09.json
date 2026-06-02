@@ -46,7 +46,7 @@
       },
       {
         "path": "B",
-        "criterion": "Three hospitalizations within 12 months for CKD complications, each lasting >=48 hours, with at least 30 days between hospitalizations",
+        "criterion": "At least three hospitalizations within a consecutive 12-month period for CKD complications, occurring at least 30 days apart, with each hospitalization lasting at least 48 hours (including hours in a hospital emergency department immediately before the hospitalization)",
         "keywords": [
           "three hospitalizations",
           "CKD complications",
@@ -59,7 +59,11 @@
           "hypertensive crisis",
           "acute kidney failure",
           "48 hours",
-          "30 days apart"
+          "30 days apart",
+          "emergency department",
+          "ED hours",
+          "ER admission",
+          "ED admission"
         ],
         "duration_months_required": 12
       }
