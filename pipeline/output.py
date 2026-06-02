@@ -574,6 +574,62 @@ def render_case_summary_html(
         / max(1, len(listing_outcomes))
     )
 
+    # --- Left sidebar nav: listings grouped by verdict priority ---
+    # Order: Meets first (most action-needed), then Does not meet (clear AI calls),
+    # then Insufficient (reviewer must investigate). Within each group, sort by
+    # groundedness desc (highest confidence first).
+    def verdict_group(v: str) -> int:
+        if v == "Meets":
+            return 0
+        if v == "Does not meet/equal":
+            return 1
+        return 2  # Insufficient or any catch-all
+
+    sidebar_items = sorted(
+        listing_outcomes,
+        key=lambda o: (
+            verdict_group(o["form_verdict"]),
+            -float(o.get("groundedness_score") or 0),
+            o.get("candidate_rank", 99),
+        ),
+    )
+    nav_groups: list[tuple[str, str, list[dict]]] = [
+        ("Meets",                       "v-met",          []),
+        ("Does not meet/equal",         "v-not_met",      []),
+        ("Insufficient evidence",       "v-insufficient", []),
+    ]
+    for o in sidebar_items:
+        if o["form_verdict"] == "Meets":
+            nav_groups[0][2].append(o)
+        elif o["form_verdict"] == "Does not meet/equal":
+            nav_groups[1][2].append(o)
+        else:
+            nav_groups[2][2].append(o)
+
+    sidebar_links = []
+    for group_label, group_class, items in nav_groups:
+        if not items:
+            continue
+        sidebar_links.append(
+            f'<div class="nav-group-header {group_class}">{escape(group_label)}'
+            f' <span class="nav-count">({len(items)})</span></div>'
+        )
+        for o in items:
+            code = o["listing_code"]
+            title = o.get("listing_title", "")
+            grounded = o.get("groundedness_score", 0) or 0
+            short_title = (title[:38] + "...") if len(title) > 38 else title
+            anchor = f"listing-{code.replace('.', '-')}"
+            sidebar_links.append(
+                f'<a class="nav-item {group_class}" href="#{anchor}">'
+                f'<span class="nav-code">{escape(code)}</span>'
+                f'<span class="nav-title">{escape(short_title)}</span>'
+                f'<span class="nav-grounded">{grounded:.2f}</span>'
+                f'</a>'
+            )
+    sidebar_html = "\n".join(sidebar_links) or \
+                   '<p style="color:#888;font-size:0.85em;padding:0.5em;">No candidates surfaced.</p>'
+
     # --- Detail sections (one per listing) ---
     detail_sections = []
     # Order: candidate_rank ascending (best-first)
@@ -616,6 +672,7 @@ def render_case_summary_html(
         n_insuf=n_insuf,
         n_total=len(listing_outcomes),
         avg_grounded=avg_grounded,
+        sidebar_html=sidebar_html,
         table_rows=rows_html,
         detail_sections="\n\n".join(detail_sections),
     )
@@ -628,7 +685,42 @@ _CASE_SUMMARY_TEMPLATE = """<!DOCTYPE html>
 <title>Case {case_id} — Disability Review Summary</title>
 <style>
   body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-         max-width: 1100px; margin: 2em auto; padding: 0 1em; line-height: 1.5; color: #1a1a1a; }}
+         line-height: 1.5; color: #1a1a1a; margin: 0; padding: 0; }}
+  /* Main content sits to the right of the fixed sidebar */
+  .main {{ max-width: 1000px; margin-left: 290px; margin-right: auto;
+           padding: 2em 2em 4em 2em; }}
+  /* Fixed left navigation sidebar */
+  .sidebar {{ position: fixed; left: 0; top: 0; bottom: 0; width: 270px;
+              background: #1a3a5c; color: #fff; overflow-y: auto;
+              padding: 1em 0.5em 1.5em 0.5em; box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+              font-size: 0.88em; }}
+  .sidebar h2 {{ color: #fff; font-size: 1em; margin: 0.5em 0.5em 0.8em 0.5em;
+                 padding-bottom: 0.4em; border-bottom: 1px solid #345779; }}
+  .nav-group-header {{ font-weight: 700; font-size: 0.78em; text-transform: uppercase;
+                       letter-spacing: 0.04em; padding: 0.7em 0.5em 0.3em 0.5em;
+                       border-top: 1px solid #345779; margin-top: 0.4em; color: #b8d4ee; }}
+  .nav-group-header:first-child {{ border-top: none; margin-top: 0; }}
+  .nav-group-header .nav-count {{ font-weight: 400; color: #88a4c4; }}
+  .nav-group-header.v-met {{ color: #7adf9e; }}
+  .nav-group-header.v-not_met {{ color: #f99494; }}
+  .nav-group-header.v-insufficient {{ color: #ffd76e; }}
+  .nav-item {{ display: flex; align-items: center; gap: 0.4em; padding: 0.45em 0.5em;
+               margin: 0.1em 0; border-radius: 4px; text-decoration: none; color: #e8eef5;
+               border-left: 3px solid transparent; transition: background 0.1s; }}
+  .nav-item:hover {{ background: #234c75; }}
+  .nav-item.v-met {{ border-left-color: #1e8e3e; }}
+  .nav-item.v-not_met {{ border-left-color: #d93025; }}
+  .nav-item.v-insufficient {{ border-left-color: #f9ab00; }}
+  .nav-code {{ font-family: ui-monospace, monospace; font-weight: 700;
+               min-width: 3.5em; flex-shrink: 0; color: #fff; }}
+  .nav-title {{ flex: 1; color: #cfd9e5; font-size: 0.92em; line-height: 1.25; }}
+  .nav-grounded {{ font-size: 0.78em; color: #88a4c4; font-family: ui-monospace, monospace;
+                   flex-shrink: 0; }}
+  /* Narrow screens: stack sidebar above content rather than fixed-left */
+  @media (max-width: 900px) {{
+    .sidebar {{ position: static; width: auto; height: auto; }}
+    .main {{ margin-left: auto; padding: 1em; }}
+  }}
   h1, h2, h3, h4 {{ color: #0a0a0a; }}
   h1 {{ font-size: 1.6em; margin-bottom: 0; }}
   .org {{ color: #555; font-size: 0.95em; margin-top: 0.3em; margin-bottom: 1.5em; }}
@@ -699,6 +791,13 @@ _CASE_SUMMARY_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body id="top">
 
+<nav class="sidebar" aria-label="Listing navigation">
+  <h2>Listings</h2>
+  {sidebar_html}
+</nav>
+
+<div class="main">
+
 <h1>Case {case_id} — Disability Review Summary</h1>
 <p class="org">UMass Chan Medical School — Disability Evaluation Services — SSI Listings (Adult)</p>
 
@@ -737,6 +836,7 @@ chart citations.</p>
   all citations against the source PDF before signing.
 </p>
 
+</div><!-- /.main -->
 </body>
 </html>
 """
