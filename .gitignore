@@ -16,15 +16,11 @@ output/
 # The top-level data/chunks.json is the SYNTHETIC demo and stays tracked.
 data/*/
 
-# Session-specific inspection scripts (debug helpers, not general tooling)
-_inspect_raw.py
-_show_subdocs.py
-_inspect_medical_chunks.py
-_show_redacted.py
-_run_multi_ingest.py
-_inspect_supplement.py
-_show_mepers_allegations.py
-_show_textract_page1.py
+# Ad-hoc one-off scripts and intermediate artifacts (start with underscore)
+_*.py
+_*.txt
+_*.md
+_*.tmp
 
 # Preview / rendered images of source PDFs (may contain PHI even if redacted)
 _preview/

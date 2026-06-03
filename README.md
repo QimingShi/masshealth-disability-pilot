@@ -1,122 +1,280 @@
 # MassHealth Disability Reviewer Assistant — Pilot
 
-An AI tool that matches a member's medical record packet against SSA disability
-listings (Blue Book) and produces an evidence-cited summary form for the
-disability reviewer. The reviewer remains the decision-maker; the AI is a
-decision-support tool.
+An AI decision-support tool for MassHealth disability reviewers. Given a
+member's medical record packet, it matches the chart against SSA Blue Book
+disability listings and produces an evidence-cited reviewer-facing form for
+each candidate listing.
 
-> ⚠️ **Pilot / research code.** Not production-ready. The data in `data/`
-> is **synthetic** — entirely fabricated for demonstration. Do not use this
-> code on real patient data without first deploying it inside a HIPAA-compliant
-> environment with appropriate Business Associate Agreements.
+The reviewer remains the decision-maker. The AI surfaces candidate listings,
+classifies each criterion as **met / not met / insufficient** with verbatim
+chart citations, and ranks confidence — but the form is a starting point for
+review, not a verdict.
 
-## What it does
+> **Pilot / institutional research code.** Designed for the UMass Chan
+> Disability Evaluation Services (DES) workflow inside a HIPAA-aligned
+> environment with AWS Textract + Bedrock + RDS Postgres provisioned for PHI.
+> Do not run on real patient data without a Business Associate Agreement
+> and the corresponding cloud configuration.
 
-1. Reads a chunked medical record (`data/chunks.json`)
-2. Identifies **candidate SSA listings** by combining three signals:
-   - Allegations → listing summary similarity (semantic embedding)
-   - ICD-10 codes from the chart → SSA body system filter
-   - Keyword and synonym hits in chart text against each listing's leaf criteria
-3. For each candidate, walks the listing's AND/OR criterion tree and asks
-   Claude to classify each leaf as **met / not met / insufficient evidence**,
-   citing verbatim chart quotes
-4. Consolidates the tree with 3-valued logic and produces a populated
-   **Matched_Listing form** per candidate listing, in markdown and HTML
-   (HTML has clickable citations that open the source PDF at the cited page)
+## What it does, end-to-end
 
-## Demo output
+1. Lists every PDF in an S3 case folder
+2. Classifies each PDF by filename (allegation supplement / medical evidence / skip)
+3. Runs AWS Textract (LAYOUT + TABLES + FORMS) on the kept PDFs
+4. Detects sub-documents and chunks the OCR output by section
+5. Computes Bedrock Titan Text Embeddings v2 (1024-dim) for every chunk + allegation
+6. Writes everything to Postgres (cases, source_pdfs, documents, chunks, allegations)
+7. Identifies candidate SSA listings via pgvector cosine similarity (allegation → listing summary)
+8. For each candidate, runs per-leaf retrieval (criterion → chunk cosine) and asks Claude Opus 4.6 via Bedrock to classify each criterion with verbatim chart citations
+9. Consolidates the AND/OR criterion tree using 3-valued logic (met / not_met / insufficient)
+10. Renders a populated reviewer form per candidate listing, plus a case-level summary HTML with a sticky left-sidebar nav grouping listings by verdict
+11. Annotates the source PDF with yellow highlights over every cited chunk
 
-Running on the included synthetic data (a fabricated metastatic colorectal
-cancer case) produces:
+Per-case cost on a typical 40-page packet: ~$5-7 (Textract is the dominant
+cost; Bedrock embeddings + LLM eval together are ~$1-3).
 
-- `output/demo-synthetic-001/13.18.md` and `.html` — listing 13.18 marked
-  **Meets** with citations to the CT impression (liver metastasis) and the
-  pathology report
-- Several rule-out forms for other cancer listings (13.17, 13.10, 13.24, 13.02)
-  that the candidate stage surfaced but the deep evaluation correctly rejects
+## The one command
 
-Open the HTML in Edge or Chrome to see clickable citations.
+```cmd
+:: 1. Auth + env (once per shell)
+aws sso login --profile user
+set DATABASE_URL=postgresql://shiq@expedite-nonprod-rds.cfqvorcy6lau.us-east-1.rds.amazonaws.com:5432/expedite
+set PGPASSWORD=<your password>
 
-## How to run
-
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-
-# 2. (Optional) Set your Anthropic API key for real LLM evaluation
-#    PowerShell:
-$env:ANTHROPIC_API_KEY = "sk-ant-..."
-
-#    Or use mock mode (no API key required) for testing the pipeline:
-$env:MOCK_EVAL = "1"
-
-# 3. Run on the included synthetic data
-python run.py
-
-# 4. Or run on a different chunks file
-python run.py path/to/your/chunks.json
+:: 2. Full pipeline for a case folder
+py db\ingest_s3_to_db.py --folder "umasschan-forhealth-expedite-incoming-data-nonprod/2181878 Psych- 100/"
 ```
 
-Outputs land in `output/<case_id>/`. The `case_id` is read from the chunks file.
+The script auto-detects `case_id=2181878` from the 7-digit folder prefix and
+runs all 10 stages above. Output lands in:
+
+- `data/2181878/chunks.json` — lite chunks shape
+- `_phi/2181878/` — source PDFs, Textract raw, bbox sidecar, annotated PDF (PHI)
+- `output/2181878/0_CASE_SUMMARY.html` ← **open this first**
+- `output/2181878/{1_MEETS,2_INSUFFICIENT,3_DOES_NOT_MEET}_<code>.html` — one per candidate listing
+
+### Useful flags
+
+| Flag | When |
+|---|---|
+| `--dry-run` | Preview the file-classification plan without spending money |
+| `--no-match` | Run only Stages 1+2 (load to DB). Use for bulk historical loads. |
+| `--medical-pattern "(?i)\b(AI\|MR)\b"` | When a folder uses "MR" prefix instead of "AI" for medical records |
+
+### Re-run matcher only (no re-OCR)
+
+If the case is already in Postgres and you just want to re-evaluate (e.g.
+after fixing a listing):
+
+```cmd
+py run.py --from-db 2181878
+```
+
+Costs ~$1-3 (just Bedrock LLM eval).
+
+## Three-layer audit trail
+
+Every matcher run persists a complete audit trail to Postgres:
+
+| Layer | Tables | What it captures |
+|---|---|---|
+| **1. Retrieval** | `chunk_leaf_matches` | "For leaf X, these chunks scored Y by cosine" |
+| **2. Criterion assessment** | `leaf_assessments`, `leaf_assessment_evidence` | "AI read those chunks, decided met/not_met/insufficient + evidence_strength, citing chunk Z with quote Q" |
+| **3. Summary** | `listing_assessments`, `case_summaries` | "AND/OR rollup to Meets / Does not meet / Insufficient, plus a 0..1 groundedness score" |
+
+The audit trail is idempotent per case — re-running the matcher does
+`DELETE WHERE case_id` then `INSERT`, so the rows always reflect the
+most recent matcher run.
+
+### Groundedness formula
+
+The composite 0..1 score in `listing_assessments`:
+
+```
+groundedness = 0.5 * frac_leaves_decided           // (n_met + n_not_met) / n_leaves
+             + 0.3 * avg_top_similarity            // mean rank-1 retrieval similarity
+                                                    // over LOAD-BEARING leaves only
+             + 0.2 * (avg_evidence_per_leaf / 2)   // citation density, capped at 2
+```
+
+"Load-bearing" leaves are the ones whose verdict drove the consolidated root
+decision — for OR-met cases, only the satisfying branch counts; for AND-not_met,
+only the blocking leaves count. See `pipeline/consolidate.py::load_bearing_leaf_paths`.
+
+### Useful queries
+
+```sql
+-- Reviewer triage: high-confidence MEETS cases
+SELECT c.case_id, l.code, la.groundedness_score, la.decision_summary
+FROM listing_assessments la
+JOIN cases c          ON c.id = la.case_id
+JOIN ssa_listings l   ON l.id = la.listing_id
+WHERE la.form_verdict = 'Meets' AND la.groundedness_score >= 0.7
+ORDER BY la.groundedness_score DESC;
+
+-- Drill into a specific case
+SELECT le.leaf_path, le.verdict, le.evidence_strength, le.rationale
+FROM leaf_assessments le
+JOIN cases c        ON c.id = le.case_id
+JOIN ssa_listings l ON l.id = le.listing_id
+WHERE c.case_id = '2181878' AND l.code = '12.02'
+ORDER BY le.leaf_path;
+```
 
 ## Project layout
 
 ```
 .
-├── data/
-│   └── chunks.json              # SYNTHETIC demo chunks (tracked)
-├── pipeline/
-│   ├── chunks.py                # Loaders + ICD extraction + body-system map
-│   ├── embed.py                 # sentence-transformers + cosine
-│   ├── candidates.py            # UNION of allegation/ICD/keyword signals
-│   ├── retrieve.py              # 3-variant per-leaf retrieval
-│   ├── evaluate.py              # Claude per-leaf eval with citation guardrails
-│   ├── mock_eval.py             # Canned responses for no-API testing
-│   ├── consolidate.py           # AND/OR tree walk, 3-valued logic
-│   ├── output.py                # Renders markdown + HTML Matched_Listing form
-│   └── ingest_textract.py       # SKETCH: chunk_by_layout for Textract output
-├── SSA JSON/                    # 120 SSA listing JSONs (public regulation data)
-├── _pdf_survey.py               # Utility: survey PDF structure
-├── _pdf_render.py               # Utility: render PDF pages to PNG
-├── _dry_run.py                  # Exercise pipeline without LLM
-├── run.py                       # End-to-end orchestrator
+├── run.py                              Main matcher entry (run on a case_id already in Postgres)
+│
+├── pipeline/                           Core matcher modules
+│   ├── chunks.py                       Loaders + ICD extraction + body-system map
+│   ├── embed.py                        Embedding workers (Titan v2 via Bedrock)
+│   ├── candidates.py                   Allegation/ICD/keyword candidate identification (JSON path)
+│   ├── retrieve.py                     3-variant per-leaf retrieval (JSON path)
+│   ├── evaluate.py                     Bedrock Claude per-leaf eval with citation guardrails
+│   ├── consolidate.py                  AND/OR tree walk + load-bearing-leaf identification
+│   ├── output.py                       Renders markdown + HTML forms + case-summary HTML
+│   ├── annotate_pdf.py                 Yellow-highlight annotation on the source PDF
+│   ├── ingest_textract.py              Textract response → layout-aware chunks
+│   ├── ingest_real.py                  Multi-PDF S3 ingest orchestrator
+│   ├── db.py                           Postgres DAL (case-side writes + read functions)
+│   ├── db_matcher.py                   SQL pgvector candidates + retrieval + persistence
+│   ├── groundedness.py                 Score components + headline-outcome picker
+│   └── mock_eval.py                    Canned LLM responses for offline testing (MOCK_EVAL=1)
+│
+├── db/                                 DB schemas + workers + entry points
+│   ├── schema_v1.sql                   SSA listings tables (listings, criteria, synonyms)
+│   ├── add_criterion_embeddings.sql    Criterion embedding column + ivfflat index
+│   ├── case_schema.sql                 Case-side tables (cases, documents, chunks, allegations)
+│   ├── add_chunk_leaf_matches_table.sql  Layer 1: retrieval cache
+│   ├── add_assessment_tables.sql       Layers 2+3: per-leaf + per-listing + case audit trail
+│   ├── add_n_load_bearing_column.sql   Add n_load_bearing column to listing_assessments
+│   ├── verify_embeddings.sql           Diagnostic queries for listing/criterion embeddings
+│   ├── verify_case_schema.sql          Diagnostic queries for case-side tables
+│   ├── compute_listing_embeddings.py   Bedrock Titan v2 worker — embed listing summaries
+│   ├── compute_criterion_embeddings.py Bedrock Titan v2 worker — embed leaf criteria
+│   ├── load_case_to_db.py              Load chunks.json + chunks_with_bbox.json → Postgres
+│   ├── ingest_s3_to_db.py              ⭐ End-to-end entry: S3 folder → Postgres + matcher
+│   └── archive/                        Historical one-time migrations (already applied)
+│
+├── SSA JSON/                           SSA Blue Book listings + loader
+│   ├── README.md                       SSA data overview
+│   ├── load_all_listings.py            Loads listings_bundle.json into Postgres
+│   ├── listings_bundle.json            All 120 listings (manually maintained from SSA 10-6-23 doc)
+│   └── disability-eval-listings/       Per-listing JSON files (in sync with the bundle)
+│
+├── data/                               Case JSON artifacts (chunks.json per case)
+│   └── chunks.json                     Synthetic baseline for offline testing
+│
+├── output/                             Per-case reviewer forms (gitignored — PHI quotes)
+├── _phi/                               PHI source artifacts (gitignored)
 ├── requirements.txt
 └── README.md
 ```
 
-## Architecture notes
+## Architecture decisions
 
-**Chunks have rich metadata**: `chunk_id`, `doc_id`, `doc_type`, `section`,
-`page_start/end`, `encounter_date`. Citations resolve to a human-readable form
-(*"CT Abdomen/Pelvis — Impression, 2099-03-10, p.7"*) and a clickable PDF link
-when the source PDF is available.
+**Bedrock, not direct Anthropic API.** All LLM calls go through Amazon Bedrock
+(`pipeline/evaluate.py`) using an application inference profile bound to
+Claude Opus 4.6. SSO via the `user` AWS profile. This keeps PHI inside the
+account boundary and uses the institutional AWS billing.
 
-**Citation guardrails are enforced server-side**: every chunk_id Claude cites
-must be in the input set; every quote must be a verbatim substring of that
-chunk. Hallucinated citations cause the leaf to be downgraded to "insufficient
-evidence" rather than silently included.
+**pgvector for retrieval.** Both candidate identification (allegation →
+listing summary) and per-leaf retrieval (criterion → chunk) use Postgres
+pgvector cosine similarity. 1024-dim Titan Text Embeddings v2 across all
+three corpora (listings, criteria, chunks) so they live in the same space.
 
-**Three-valued verdicts**: leaves and internal nodes carry one of `met`,
-`not_met`, or `insufficient`. Insufficient is never collapsed into not_met —
-the reviewer must see what couldn't be determined from the chart.
+**Server-side citation guardrails.** Every chunk_id Claude cites must be in
+the input set; every quote must be a whitespace-normalized verbatim substring
+of that chunk. Hallucinated citations cause the leaf to be downgraded to
+`insufficient` rather than silently included. See `pipeline/evaluate.py`.
 
-**OCR is deliberately mock**: the included data is hand-curated chunks. Real
-OCR via AWS Textract is the next integration; a template
-(`pipeline/ingest_textract.py`) is ready for the `chunk_by_layout()` step
-once Textract output is available.
+**Three-valued verdicts.** Leaves and internal nodes carry `met`, `not_met`,
+or `insufficient`. The matcher's consolidation never collapses `insufficient`
+into `not_met` — the reviewer must see what the chart couldn't speak to.
 
-## Roadmap
+**Idempotent end-to-end.** Re-running ingest on the same case_id does
+`DELETE` + `INSERT` on every case-scoped table (chunks, allegations,
+chunk_leaf_matches, leaf_assessments, listing_assessments, case_summaries).
+No accumulating cruft from prior runs.
 
-- [ ] Real OCR pipeline via AWS Textract (with bounding boxes for tier-2
-      citation highlighting)
-- [ ] Annotated source-PDF generation (PyMuPDF highlight annotations at
-      cited bboxes) so HTML citations open a pre-highlighted page
-- [ ] Numeric criterion checker (FEV1 thresholds, lab values, etc.)
-- [ ] Duration enforcement (`duration_months_required` against encounter dates)
-- [ ] Candidate-scoring calibration against ≥5 gold-standard cases
-- [ ] Side-by-side reviewer web UI (form + embedded PDF.js viewer)
+**Adaptive retry on Bedrock throttling.** `pipeline/evaluate.py` wraps
+`invoke_model` with a two-layer retry: boto3 client adaptive mode
+(max_attempts=10) + an outer 5-attempt loop with exponential backoff
+(4s → 64s). Handles the back-to-back-call pattern of the matcher
+(~35-50 calls per case) without bouncing on transient
+`ServiceUnavailableException`s.
+
+## Per-case output: what reviewers see
+
+The case-summary HTML (`output/<case_id>/0_CASE_SUMMARY.html`) is the
+reviewer's single-page entry point:
+
+- **Headline**: N candidates evaluated, breakdown of Meets / Does not meet /
+  Insufficient counts, overall groundedness
+- **Sticky left-sidebar nav**: every candidate listing, grouped by verdict
+  priority (Meets → Does not meet → Insufficient), with verdict-colored left
+  border and groundedness score per row. Click to jump.
+- **3-column summary table** ("Possible Visualization of Output Report"):
+  one row per allegation-mapped listing, showing the allegation, the best
+  cited chart evidence (provider / date / page with clickable PDF link), and
+  the matched SSI listing with verdict pill
+- **Detailed listing sections below**: per-candidate forms with the full
+  AND/OR criterion tree, per-leaf verdicts + rationale + verbatim citations.
+  Each section has an anchor and a "↑ Back to summary table" link.
+
+Citations are clickable links to `file:///.../_phi/<case>/source_annotated.pdf#page=N`
+when the local source PDF exists; otherwise they render as plain page-number
+text. The annotated PDF is generated at the end of the matcher run.
+
+## Known limitations
+
+- Some 8.x and 11.x listings haven't been deep-audited against the 10-6-23
+  SSA doc (the doc only contains 2023 revisions, not the full Blue Book).
+  The 6.xx and 12.xx ranges plus the 4 listings we caught in cancer/immune
+  audits (13.13, 13.23, 13.29, 14.04) are confirmed correct.
+- File-classification uses simple regex on filenames (`AI`, `MR`, `Supplement`).
+  Override per-run via `--medical-pattern`. A future content-based classifier
+  (read page-1 text + Bedrock prompt) is sketched but not built.
+- Annotated PDF generation requires `chunks_with_bbox.json` from the Textract
+  ingest path; legacy hand-transcribed cases get page-level (not bbox-level)
+  citations.
+- HTML citations use absolute `file://` URLs and work only when the case
+  folder is opened locally — they break on SharePoint browser viewing. To
+  hand off a case bundle externally, either zip + send the folder for local
+  open, or restructure the output to use relative URLs (small code change).
+
+## Setup notes (first-time)
+
+1. AWS account with Textract + Bedrock access (`AWSExpediteUsers` role)
+2. RDS Postgres instance with pgvector extension enabled
+3. Bedrock application inference profile for Claude Opus 4.6
+4. SSO profile `user` configured: `aws configure sso --profile user`
+5. `pip install -r requirements.txt`
+6. Bring up the DB schema (one-time):
+
+```sql
+\i db/schema_v1.sql
+\i db/add_criterion_embeddings.sql
+\i db/case_schema.sql
+\i db/add_chunk_leaf_matches_table.sql
+\i db/add_assessment_tables.sql
+\i db/add_n_load_bearing_column.sql
+```
+
+7. Load SSA listings + compute their embeddings (one-time):
+
+```cmd
+py "SSA JSON\load_all_listings.py"
+py db\compute_listing_embeddings.py
+py db\compute_criterion_embeddings.py
+```
+
+8. You're ready to run case ingests via `py db\ingest_s3_to_db.py --folder ...`
 
 ## License
 
-Pilot code for institutional research use. SSA listings under `SSA JSON/` are
-sourced from public regulation data and remain in the public domain.
+Pilot code for UMass Chan Medical School Disability Evaluation Services. SSA
+listings under `SSA JSON/` are derived from public regulation data and remain
+in the public domain.
