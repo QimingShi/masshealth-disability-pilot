@@ -435,8 +435,8 @@ def to_retrieved_chunks(retrieved_dicts: list[dict]):
 
     evaluate.py's RetrievedChunk has: chunk (Chunk), sources (list[str]), score.
     """
-    # Late import to avoid circular module deps at import time
-    from .retrieve import RetrievedChunk
+    # Late import to keep the module-load graph minimal
+    from .evaluate import RetrievedChunk
     out: list[RetrievedChunk] = []
     for rec in retrieved_dicts:
         out.append(RetrievedChunk(

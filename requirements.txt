@@ -1,8 +1,21 @@
-# Pipeline runtime
-anthropic>=0.40              # Claude API client (only required when MOCK_EVAL=0)
-sentence-transformers>=2.2   # Local embedding model (all-MiniLM-L6-v2)
-numpy>=1.24                  # Vector math
-pymupdf>=1.23                # PDF rendering / survey utilities
+# MassHealth Disability Reviewer Assistant — pipeline runtime
+#
+# All LLM + embedding calls go through Amazon Bedrock (boto3). All retrieval
+# happens in Postgres via pgvector. There is no local-model dependency.
 
-# AWS Textract ingestion (real OCR path)
-boto3>=1.28
+# AWS — Textract OCR, Bedrock embeddings (Titan v2) and LLM (Claude Opus 4.6)
+boto3>=1.34
+
+# Postgres + pgvector adapter
+psycopg2-binary>=2.9
+pgvector>=0.2
+
+# SSA listings loader uses SQLAlchemy text() for parameterized statements
+SQLAlchemy>=2.0
+
+# PDF rendering + bbox-highlight annotation (pipeline/annotate_pdf.py)
+pymupdf>=1.23
+
+# Numeric arrays (pgvector adapter returns numpy arrays; embedding workers
+# batch through numpy)
+numpy>=1.24

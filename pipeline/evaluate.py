@@ -20,8 +20,19 @@ import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
 
-from .chunks import Listing
-from .retrieve import RetrievedChunk
+from .chunks import Chunk, Listing
+
+
+# Data shape produced by the SQL retrieval (pipeline.db_matcher) and consumed
+# by evaluate_leaf below. Carries the chunk dataclass, retrieval-similarity
+# score, and a short list of "sources" tags (currently just one entry like
+# "embed(0.72)" indicating cosine-from-pgvector — but the shape is open in
+# case we later add other retrieval signals).
+@dataclass
+class RetrievedChunk:
+    chunk: Chunk
+    sources: list[str]
+    score: float
 
 
 # ---- Bedrock routing --------------------------------------------------------
@@ -157,21 +168,17 @@ def evaluate_leaf(
         f"\nEvaluate."
     )
 
-    if os.environ.get("MOCK_EVAL") == "1":
-        from .mock_eval import mock_evaluate
-        parsed = mock_evaluate(listing.code, leaf_path, chunks_by_id)
-    else:
-        response_text = _call_claude(_SYSTEM, user)
+    response_text = _call_claude(_SYSTEM, user)
+    parsed = _parse_response(response_text)
+    # Retry once if the response didn't parse — guards against the
+    # occasional malformed-JSON glitch. Without this, a single bad response
+    # can flip a Meets verdict to Insufficient via the AND consolidation.
+    if not parsed:
+        response_text = _call_claude(
+            _SYSTEM + "\n\nIMPORTANT: Return strictly valid JSON only, no preamble or markdown fence.",
+            user,
+        )
         parsed = _parse_response(response_text)
-        # Retry once if the response didn't parse — guards against the
-        # occasional malformed-JSON glitch. Without this, a single bad response
-        # can flip a Meets verdict to Insufficient via the AND consolidation.
-        if not parsed:
-            response_text = _call_claude(
-                _SYSTEM + "\n\nIMPORTANT: Return strictly valid JSON only, no preamble or markdown fence.",
-                user,
-            )
-            parsed = _parse_response(response_text)
 
     # ---- guardrails ----
     debug = [

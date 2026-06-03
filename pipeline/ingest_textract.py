@@ -455,10 +455,12 @@ def to_pipeline_chunks(records: list[ChunkRecord]) -> list[dict]:
 # test it against your real packets when Textract output is available.
 
 
-# ---------- demo / smoke test ----------
+# ---------- module-level smoke test ----------
+# Run with `python -m pipeline.ingest_textract` to exercise chunk_by_layout
+# against a small fixed Textract response. Useful when tweaking the parser
+# locally without paying for a Textract job.
 
 if __name__ == "__main__":
-    # Minimal synthetic input so the file is exercisable without real Textract.
     fake_response = {
         "Blocks": [
             # Section: HPI

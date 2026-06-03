@@ -1,20 +1,18 @@
-# MassHealth Disability Reviewer Assistant — Pilot
+# MassHealth Disability Reviewer Assistant
 
-An AI decision-support tool for MassHealth disability reviewers. Given a
-member's medical record packet, it matches the chart against SSA Blue Book
-disability listings and produces an evidence-cited reviewer-facing form for
-each candidate listing.
+AI decision-support tool for MassHealth disability reviewers. Given a member's
+medical record packet, it matches the chart against SSA Blue Book disability
+listings and produces an evidence-cited reviewer-facing form for each candidate
+listing.
 
 The reviewer remains the decision-maker. The AI surfaces candidate listings,
 classifies each criterion as **met / not met / insufficient** with verbatim
-chart citations, and ranks confidence — but the form is a starting point for
-review, not a verdict.
+chart citations, and ranks confidence — the form is a starting point for
+reviewer evaluation, not a verdict.
 
-> **Pilot / institutional research code.** Designed for the UMass Chan
-> Disability Evaluation Services (DES) workflow inside a HIPAA-aligned
-> environment with AWS Textract + Bedrock + RDS Postgres provisioned for PHI.
-> Do not run on real patient data without a Business Associate Agreement
-> and the corresponding cloud configuration.
+Runs inside the UMass Chan Disability Evaluation Services (DES) cloud
+environment: AWS Textract for OCR, Bedrock for embeddings (Titan v2) and LLM
+(Claude Opus 4.6), and RDS Postgres + pgvector for retrieval.
 
 ## What it does, end-to-end
 
@@ -129,10 +127,7 @@ ORDER BY le.leaf_path;
 │
 ├── pipeline/                           Core matcher modules
 │   ├── chunks.py                       Loaders + ICD extraction + body-system map
-│   ├── embed.py                        Embedding workers (Titan v2 via Bedrock)
-│   ├── candidates.py                   Allegation/ICD/keyword candidate identification (JSON path)
-│   ├── retrieve.py                     3-variant per-leaf retrieval (JSON path)
-│   ├── evaluate.py                     Bedrock Claude per-leaf eval with citation guardrails
+│   ├── evaluate.py                     Bedrock Claude per-leaf eval + citation guardrails
 │   ├── consolidate.py                  AND/OR tree walk + load-bearing-leaf identification
 │   ├── output.py                       Renders markdown + HTML forms + case-summary HTML
 │   ├── annotate_pdf.py                 Yellow-highlight annotation on the source PDF
@@ -140,8 +135,7 @@ ORDER BY le.leaf_path;
 │   ├── ingest_real.py                  Multi-PDF S3 ingest orchestrator
 │   ├── db.py                           Postgres DAL (case-side writes + read functions)
 │   ├── db_matcher.py                   SQL pgvector candidates + retrieval + persistence
-│   ├── groundedness.py                 Score components + headline-outcome picker
-│   └── mock_eval.py                    Canned LLM responses for offline testing (MOCK_EVAL=1)
+│   └── groundedness.py                 Score components + headline-outcome picker
 │
 ├── db/                                 DB schemas + workers + entry points
 │   ├── schema_v1.sql                   SSA listings tables (listings, criteria, synonyms)
@@ -275,6 +269,6 @@ py db\compute_criterion_embeddings.py
 
 ## License
 
-Pilot code for UMass Chan Medical School Disability Evaluation Services. SSA
+Production code for UMass Chan Medical School Disability Evaluation Services. SSA
 listings under `SSA JSON/` are derived from public regulation data and remain
 in the public domain.
