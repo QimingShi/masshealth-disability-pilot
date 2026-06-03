@@ -42,7 +42,9 @@ class RetrievedChunk:
 # Bedrock, then update the label here to match.
 BEDROCK_INFERENCE_PROFILE = os.environ.get(
     "LISTING_EVAL_BEDROCK_PROFILE",
-    "arn:aws:bedrock:us-east-1:251862868170:application-inference-profile/i6q45gpa1bzt",
+    # Set this in your environment to your Bedrock application-inference-profile ARN.
+    # Example shape: arn:aws:bedrock:<region>:<account>:application-inference-profile/<id>
+    "arn:aws:bedrock:us-east-1:000000000000:application-inference-profile/REPLACE_ME",
 )
 MODEL = os.environ.get("LISTING_EVAL_MODEL", "claude-opus-4-6 (bedrock)")
 AWS_PROFILE = os.environ.get("AWS_PROFILE", "user")

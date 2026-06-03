@@ -36,20 +36,20 @@ cost; Bedrock embeddings + LLM eval together are ~$1-3).
 ```cmd
 :: 1. Auth + env (once per shell)
 aws sso login --profile user
-set DATABASE_URL=postgresql://shiq@expedite-nonprod-rds.cfqvorcy6lau.us-east-1.rds.amazonaws.com:5432/expedite
+set DATABASE_URL=postgresql://USER@YOUR-RDS-HOST:5432/DB
 set PGPASSWORD=<your password>
 
 :: 2. Full pipeline for a case folder
-py db\ingest_s3_to_db.py --folder "umasschan-forhealth-expedite-incoming-data-nonprod/2181878 Psych- 100/"
+py db\ingest_s3_to_db.py --folder "your-incoming-bucket/1234567 Psych- 100/"
 ```
 
-The script auto-detects `case_id=2181878` from the 7-digit folder prefix and
+The script auto-detects `case_id=1234567` from the 7-digit folder prefix and
 runs all 10 stages above. Output lands in:
 
-- `data/2181878/chunks.json` — lite chunks shape
-- `_phi/2181878/` — source PDFs, Textract raw, bbox sidecar, annotated PDF (PHI)
-- `output/2181878/0_CASE_SUMMARY.html` ← **open this first**
-- `output/2181878/{1_MEETS,2_INSUFFICIENT,3_DOES_NOT_MEET}_<code>.html` — one per candidate listing
+- `data/1234567/chunks.json` — lite chunks shape
+- `_phi/1234567/` — source PDFs, Textract raw, bbox sidecar, annotated PDF (PHI)
+- `output/1234567/0_CASE_SUMMARY.html` ← **open this first**
+- `output/1234567/{1_MEETS,2_INSUFFICIENT,3_DOES_NOT_MEET}_<code>.html` — one per candidate listing
 
 ### Useful flags
 
@@ -65,7 +65,7 @@ If the case is already in Postgres and you just want to re-evaluate (e.g.
 after fixing a listing):
 
 ```cmd
-py run.py --from-db 2181878
+py run.py --from-db 1234567
 ```
 
 Costs ~$1-3 (just Bedrock LLM eval).
@@ -115,7 +115,7 @@ SELECT le.leaf_path, le.verdict, le.evidence_strength, le.rationale
 FROM leaf_assessments le
 JOIN cases c        ON c.id = le.case_id
 JOIN ssa_listings l ON l.id = le.listing_id
-WHERE c.case_id = '2181878' AND l.code = '12.02'
+WHERE c.case_id = '1234567' AND l.code = '12.02'
 ORDER BY le.leaf_path;
 ```
 

@@ -47,9 +47,11 @@ from pipeline.chunks import extract_icd_codes, Chunk   # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-INFERENCE_PROFILE_ARN = (
-    "arn:aws:bedrock:us-east-1:251862868170:"
-    "application-inference-profile/ejscpg2fvj5j"
+INFERENCE_PROFILE_ARN = os.environ.get(
+    "TITAN_INFERENCE_PROFILE_ARN",
+    # Set TITAN_INFERENCE_PROFILE_ARN to your Bedrock application-inference-profile ARN.
+    # Example shape: arn:aws:bedrock:<region>:<account>:application-inference-profile/<id>
+    "arn:aws:bedrock:us-east-1:000000000000:application-inference-profile/REPLACE_ME",
 )
 EMBEDDING_DIM = 1024
 

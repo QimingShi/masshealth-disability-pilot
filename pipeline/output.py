@@ -411,7 +411,7 @@ def render_case_summary_html(
     """Render a single HTML document with summary table + all listing forms.
 
     Args:
-        case_id: human-readable case ID (e.g. '2181878')
+        case_id: human-readable case ID (e.g. '1234567')
         allegations: list of {text, source_chunk_pk, source_chunk_id, ...}
             from get_allegations_for_case() or run_from_db's allegation_rows.
         candidates: list of DBCandidate objects from find_candidates_sql.

@@ -59,7 +59,7 @@ def run_from_db(case_id_str: str) -> int:
     case-level summary HTML with sticky sidebar nav.
 
     Args:
-        case_id_str: the human-readable case_id (e.g. "2181878")
+        case_id_str: the human-readable case_id (e.g. "1234567")
 
     Returns:
         0 on success, non-zero on error.

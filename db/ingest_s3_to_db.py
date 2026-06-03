@@ -128,10 +128,10 @@ def parse_s3_folder(s: str) -> tuple[str, str]:
 def extract_case_id_from_folder(prefix: str) -> str | None:
     """Pull the 7-digit MassHealth case id from the last path component.
 
-    Convention: case folders are named like '2181878 Psych- 100/' with the
+    Convention: case folders are named like '1234567 Psych- 100/' with the
     case id as a 7-digit prefix. The lookahead requires a non-digit or end-
     of-string after the 7 digits — so '12345678 Folder' (8 digits) fails
-    rather than silently truncating to '1234567'. Returns None if no match.
+    rather than silently truncating to its first 7 digits. Returns None if no match.
     """
     parts = [p for p in prefix.strip("/").split("/") if p]
     if not parts:
@@ -204,7 +204,7 @@ def main() -> int:
     )
     p.add_argument(
         "--folder",
-        help="folder mode: S3 prefix (e.g. 'bucket/2181878 Psych- 100/'). "
+        help="folder mode: S3 prefix (e.g. 'bucket/1234567 Psych- 100/'). "
              "Lists every PDF in the prefix, classifies by filename, ingests "
              "the kept files. Default rules: 'Supplement'->allegation, "
              "'AI' (word-bounded)->medical_evidence, others skipped.",
