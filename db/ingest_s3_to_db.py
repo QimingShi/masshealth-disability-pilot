@@ -36,7 +36,9 @@ Side-effect files (gitignored, contain PHI):
   _phi/<case_id>/textract_raw.json           combined Textract response
   _phi/<case_id>/chunks_with_bbox.json       chunks + bbox + confidence
   _phi/<case_id>/ingest_manifest.json        which PDF → which page range
-  _phi/<case_id>/source_annotated.pdf        (with --match) bbox-highlighted PDF
+  output/<case_id>/source_annotated.pdf      (with --match) bbox-highlighted PDF
+                                              (lives alongside HTML so citations
+                                               are relative + bundle is portable)
   output/<case_id>/*.md, *.html              (with --match) reviewer forms
 
 The local artifacts get written even though we also persist to DB — useful

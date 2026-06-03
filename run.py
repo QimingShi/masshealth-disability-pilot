@@ -124,6 +124,12 @@ def run_from_db(case_id_str: str) -> int:
         # _phi/<case_id>/source.pdf and chunks_with_bbox.json alongside each
         # ingested case (db/ingest_s3_to_db.py). Probe those local paths so
         # HTML citations can hyperlink into the right PDF.
+        #
+        # The *annotated* PDF, however, is written into out_dir (the same
+        # folder as the HTML outputs) so the case bundle is self-contained:
+        # citations use relative URLs (just "source_annotated.pdf#page=N"),
+        # so output/<case_id>/ can be moved, zipped, or shared as a single
+        # folder without breaking the links.
         source_pdf_path = None
         bbox_sidecar_path = None
         annotated_pdf_path = None
@@ -134,8 +140,23 @@ def run_from_db(case_id_str: str) -> int:
             candidate_bbox = phi_dir / "chunks_with_bbox.json"
             if candidate_bbox.exists():
                 bbox_sidecar_path = candidate_bbox
-                annotated_pdf_path = phi_dir / "source_annotated.pdf"
-        html_pdf_target = annotated_pdf_path or source_pdf_path
+                annotated_pdf_path = out_dir / "source_annotated.pdf"
+        if annotated_pdf_path:
+            # Annotated PDF will be created in out_dir by the annotate step
+            # below; HTML links to it by relative filename.
+            html_pdf_target = annotated_pdf_path
+        elif source_pdf_path:
+            # No bbox sidecar — fall back to the un-annotated source PDF, but
+            # copy it into out_dir so citations still resolve relatively and
+            # the bundle stays self-contained.
+            import shutil
+            bundled_source = out_dir / "source.pdf"
+            if not bundled_source.exists() or \
+               bundled_source.stat().st_mtime < source_pdf_path.stat().st_mtime:
+                shutil.copy2(source_pdf_path, bundled_source)
+            html_pdf_target = bundled_source
+        else:
+            html_pdf_target = None
         if annotated_pdf_path:
             print(f"      bbox sidecar found; will produce annotated PDF: "
                   f"{annotated_pdf_path.name}")

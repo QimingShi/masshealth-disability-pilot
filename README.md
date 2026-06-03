@@ -234,10 +234,13 @@ text. The annotated PDF is generated at the end of the matcher run.
 - Annotated PDF generation requires `chunks_with_bbox.json` from the Textract
   ingest path; legacy hand-transcribed cases get page-level (not bbox-level)
   citations.
-- HTML citations use absolute `file://` URLs and work only when the case
-  folder is opened locally — they break on SharePoint browser viewing. To
-  hand off a case bundle externally, either zip + send the folder for local
-  open, or restructure the output to use relative URLs (small code change).
+- HTML citations use *relative* URLs to a copy of the source PDF placed
+  alongside the HTML in `output/<case_id>/`. The case bundle is therefore
+  self-contained: zip or copy the folder and every citation still resolves
+  in a local browser (Edge/Chrome/Firefox). SharePoint's browser-side HTML
+  preview may still strip the `#page=N` fragment when opened through the
+  web viewer — for SharePoint hand-off, expect reviewers to download the
+  folder and open `0_CASE_SUMMARY.html` locally.
 
 ## Setup notes (first-time)
 

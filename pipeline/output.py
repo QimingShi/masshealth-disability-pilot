@@ -207,13 +207,21 @@ def write_form(out_path: Path, content: str):
 # =============================================================================
 
 def _pdf_page_link(source_pdf_path: Path | None, page: int) -> str | None:
-    """Return a file:// URL with #page=N fragment that all major PDF viewers
-    honor (Adobe Reader, Edge/Chrome built-in viewer, Firefox PDF.js).
-    Returns None if no source PDF path was provided."""
+    """Return a *relative* URL (just the PDF's filename) with #page=N fragment
+    that all major PDF viewers honor (Adobe Reader, Edge/Chrome built-in viewer,
+    Firefox PDF.js). Returns None if no source PDF path was provided.
+
+    Convention: the source PDF is expected to live in the same directory as
+    the HTML that references it (see run.py: annotated_pdf_path is written
+    into out_dir alongside the *.html outputs). This keeps each case bundle
+    self-contained — copy/zip output/<case_id>/ and every citation still works.
+    """
     if not source_pdf_path:
         return None
-    # Path.as_uri() handles the file:// scheme + URL-encoding of spaces/specials.
-    return f"{source_pdf_path.resolve().as_uri()}#page={page}"
+    # quote() handles URL-encoding of spaces and other special chars in the
+    # filename. We deliberately do NOT call .resolve().as_uri() — that would
+    # produce an absolute file:// URL that breaks when the bundle is moved.
+    return f"{quote(source_pdf_path.name)}#page={page}"
 
 
 def render_form_html(
@@ -346,10 +354,11 @@ def render_form_html(
             )
         citations_html = "<h3>Citations</h3><ol class=\"citations\">" + "".join(rows) + "</ol>"
 
-    # Top-of-page link to the whole packet
+    # Top-of-page link to the whole packet. Relative URL (just the filename)
+    # so the bundle stays portable — see _pdf_page_link for the rationale.
     open_packet = ""
     if source_pdf_path:
-        pkt_uri = source_pdf_path.resolve().as_uri()
+        pkt_uri = quote(source_pdf_path.name)
         open_packet = (
             f'<p class="open-packet">'
             f'<a href="{escape(pkt_uri)}" target="_blank" rel="noopener">'
