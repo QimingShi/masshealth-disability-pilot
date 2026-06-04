@@ -282,7 +282,10 @@ def _fill_header_part(header_part, field_tokens: list[tuple[str, str]]) -> int:
 #  Phase 2 — leaf checkboxes
 # ---------------------------------------------------------------------------
 
-_LEAF_MARKER_RE = re.compile(r"^(_{2,})([A-Za-z0-9]+)\.")
+# Tolerate leading whitespace because nested sub-criteria are tab-indented
+# in many templates (e.g. 12.02 uses '\t____1.' under A, while 1.15 uses
+# unindented '____1.'). The optional \s* matches both.
+_LEAF_MARKER_RE = re.compile(r"^\s*(_{2,})([A-Za-z0-9]+)\.")
 
 
 def _marker_level(marker: str) -> int:
@@ -349,13 +352,17 @@ def _mark_leaf_checkboxes(
         marker = m.group(2)
         level = _marker_level(marker)
         stack = stack[:level] + [marker]
-        path = f"{listing_code}." + ".".join(stack)
-        seen[path] = idx
+        # The NodeVerdict tree uses paths straight from rule_json — those
+        # are BARE (e.g. "A", "A.1", "B.3.a") with no listing-code prefix.
+        # Try the bare-stack key first, then fall back to the prefixed
+        # form so callers that pass listing-prefixed verdict dicts (some
+        # tests) still work.
+        bare_path = ".".join(stack)
+        prefixed_path = f"{listing_code}.{bare_path}"
+        seen[bare_path] = idx
 
-        # Look up verdict; default to "unknown" if neither the rule_json
-        # nor matcher had this path (shouldn't happen if rule_json and
-        # template are in sync; defensive fallback).
-        verdict = verdicts_by_path.get(path)
+        verdict = (verdicts_by_path.get(bare_path)
+                   or verdicts_by_path.get(prefixed_path))
         checkbox = {
             "met":          CHECKBOX_MET,
             "not_met":      CHECKBOX_NOT_MET,
