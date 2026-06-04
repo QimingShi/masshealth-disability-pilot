@@ -24,11 +24,13 @@ from pipeline.chunks import Chunk, Listing
 from pipeline.evaluate import evaluate_leaf, LeafResult
 from pipeline.consolidate import consolidate, form_verdict, load_bearing_leaf_paths
 from pipeline.output import render_form, render_form_html, render_case_summary_html, write_form
+from pipeline.output_docx import render_form_docx, find_template, LISTINGS_WITHOUT_TEMPLATE
 from pipeline.annotate_pdf import annotate_pdf, collect_cited_chunk_ids
 
 
 HERE = Path(__file__).parent
 OUTPUT_ROOT = HERE / "output"
+TEMPLATES_DIR = HERE / "templates" / "listings"   # hand-crafted UMass DES forms
 TOP_K_CANDIDATES = 5      # how many listings to fully evaluate per case
 
 
@@ -347,6 +349,35 @@ def run_from_db(case_id_str: str) -> int:
             html_path = out_dir / f"{file_stem}.html"
             write_form(html_path, html)
             print(f"      -> {html_path}")
+
+            # Render the UMass Chan DES Word form by filling the hand-crafted
+            # template under templates/listings/<code> *.docx. The docx is the
+            # artifact reviewers actually print + sign; HTML/MD are the
+            # browseable + diff-able views of the same data. Filename mirrors
+            # the template's basename (e.g. "1.15 Disorders of the Skeletal
+            # Spine ...docx") so reviewers recognize it.
+            #
+            # 4 listings (12.05 / 5.11 / 5.12 / 8.09) have no UMass template;
+            # we skip docx for those and fall back to the HTML/MD just written.
+            if listing.code in LISTINGS_WITHOUT_TEMPLATE:
+                print(f"      (skipping docx: no UMass template for {listing.code})")
+            else:
+                tpl_path = find_template(listing.code, TEMPLATES_DIR)
+                if tpl_path is None:
+                    print(f"      WARNING: no template found for {listing.code} "
+                          f"under {TEMPLATES_DIR}; skipping docx")
+                else:
+                    docx_path = out_dir / tpl_path.name
+                    render_form_docx(
+                        listing=listing,
+                        root_verdict=root,
+                        leaf_results=leaf_results,
+                        case_id=case_id_str,
+                        chunks_by_id=chunks_by_id,
+                        template_path=tpl_path,
+                        output_path=docx_path,
+                    )
+                    print(f"      -> {docx_path}")
 
             leaf_results_by_listing[listing.code] = leaf_results
             listings_by_code[listing.code] = listing
