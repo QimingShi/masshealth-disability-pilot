@@ -51,14 +51,15 @@ from .evaluate import LeafResult
 #  Public API
 # ---------------------------------------------------------------------------
 
-# Visual style picked in design Q&A: Unicode box characters. Same convention
-# as pipeline/output.py markdown + HTML renderers, so reviewers see the same
-# glyphs across all three formats.
-CHECKBOX_MET          = "☒"   # ☒ — verdict 'met'
-CHECKBOX_NOT_MET      = "☐"   # ☐ — verdict 'not_met'
-CHECKBOX_INSUFFICIENT = "?"        # plain '?' — verdict 'insufficient'
-CHECKBOX_UNKNOWN      = "_"        # _ — leaf not evaluated (shouldn't happen
-                                   # in normal flow but defensive)
+# Visual style: ASCII bracketed boxes. Unicode ☒/☐ depend on font glyph
+# coverage and don't render reliably in Office's default Courier New
+# (reviewers saw blank squares). ASCII renders in every font, every
+# Word/LibreOffice/Google-Docs version.
+CHECKBOX_MET          = "[X]"      # verdict 'met'
+CHECKBOX_NOT_MET      = "[ ]"      # verdict 'not_met'
+CHECKBOX_INSUFFICIENT = "[?]"      # verdict 'insufficient'
+CHECKBOX_UNKNOWN      = "[_]"      # leaf not evaluated (shouldn't happen
+                                   # in normal flow; defensive fallback)
 
 # Listings the matcher may pick but for which we have no hand-crafted
 # template. The renderer logs a warning and skips docx for these; HTML/MD
@@ -504,28 +505,32 @@ def _build_narrative(
     chunks_by_id: dict[str, Chunk],
 ) -> list[str]:
     """Render the per-leaf rationale + verbatim citations as a list of
-    paragraph-sized strings.
+    paragraph-sized strings — for met leaves only.
 
-    Mirrors what pipeline/output.py produces for the HTML 'OBJECTIVE MEDICAL
-    EVIDENCE AND OTHER ADDITIONAL INFORMATION' section: one block per leaf
-    with verdict, rationale, then each cited quote tagged with provider /
-    date / page.
+    The form is a positive-evidence record. Reviewers don't need the form to
+    re-state "this criterion wasn't met" or "AI couldn't tell" for every
+    not_met / insufficient leaf — those are visible via the unchecked boxes
+    in the criterion tree above. The HTML form (pipeline/output.py) still
+    shows the full audit trail including not_met and insufficient rationales
+    for cases when the reviewer wants the AI's complete reasoning.
     """
     paragraphs: list[str] = []
 
     def walk(node: NodeVerdict):
         if node.logic is None:
+            if node.verdict != "met":
+                return
             lr = leaf_results.get(node.path)
             if lr is None:
                 return
-            head = f"{node.path} ({node.verdict}): {lr.rationale or ''}"
+            head = f"{node.path}: {lr.rationale or ''}"
             paragraphs.append(head)
             for ev in lr.evidence or []:
                 chunk = chunks_by_id.get(ev.chunk_id)
                 if chunk is None:
                     continue
                 tag = _chunk_label(chunk)
-                paragraphs.append(f"  • {tag}: “{ev.quote}”")
+                paragraphs.append(f"  - {tag}: \"{ev.quote}\"")
         else:
             for c in node.children:
                 walk(c)
