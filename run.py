@@ -145,17 +145,29 @@ def run_from_db(case_id_str: str) -> int:
             phi_dir=phi_dir,
         )
 
-        # Bbox sidecar is only used for the annotation step (yellow highlights
-        # on each cited chunk). If it's not on local disk, we skip annotation —
-        # citations still hyperlink to source.pdf#page=N, just without highlights.
-        # TODO: reconstruct chunks_with_bbox.json from chunks.bbox in the DB
-        # so annotation also works on a fresh PHI machine.
+        # Bbox sidecar — drives the yellow-highlight annotation step. We
+        # prefer the on-disk sidecar (_phi/<case>/chunks_with_bbox.json,
+        # written at ingest time) when it's available because it carries the
+        # exact original bbox JSON; otherwise we reconstruct an equivalent
+        # sidecar from chunks.bbox in the DB. Either way, downstream code
+        # consumes the same JSON file.
         bbox_sidecar_path = None
         annotated_pdf_path = None
-        candidate_bbox = phi_dir / "chunks_with_bbox.json"
-        if source_pdf_path is not None and candidate_bbox.exists():
-            bbox_sidecar_path = candidate_bbox
-            annotated_pdf_path = out_dir / "source_annotated.pdf"
+        if source_pdf_path is not None:
+            candidate_bbox = phi_dir / "chunks_with_bbox.json"
+            if candidate_bbox.exists():
+                bbox_sidecar_path = candidate_bbox
+            else:
+                from pipeline.output_bundle import reconstruct_bbox_sidecar
+                rebuilt = out_dir / "_chunks_with_bbox.json"
+                bbox_sidecar_path = reconstruct_bbox_sidecar(
+                    conn, case_pk=case_pk, output_path=rebuilt,
+                )
+                if bbox_sidecar_path:
+                    print(f"      bundle: reconstructed bbox sidecar from DB "
+                          f"-> {bbox_sidecar_path.name}")
+            if bbox_sidecar_path is not None:
+                annotated_pdf_path = out_dir / "source_annotated.pdf"
 
         # If we produced an annotated PDF, prefer linking to that (highlights).
         # Otherwise link to the plain combined source.pdf (page-level only).
@@ -442,6 +454,16 @@ def run_from_db(case_id_str: str) -> int:
                 output_pdf=annotated_pdf_path,
             )
             print(f"      drew {n} highlight rectangles -> {out_pdf}")
+
+            # If we reconstructed the bbox sidecar from the DB (filename
+            # starts with "_"), it was a build-time artifact — delete so
+            # the SharePoint bundle only ships the reviewer-facing files.
+            if bbox_sidecar_path.parent == out_dir and \
+               bbox_sidecar_path.name.startswith("_"):
+                try:
+                    bbox_sidecar_path.unlink()
+                except OSError:
+                    pass   # non-fatal — re-runs will overwrite anyway
 
     print("\nDone.")
     return 0

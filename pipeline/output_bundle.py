@@ -21,6 +21,7 @@ Why we don't ship the original S3-side PDFs:
 """
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
 
@@ -148,3 +149,60 @@ def ensure_source_pdf(
     print(f"      bundle: wrote combined source.pdf "
           f"({out_pdf.stat().st_size // 1024} KB) to {out_pdf}")
     return out_pdf
+
+
+# ---------------------------------------------------------------------------
+#  Bbox sidecar reconstruction (for annotated-PDF highlights)
+# ---------------------------------------------------------------------------
+
+def reconstruct_bbox_sidecar(
+    conn,
+    case_pk: int,
+    output_path: Path,
+) -> Path | None:
+    """Rebuild the chunks_with_bbox.json sidecar from chunks.bbox in the DB.
+
+    Used when a case is run on a machine that doesn't have
+    _phi/<case>/chunks_with_bbox.json on disk. The sidecar feeds
+    pipeline/annotate_pdf, which draws yellow highlights at each cited
+    chunk's bbox to produce source_annotated.pdf.
+
+    The on-disk format (from pipeline/ingest_real) is:
+        {"chunks": [
+            {"chunk_id": "doc-01-p3-clinical",
+             "bbox_by_page": {"3": [left, top, right, bottom]}},
+            ...
+        ]}
+
+    The DB column chunks.bbox is JSONB shaped as {"<page>": [l,t,r,b], ...}
+    — i.e. the inner bbox_by_page directly. We just need to wrap each row.
+
+    Returns the written path, or None if there are no chunks-with-bbox to
+    reconstruct (e.g. an older case ingested before bbox was captured).
+    """
+    from .db import get_chunks_for_case
+
+    rows = get_chunks_for_case(conn, case_pk, with_embedding=False)
+    if not rows:
+        return None
+
+    chunks_with_bbox: list[dict] = []
+    for r in rows:
+        bbox = r.get("bbox")
+        if not bbox:
+            # Chunk has no bbox info — common for hand-loaded cases or
+            # the older ingest path that didn't persist bbox to DB. Skip.
+            continue
+        chunks_with_bbox.append({
+            "chunk_id":     r["chunk_id"],
+            "bbox_by_page": bbox,
+        })
+    if not chunks_with_bbox:
+        return None
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(
+        json.dumps({"chunks": chunks_with_bbox}),
+        encoding="utf-8",
+    )
+    return output_path
