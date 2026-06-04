@@ -332,6 +332,27 @@ def get_case_pk_by_case_id(conn, case_id_str: str) -> int | None:
     return row[0] if row else None
 
 
+def get_source_pdfs(conn, case_pk: int) -> list[dict]:
+    """Return all source_pdfs rows for a case, ordered by their page offset
+    in the combined source.pdf so callers can rebuild the same combined PDF.
+
+    Each dict has: role, s3_bucket, s3_key, local_path, combined_page_start,
+    combined_page_end, page_count. Empty list if the case wasn't ingested via
+    db/ingest_s3_to_db.py (i.e. no S3-tracked PDFs).
+    """
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT role, s3_bucket, s3_key, local_path,
+               combined_page_start, combined_page_end, page_count
+        FROM source_pdfs
+        WHERE case_id = %s
+        ORDER BY combined_page_start NULLS LAST, id
+    """, (case_pk,))
+    cols = ("role", "s3_bucket", "s3_key", "local_path",
+            "combined_page_start", "combined_page_end", "page_count")
+    return [dict(zip(cols, row)) for row in cur.fetchall()]
+
+
 def get_chunks_for_case(conn, case_pk: int, *, with_embedding: bool = True
                         ) -> list[dict]:
     """Return all chunks for a case, joined with document metadata.

@@ -122,51 +122,53 @@ def run_from_db(case_id_str: str) -> int:
         out_dir = OUTPUT_ROOT / case_id_str
         out_dir.mkdir(parents=True, exist_ok=True)
 
-        # Source-PDF + bbox sidecar. The ingest pipeline writes
-        # _phi/<case_id>/source.pdf and chunks_with_bbox.json alongside each
-        # ingested case (db/ingest_s3_to_db.py). Probe those local paths so
-        # HTML citations can hyperlink into the right PDF.
+        # Source PDF + bbox sidecar. The matcher cites chunks by chunks.page_start,
+        # so the HTML's "source.pdf#page=N" links need a PDF whose pagination
+        # matches what the matcher recorded. We bundle that PDF into out_dir
+        # itself (via pipeline/output_bundle.ensure_source_pdf) so the case
+        # folder is fully self-contained: zip it, upload to SharePoint, share —
+        # citations resolve relatively as long as source.pdf sits next to the
+        # HTML files.
         #
-        # The *annotated* PDF, however, is written into out_dir (the same
-        # folder as the HTML outputs) so the case bundle is self-contained:
-        # citations use relative URLs (just "source_annotated.pdf#page=N"),
-        # so output/<case_id>/ can be moved, zipped, or shared as a single
-        # folder without breaking the links.
-        source_pdf_path = None
+        # ensure_source_pdf resolution order:
+        #   1. out_dir/source.pdf already cached  (re-runs no-op)
+        #   2. _phi/<case>/source.pdf on local disk → copied into out_dir
+        #   3. Fetch each source_pdfs row from S3 → combine into out_dir/source.pdf
+        # Returns None if the case has no S3 records AND no local PHI copy
+        # (rare: only synthetic/hand-loaded cases).
+        from pipeline.output_bundle import ensure_source_pdf
+        phi_dir = HERE / "_phi" / case_id_str
+        source_pdf_path = ensure_source_pdf(
+            conn,
+            case_pk=case_pk,
+            out_dir=out_dir,
+            phi_dir=phi_dir,
+        )
+
+        # Bbox sidecar is only used for the annotation step (yellow highlights
+        # on each cited chunk). If it's not on local disk, we skip annotation —
+        # citations still hyperlink to source.pdf#page=N, just without highlights.
+        # TODO: reconstruct chunks_with_bbox.json from chunks.bbox in the DB
+        # so annotation also works on a fresh PHI machine.
         bbox_sidecar_path = None
         annotated_pdf_path = None
-        phi_dir = HERE / "_phi" / case_id_str
-        candidate_pdf = phi_dir / "source.pdf"
-        if candidate_pdf.exists():
-            source_pdf_path = candidate_pdf
-            candidate_bbox = phi_dir / "chunks_with_bbox.json"
-            if candidate_bbox.exists():
-                bbox_sidecar_path = candidate_bbox
-                annotated_pdf_path = out_dir / "source_annotated.pdf"
-        if annotated_pdf_path:
-            # Annotated PDF will be created in out_dir by the annotate step
-            # below; HTML links to it by relative filename.
-            html_pdf_target = annotated_pdf_path
-        elif source_pdf_path:
-            # No bbox sidecar — fall back to the un-annotated source PDF, but
-            # copy it into out_dir so citations still resolve relatively and
-            # the bundle stays self-contained.
-            import shutil
-            bundled_source = out_dir / "source.pdf"
-            if not bundled_source.exists() or \
-               bundled_source.stat().st_mtime < source_pdf_path.stat().st_mtime:
-                shutil.copy2(source_pdf_path, bundled_source)
-            html_pdf_target = bundled_source
-        else:
-            html_pdf_target = None
+        candidate_bbox = phi_dir / "chunks_with_bbox.json"
+        if source_pdf_path is not None and candidate_bbox.exists():
+            bbox_sidecar_path = candidate_bbox
+            annotated_pdf_path = out_dir / "source_annotated.pdf"
+
+        # If we produced an annotated PDF, prefer linking to that (highlights).
+        # Otherwise link to the plain combined source.pdf (page-level only).
+        html_pdf_target = annotated_pdf_path or source_pdf_path
         if annotated_pdf_path:
             print(f"      bbox sidecar found; will produce annotated PDF: "
                   f"{annotated_pdf_path.name}")
         elif source_pdf_path:
-            print("      no bbox sidecar; citations will be page-level only")
+            print(f"      source.pdf bundled into out_dir; citations will be "
+                  f"page-level (no bbox highlights)")
         else:
-            print(f"      no source.pdf at {phi_dir}; HTML citations will not "
-                  f"be hyperlinked")
+            print(f"      WARNING: no source.pdf available (case has no S3 records "
+                  f"and no _phi copy); HTML citations will not be hyperlinked")
 
         print("[2/6] (skipped: embeddings already in DB)")
 
