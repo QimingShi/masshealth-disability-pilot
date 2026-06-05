@@ -868,6 +868,16 @@ def ingest_multi_pdf_case(
     pipeline_chunks: list[dict] = []
     full_records: list[ChunkRecord] = []
 
+    # Map a combined-PDF page number to the local_path of the source PDF
+    # that contributed it. Used below to attribute each sub-document to its
+    # originating source PDF (populates documents.source_pdf_id in DB).
+    def _source_pdf_for_page(page_num: int) -> str | None:
+        for m in manifest:
+            lo, hi = m["combined_pages"]
+            if lo <= page_num <= hi:
+                return m["local_path"]
+        return None
+
     for sd in sub_docs:
         meta = _extract_doc_metadata(sd["blocks"], idx_all, derived_title=sd.get("derived_title", ""))
         documents.append({
@@ -876,6 +886,7 @@ def ingest_multi_pdf_case(
             "doc_title": meta["doc_title"],
             "encounter_date": meta["encounter_date"],
             "page_range_in_packet": [sd["page_start"], sd["page_end"]],
+            "source_pdf_local_path": _source_pdf_for_page(sd["page_start"]),
         })
         print(
             f"        {sd['doc_id']}  pp.{sd['page_start']:>2}-{sd['page_end']:<2}  "

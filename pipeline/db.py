@@ -150,6 +150,14 @@ def insert_documents(conn, case_id_pk: int, documents: list[dict],
     so chunks can reference them by FK.
 
     Idempotent via delete-then-insert scoped to this case.
+
+    source_pdf_id resolution (in order):
+      1. Explicit: each doc dict may set "source_pdf_local_path" matching a
+         key in source_pdf_map (path -> source_pdfs.id from insert_source_pdfs).
+      2. Inferred: if step 1 doesn't resolve, after the INSERT we run a
+         single UPDATE that joins page_start to source_pdfs.combined_page_*.
+         Covers callers (older ingest paths, chunks.json-only loaders) that
+         don't set source_pdf_local_path explicitly.
     """
     cur = conn.cursor()
     cur.execute("DELETE FROM documents WHERE case_id = %s", (case_id_pk,))
@@ -178,6 +186,24 @@ def insert_documents(conn, case_id_pk: int, documents: list[dict],
             source_pdf_id,
         ))
         out[d["doc_id"]] = cur.fetchone()[0]
+
+    # Step 2: page-range inference for rows that still have NULL source_pdf_id.
+    # Joins document.page_start to the source_pdf whose combined_page range
+    # covers it. This is the same logic as db/backfill_document_source_pdf_id.sql
+    # — running it inline keeps fresh ingests from also leaving NULL FKs.
+    cur.execute("""
+        UPDATE documents d
+        SET source_pdf_id = sp.id
+        FROM source_pdfs sp
+        WHERE d.case_id = %s
+          AND d.source_pdf_id IS NULL
+          AND sp.case_id = d.case_id
+          AND d.page_start IS NOT NULL
+          AND sp.combined_page_start IS NOT NULL
+          AND sp.combined_page_end   IS NOT NULL
+          AND d.page_start BETWEEN sp.combined_page_start AND sp.combined_page_end
+    """, (case_id_pk,))
+
     return out
 
 
