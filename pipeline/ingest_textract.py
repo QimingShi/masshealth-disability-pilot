@@ -129,7 +129,13 @@ SECTIONS_SPLIT_LIST = {"Visit Diagnoses", "Problem List", "Medications"}
 def _normalize_section_name(raw_header: str) -> str:
     key = re.sub(r"[^\w\s/]", "", raw_header).strip().lower()
     key = re.sub(r"\s+", " ", key)
-    return SECTION_NORMALIZER.get(key, raw_header.strip())
+    # Cap at 120 to fit chunks.section VARCHAR(120). Textract sometimes
+    # captures a long form-instruction line as the section header (e.g.
+    # "PART 1 Your health problems List and describe all your medical
+    # and mental health problems..."). The first ~120 chars preserve
+    # enough to identify the section.
+    out = SECTION_NORMALIZER.get(key, raw_header.strip())
+    return out[:120]
 
 
 # ---------- text extraction from blocks ----------

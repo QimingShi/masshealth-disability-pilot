@@ -130,13 +130,10 @@ CREATE TABLE IF NOT EXISTS chunks (
     document_id         INT          NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
     chunk_id            VARCHAR(128) NOT NULL,         -- "doc-01:p1:HPI:0"
 
-    section             TEXT,                           -- "HPI", "Impression", "Labs — CMP", or
-                                                        -- a long form-header line like
-                                                        -- "PART 1 Your health problems — List and
-                                                        --  describe all your medical and mental
-                                                        --  health problems...". TEXT (not VARCHAR)
-                                                        -- because Textract section names sometimes
-                                                        -- include the printed instruction text.
+    section             VARCHAR(120),                   -- "HPI", "Impression", "Labs — CMP"
+                                                        -- Capped at 120 in pipeline/ingest_textract.
+                                                        -- _normalize_section_name so the printed
+                                                        -- form-instruction text doesn't overflow.
     page_start          INT,
     page_end            INT,
     bbox                JSONB,                          -- {"<page>": [left,top,right,bottom], ...}
