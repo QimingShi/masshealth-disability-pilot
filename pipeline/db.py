@@ -254,6 +254,22 @@ def insert_chunks(conn, case_id_pk: int, doc_id_map: dict[str, int],
         bbox = c.get("bbox")
         if bbox is None and "bbox_by_page" in c:
             bbox = c["bbox_by_page"]
+
+        # Defensive truncation for column-width safety. The chunker caps
+        # the section slug in chunk_id to 60 chars via _safe(), and the
+        # migrate_chunks_section_to_text.sql migration widens
+        # chunks.section to TEXT. The truncations below are belt-and-
+        # suspenders for databases that haven't been migrated yet, so we
+        # never crash on StringDataRightTruncation. Section is preserved
+        # in full when the column allows; chunk_id stays unique within
+        # the case via its rowN:idx suffix.
+        section = c.get("section")
+        if section and len(section) > 200:
+            section = section[:200].rstrip() + "…"
+        chunk_id = c["chunk_id"]
+        if len(chunk_id) > 128:
+            chunk_id = chunk_id[:128]
+
         cur.execute("""
             INSERT INTO chunks
                 (case_id, document_id, chunk_id, section, page_start, page_end,
@@ -264,8 +280,8 @@ def insert_chunks(conn, case_id_pk: int, doc_id_map: dict[str, int],
         """, (
             case_id_pk,
             document_id,
-            c["chunk_id"],
-            c.get("section"),
+            chunk_id,
+            section,
             c.get("page_start"),
             c.get("page_end"),
             json.dumps(bbox) if bbox else None,

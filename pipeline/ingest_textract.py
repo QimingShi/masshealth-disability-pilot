@@ -555,8 +555,15 @@ def _split_list_lines(text: str) -> list[str]:
 # ---------- helpers ----------
 
 def _safe(s: str) -> str:
-    """Make a section name safe for use in a chunk_id (no spaces/punctuation)."""
-    return re.sub(r"[^A-Za-z0-9]+", "", s) or "Section"
+    """Make a section name safe for use in a chunk_id (no spaces/punctuation).
+
+    Capped at 60 chars so the overall chunk_id stays well under the DB
+    column limit (VARCHAR(128)) even when long form-header section names
+    feed in. The section's full text is still preserved on chunks.section
+    (now TEXT) — only the slug used in the chunk_id is bounded.
+    """
+    slug = re.sub(r"[^A-Za-z0-9]+", "", s) or "Section"
+    return slug[:60]
 
 
 # ---------- adapter for the existing pipeline ----------
