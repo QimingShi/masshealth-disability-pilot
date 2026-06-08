@@ -512,11 +512,75 @@ def _is_supplement_section(section: str, text: str) -> bool:
     )
 
 
+# Header-row keyword sets that identify the two supplement tables.
+# We match on column-header substrings (Textract preserves the printed
+# header text in the first row of a TABLE block).
+_PART1_HEADER_KEYWORDS = (
+    "list your medical",
+    "describe the symptoms",
+    "health problems",
+)
+_PART2_HEADER_KEYWORDS = (
+    "reason for visit",
+    "name of medical",
+    "name of medical and mental health providers",
+)
+
+
+def _split_table_row(line: str) -> list[str]:
+    """Split a Textract-rendered table row on the pipe separator."""
+    return [cell.strip() for cell in line.split("|")]
+
+
+def _extract_supplement_table_allegations(table_text: str) -> list[str]:
+    """Parse a pipe-separated table chunk; pull allegations from PART 1 / PART 2.
+
+    Returns a list of raw allegation strings (no garbage filtering — caller's
+    add() applies that). Empty list if the table doesn't look like a known
+    supplement section.
+
+    Strategy:
+      - The first non-empty line is the column header. Match keywords to
+        decide which table this is.
+      - For PART 1 ("list your medical and mental health problems"), the
+        diagnoses live in column 1.
+      - For PART 2 ("name of medical providers" + "reason for visit"),
+        the reason for visit is in column 2.
+      - Header itself isn't emitted.
+    """
+    lines = [ln for ln in table_text.split("\n") if ln.strip()]
+    if len(lines) < 2:
+        return []
+
+    header_lc = lines[0].lower()
+
+    is_part1 = any(kw in header_lc for kw in _PART1_HEADER_KEYWORDS)
+    is_part2 = any(kw in header_lc for kw in _PART2_HEADER_KEYWORDS)
+    if not (is_part1 or is_part2):
+        return []
+
+    out: list[str] = []
+    for line in lines[1:]:
+        cells = _split_table_row(line)
+        if not cells:
+            continue
+        if is_part1:
+            # Column 1 = patient's listed health problem
+            if cells and cells[0]:
+                out.append(cells[0])
+        elif is_part2:
+            # Column 2 = reason for visit (e.g. "Kidneys", "Oncology Surgeon")
+            if len(cells) >= 2 and cells[1]:
+                out.append(cells[1])
+    return out
+
+
 def auto_extract_allegations(chunks: list[dict]) -> list[dict]:
     """Best-effort allegation extraction. Combines chart-style patterns
     (chief complaint, visit diagnoses, PMH) with supplement-form patterns
-    (reason for visit, conditions claimed). All candidate allegations pass
-    through _is_garbage_allegation() before being kept."""
+    (reason for visit, conditions claimed, MassHealth Part 1/Part 2 tables).
+    All candidate allegations pass through _is_garbage_allegation() before
+    being kept."""
     allegations: list[dict] = []
     seen: set[str] = set()
 
@@ -538,6 +602,29 @@ def auto_extract_allegations(chunks: list[dict]) -> list[dict]:
         section = c.get("section", "")
         section_lc = section.lower()
         text = c.get("text", "")
+
+        # ---- MassHealth Adult Disability Supplement: PART 1 / PART 2 tables ----
+        # Textract renders TABLE blocks as pipe-separated lines (see
+        # ingest_textract._render_table). The supplement form has two
+        # multi-row tables we care about:
+        #
+        #   PART 1: column 1 is the patient's listed diagnoses.
+        #     header keywords: "list your medical", "health problems"
+        #   PART 2: column 2 is the reason for each provider visit.
+        #     header keywords: "reason for visit", "name of medical"
+        #
+        # For PART 1 we pull column 1 from every body row.
+        # For PART 2 we pull column 2.
+        # Pre-printed example rows (e.g. "Depression / Very tired all the
+        # time. April 2010 / None") will be included — they're filtered by
+        # _is_garbage_allegation only if they happen to match a known
+        # garbage pattern. Treating them as real allegations costs nothing
+        # in practice: if the chart has matching evidence the listing was
+        # already going to come up; if not, Claude returns 'insufficient'.
+        if c.get("is_table") and text:
+            allegs_from_table = _extract_supplement_table_allegations(text)
+            for alleg in allegs_from_table:
+                add(alleg, "supplement_form", c["chunk_id"])
 
         # ---- Supplement-form patterns (high precision) ----
         if _is_supplement_section(section, text):
