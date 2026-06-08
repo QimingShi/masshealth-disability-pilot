@@ -209,10 +209,32 @@ def run_from_db(case_id_str: str, *, include_codes: list[str] | None = None) -> 
         candidates = find_candidates_sql(
             conn, case_pk, top_k=TOP_K_CANDIDATES,
         )
+        # Fallback: if allegation -> listing similarity surfaced nothing,
+        # try the chart-keyword path. For each allegation text, find chart
+        # chunks containing that text as a substring, then use the chunks'
+        # embeddings to find listings. Catches cases where the supplement
+        # text is too sparse for the embedding match alone but the chart
+        # mentions the condition by name.
+        if not candidates:
+            print("      No candidates from allegation -> listing similarity. "
+                  "Trying chart-keyword fallback...")
+            from pipeline.db_matcher import find_candidates_via_chart_keywords
+            candidates = find_candidates_via_chart_keywords(
+                conn, case_pk, top_k=TOP_K_CANDIDATES,
+            )
+            if candidates:
+                print(f"      [fallback] surfaced {len(candidates)} candidate(s) "
+                      f"via chart-keyword match")
+
+        # If still nothing (and no --include override), keep going rather
+        # than failing: render an empty case-summary so the reviewer at
+        # least sees that the matcher ran but found nothing to evaluate.
         if not candidates and not include_codes:
-            print("      No candidates surfaced. Did the embedding workers run "
-                  "for both allegations and ssa_listings?", file=sys.stderr)
-            return 4
+            print("      WARNING: no candidates surfaced via either path; "
+                  "case-summary will be empty. Verify allegation extraction "
+                  "(see allegations table) and listing/chunk embeddings "
+                  "(compute_listing_embeddings / case ingest).",
+                  file=sys.stderr)
 
         # Force-include any listings the operator passed via --include that
         # didn't already make the shortlist. Synthetic score=0.0 and reasoning
