@@ -484,6 +484,32 @@ def get_listings(conn, *, with_embedding: bool = False) -> list[dict]:
     return out
 
 
+def get_listings_by_codes(conn, codes: list[str]) -> list[dict]:
+    """Return SSA listings whose .code is in `codes`. Used by run.py's
+    --include flag to manually force-evaluate listings that didn't make the
+    top-K candidate shortlist. Same dict shape as get_listings()."""
+    if not codes:
+        return []
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT id, code, title, body_system, summary, rule_json
+        FROM ssa_listings
+        WHERE code = ANY(%s)
+        ORDER BY code
+    """, (codes,))
+    return [
+        {
+            "id":          row[0],
+            "code":        row[1],
+            "title":       row[2],
+            "body_system": row[3],
+            "summary":     row[4],
+            "rule_json":   row[5],
+        }
+        for row in cur.fetchall()
+    ]
+
+
 def get_listing_synonyms(conn, listing_pk) -> dict[str, list[str]]:
     # listing_pk is UUID — psycopg2 binds str/UUID transparently.
     """Return the synonym map for one listing in {canonical: [variants]} shape."""

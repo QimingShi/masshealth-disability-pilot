@@ -35,19 +35,38 @@ TOP_K_CANDIDATES = 10     # how many listings to fully evaluate per case
 
 
 def main(argv: list[str]) -> int:
-    """CLI dispatcher. Only one mode: --from-db <case_id>."""
-    if len(argv) >= 3 and argv[1] == "--from-db":
-        return run_from_db(argv[2])
+    """CLI dispatcher.
+
+    Usage:
+        python run.py --from-db <case_id>
+        python run.py --from-db <case_id> --include 1.18,2.04,3.02
+
+    --include lets a reviewer force-evaluate specific listing codes that
+    didn't make the top-K candidate shortlist (useful when you know a case
+    should be checked against a particular listing regardless of allegation
+    similarity).
+    """
     if argv[1:2] in (["-h"], ["--help"]):
-        print("Usage: python run.py --from-db <case_id>")
+        print("Usage: python run.py --from-db <case_id> [--include <code1,code2,...>]")
         return 0
-    print("Usage: python run.py --from-db <case_id>", file=sys.stderr)
+    if len(argv) >= 3 and argv[1] == "--from-db":
+        case_id = argv[2]
+        include_codes: list[str] = []
+        if "--include" in argv:
+            idx = argv.index("--include")
+            if idx + 1 < len(argv):
+                include_codes = [
+                    c.strip() for c in argv[idx + 1].split(",") if c.strip()
+                ]
+        return run_from_db(case_id, include_codes=include_codes)
+    print("Usage: python run.py --from-db <case_id> [--include <code1,code2,...>]",
+          file=sys.stderr)
     print("       (the case must already be loaded into Postgres via "
           "db/ingest_s3_to_db.py)", file=sys.stderr)
     return 2
 
 
-def run_from_db(case_id_str: str) -> int:
+def run_from_db(case_id_str: str, *, include_codes: list[str] | None = None) -> int:
     """Run the matcher against a case that's already loaded into Postgres.
 
     Reads chunks, allegations, and the listing reference data from the DB,
@@ -188,10 +207,48 @@ def run_from_db(case_id_str: str) -> int:
         candidates = find_candidates_sql(
             conn, case_pk, top_k=TOP_K_CANDIDATES,
         )
-        if not candidates:
+        if not candidates and not include_codes:
             print("      No candidates surfaced. Did the embedding workers run "
                   "for both allegations and ssa_listings?", file=sys.stderr)
             return 4
+
+        # Force-include any listings the operator passed via --include that
+        # didn't already make the shortlist. Synthetic score=0.0 and reasoning
+        # tag flags them so the printed output makes it obvious they're
+        # reviewer-forced, not similarity-driven.
+        if include_codes:
+            from pipeline.db import get_listings_by_codes
+            from pipeline.db_matcher import DBCandidate
+            already = {c.listing.code for c in candidates}
+            to_add  = [code for code in include_codes if code not in already]
+            if to_add:
+                forced_rows = get_listings_by_codes(conn, to_add)
+                found = {row["code"] for row in forced_rows}
+                missing = [c for c in to_add if c not in found]
+                if missing:
+                    print(f"      WARNING: --include codes not in ssa_listings: "
+                          f"{missing}", file=sys.stderr)
+                for row in forced_rows:
+                    candidates.append(DBCandidate(
+                        listing_pk=row["id"],
+                        listing=Listing(
+                            code=row["code"],
+                            title=row["title"],
+                            body_system=row["body_system"],
+                            summary=row["summary"],
+                            synonyms={},
+                            rule_json=row["rule_json"],
+                        ),
+                        score=0.0,
+                        reasoning=[f"forced via --include (not in top-{TOP_K_CANDIDATES})"],
+                    ))
+                print(f"      --include: added {len(forced_rows)} forced "
+                      f"candidate(s): {sorted(found)}")
+            already_kept = [c for c in include_codes if c in already]
+            if already_kept:
+                print(f"      --include: already in top-{TOP_K_CANDIDATES} "
+                      f"shortlist: {already_kept}")
+
         print(f"      Top {len(candidates)} candidates:")
         for c in candidates:
             print(f"        {c.listing.code:>6}  score={c.score:.2f}  "
