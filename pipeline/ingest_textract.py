@@ -237,6 +237,90 @@ def _render_table(table_block: Block, idx: dict[str, Block]) -> str:
     return "\n".join(" | ".join(cell for cell in row) for row in rows)
 
 
+def _extract_table_grid(table_block: Block, idx: dict[str, Block]) -> list[list[str]]:
+    """Same row extraction as _render_table but returns structured rows
+    (list[list[str]]) instead of a flattened string.
+
+    Used by the per-row table chunker. Returns [] when the TABLE has no
+    CELL children we can reach (rare; means the table extractor saw the
+    grid but didn't link cells, in which case the caller should fall back
+    to single-chunk rendering).
+    """
+    cells_by_rc: dict[tuple[int, int], list[Block]] = defaultdict(list)
+    for cid in _children(table_block):
+        cb = idx.get(cid)
+        if cb and cb.get("BlockType") == "CELL":
+            r, c = cb["RowIndex"], cb["ColumnIndex"]
+            cells_by_rc[(r, c)].append(cb)
+    if not cells_by_rc:
+        return []
+    n_rows = max(r for r, _ in cells_by_rc)
+    n_cols = max(c for _, c in cells_by_rc)
+    rows: list[list[str]] = []
+    for r in range(1, n_rows + 1):
+        row: list[str] = []
+        for c in range(1, n_cols + 1):
+            cell_blocks = cells_by_rc.get((r, c), [])
+            cell_text = ""
+            if cell_blocks:
+                words = _word_blocks_under(cell_blocks[0], idx)
+                cell_text = " ".join(w.get("Text", "") for w in words).strip()
+            row.append(cell_text)
+        rows.append(row)
+    return rows
+
+
+def _bbox_overlap(a: dict, b: dict) -> float:
+    """Intersection-over-min-area of two normalized Textract BoundingBoxes.
+    Used to associate a LAYOUT_TABLE block with the underlying TABLE block
+    when they aren't linked by direct CHILD relationship.
+    """
+    ax1, ay1 = a.get("Left", 0), a.get("Top", 0)
+    ax2, ay2 = ax1 + a.get("Width", 0), ay1 + a.get("Height", 0)
+    bx1, by1 = b.get("Left", 0), b.get("Top", 0)
+    bx2, by2 = bx1 + b.get("Width", 0), by1 + b.get("Height", 0)
+    ix1, iy1 = max(ax1, bx1), max(ay1, by1)
+    ix2, iy2 = min(ax2, bx2), min(ay2, by2)
+    if ix2 <= ix1 or iy2 <= iy1:
+        return 0.0
+    inter = (ix2 - ix1) * (iy2 - iy1)
+    area_a = max(1e-9, (ax2 - ax1) * (ay2 - ay1))
+    area_b = max(1e-9, (bx2 - bx1) * (by2 - by1))
+    return inter / min(area_a, area_b)
+
+
+def _find_table_block_for_layout(layout_table: Block, idx: dict[str, Block]
+                                  ) -> Block | None:
+    """Locate the TABLE block that backs a LAYOUT_TABLE block.
+
+    First tries direct CHILD relationship (Textract's standard pattern).
+    Falls back to bbox-overlap search across all TABLE blocks on the same
+    page — handles the case where Textract emits TABLEs at the top level
+    without a layout link.
+    """
+    # 1. Direct CHILD relationship
+    for cid in _children(layout_table):
+        cb = idx.get(cid)
+        if cb and cb.get("BlockType") == "TABLE":
+            return cb
+    # 2. Spatial overlap fallback
+    page = layout_table.get("Page", 1)
+    lbbox = layout_table.get("Geometry", {}).get("BoundingBox", {})
+    if not lbbox:
+        return None
+    best: tuple[float, Block] | None = None
+    for b in idx.values():
+        if b.get("BlockType") != "TABLE":
+            continue
+        if b.get("Page") != page:
+            continue
+        tbbox = b.get("Geometry", {}).get("BoundingBox", {})
+        score = _bbox_overlap(lbbox, tbbox)
+        if score > 0.5 and (best is None or score > best[0]):
+            best = (score, b)
+    return best[1] if best else None
+
+
 def _avg_confidence(blocks: list[Block]) -> float:
     confs = [b.get("Confidence", 0.0) for b in blocks if b.get("Confidence") is not None]
     return sum(confs) / len(confs) if confs else 0.0
@@ -345,11 +429,78 @@ def chunk_by_layout(
             current_section = _normalize_section_name(header_text) or current_section
 
         elif btype == "LAYOUT_TABLE":
-            # A table is its own chunk: flush prior text, emit table alone,
-            # then continue accumulating under the same section.
+            # Tables get split per-row so each row gets a clean embedding.
+            # Embedding the whole table as one chunk mashes every diagnosis,
+            # symptom, date, and medication together — the resulting vector
+            # is an "average of everything", useless for matching any
+            # individual row against a specific SSA listing. Per-row chunks
+            # each include the header line for context so the embedder
+            # knows what each cell represents (e.g. "Diagnosis: Diabetes |
+            # Symptoms: High sugar | Onset: Oct 2011 | Med: Lispro").
             flush_pending()
-            pending_blocks.append(b)
-            flush_pending()
+
+            table_block = _find_table_block_for_layout(b, idx)
+            grid = _extract_table_grid(table_block, idx) if table_block else []
+
+            if len(grid) >= 2:
+                header_line = " | ".join(grid[0])
+                for row_idx, row_cells in enumerate(grid[1:], start=1):
+                    # Skip fully-blank rows (form templates often have them)
+                    if not any(cell.strip() for cell in row_cells):
+                        continue
+                    row_line = " | ".join(row_cells)
+                    chunk_text = f"{header_line}\n{row_line}"
+
+                    # Collect WORDs + bbox from this row's cells specifically,
+                    # not the whole LAYOUT_TABLE — gives accurate per-row
+                    # geometry for the bbox sidecar / annotation step.
+                    row_word_blocks: list[Block] = []
+                    row_bbox = BBox()
+                    row_pages: list[int] = []
+                    row_block_ids: list[str] = []
+                    if table_block:
+                        for cid in _children(table_block):
+                            cb = idx.get(cid)
+                            if not (cb and cb.get("BlockType") == "CELL"):
+                                continue
+                            if cb.get("RowIndex") != row_idx + 1:  # +1: header is row 1
+                                continue
+                            _add_geometry_to_bbox(cb, row_bbox)
+                            page = cb.get("Page", 1)
+                            row_pages.append(page)
+                            row_block_ids.append(cb["Id"])
+                            row_word_blocks.extend(_word_blocks_under(cb, idx))
+
+                    page_start = min(row_pages) if row_pages else b.get("Page", 1)
+                    page_end   = max(row_pages) if row_pages else page_start
+
+                    chunk_idx = section_idx_counter[current_section]
+                    section_idx_counter[current_section] += 1
+                    chunk_id = (f"{doc_id}:p{page_start}:{_safe(current_section)}:"
+                                f"row{row_idx}:{chunk_idx}")
+
+                    chunks.append(ChunkRecord(
+                        chunk_id=chunk_id,
+                        doc_id=doc_id,
+                        section=current_section,
+                        text=chunk_text,
+                        page_start=page_start,
+                        page_end=page_end,
+                        bbox=row_bbox,
+                        ocr_confidence=_avg_confidence(row_word_blocks),
+                        layout_block_type="LAYOUT_TABLE",
+                        is_table=True,
+                        source_block_ids=row_block_ids or [b["Id"]],
+                        doc_type=doc_meta.get("doc_type"),
+                        doc_title=doc_meta.get("doc_title"),
+                        encounter_date=doc_meta.get("encounter_date"),
+                    ))
+            else:
+                # No usable table grid (extractor missed cell structure):
+                # fall back to the original single-chunk behavior so we
+                # don't lose the content entirely.
+                pending_blocks.append(b)
+                flush_pending()
 
         else:
             # LAYOUT_TEXT, LAYOUT_LIST, LAYOUT_KEY_VALUE -> accumulate under section
