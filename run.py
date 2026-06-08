@@ -465,6 +465,29 @@ def run_from_db(case_id_str: str) -> int:
                 except OSError:
                     pass   # non-fatal — re-runs will overwrite anyway
 
+        # ---- Optional: publish the rendered bundle to outgoing S3 ----
+        # Opt-in by setting OUTPUT_PUBLISH_BUCKET in the shell environment.
+        # When set, every successful matcher run also pushes out_dir to
+        # s3://<bucket>/<case_id>/ for downstream consumers (SharePoint
+        # sync, reviewer self-serve download, etc.). Skipped silently when
+        # the env var is unset — won't trigger AWS calls or block run.py.
+        publish_bucket = os.environ.get("OUTPUT_PUBLISH_BUCKET")
+        if publish_bucket:
+            try:
+                from pipeline.output_publish import publish_to_s3
+                print(f"\n[publish] Uploading bundle to "
+                      f"s3://{publish_bucket}/{case_id_str}/ ...")
+                publish_to_s3(
+                    case_id=case_id_str,
+                    out_dir=out_dir,
+                    bucket=publish_bucket,
+                )
+            except Exception as e:
+                # Don't fail the whole run if publish hits a transient AWS
+                # error — the local bundle is fine; reviewer can re-publish
+                # later via py publish_output.py <case_id>.
+                print(f"[publish] WARNING — upload failed: {e}")
+
     print("\nDone.")
     return 0
 
