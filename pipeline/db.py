@@ -487,16 +487,22 @@ def get_listings(conn, *, with_embedding: bool = False) -> list[dict]:
 def get_listings_by_codes(conn, codes: list[str]) -> list[dict]:
     """Return SSA listings whose .code is in `codes`. Used by run.py's
     --include flag to manually force-evaluate listings that didn't make the
-    top-K candidate shortlist. Same dict shape as get_listings()."""
+    top-K candidate shortlist. Same dict shape as get_listings().
+
+    Uses IN %s (with a tuple bind) — psycopg2 expands a tuple into an SQL
+    IN list, which behaves identically across all driver versions. The
+    earlier ANY(%s) form depended on the driver adapting a Python list to
+    a Postgres array, which some setups don't do silently.
+    """
     if not codes:
         return []
     cur = conn.cursor()
     cur.execute("""
         SELECT id, code, title, body_system, summary, rule_json
         FROM ssa_listings
-        WHERE code = ANY(%s)
+        WHERE code IN %s
         ORDER BY code
-    """, (codes,))
+    """, (tuple(codes),))
     return [
         {
             "id":          row[0],

@@ -39,31 +39,33 @@ def main(argv: list[str]) -> int:
 
     Usage:
         python run.py --from-db <case_id>
+        python run.py --from-db <case_id> --include 1.18
         python run.py --from-db <case_id> --include 1.18,2.04,3.02
 
-    --include lets a reviewer force-evaluate specific listing codes that
-    didn't make the top-K candidate shortlist (useful when you know a case
-    should be checked against a particular listing regardless of allegation
-    similarity).
+    --include force-evaluates specific listing codes that didn't make the
+    top-K candidate shortlist. Useful when the reviewer knows a case
+    should be checked against a particular listing regardless of how well
+    the allegation embeddings matched.
     """
-    if argv[1:2] in (["-h"], ["--help"]):
-        print("Usage: python run.py --from-db <case_id> [--include <code1,code2,...>]")
-        return 0
-    if len(argv) >= 3 and argv[1] == "--from-db":
-        case_id = argv[2]
-        include_codes: list[str] = []
-        if "--include" in argv:
-            idx = argv.index("--include")
-            if idx + 1 < len(argv):
-                include_codes = [
-                    c.strip() for c in argv[idx + 1].split(",") if c.strip()
-                ]
-        return run_from_db(case_id, include_codes=include_codes)
-    print("Usage: python run.py --from-db <case_id> [--include <code1,code2,...>]",
-          file=sys.stderr)
-    print("       (the case must already be loaded into Postgres via "
-          "db/ingest_s3_to_db.py)", file=sys.stderr)
-    return 2
+    import argparse
+    p = argparse.ArgumentParser(
+        prog="run.py",
+        description=("Run the matcher on a case already loaded into Postgres."),
+    )
+    p.add_argument(
+        "--from-db", dest="case_id", required=True,
+        help="case_id (human-readable, as in cases.case_id) to evaluate",
+    )
+    p.add_argument(
+        "--include", default="",
+        help=("comma-separated listing codes to force-evaluate even if they "
+              "didn't make the top-K shortlist, e.g. --include 1.18,2.04"),
+    )
+    args = p.parse_args(argv[1:])
+    include_codes = [c.strip() for c in args.include.split(",") if c.strip()]
+    if include_codes:
+        print(f"--include codes received: {include_codes}")
+    return run_from_db(args.case_id, include_codes=include_codes)
 
 
 def run_from_db(case_id_str: str, *, include_codes: list[str] | None = None) -> int:
@@ -217,17 +219,26 @@ def run_from_db(case_id_str: str, *, include_codes: list[str] | None = None) -> 
         # tag flags them so the printed output makes it obvious they're
         # reviewer-forced, not similarity-driven.
         if include_codes:
+            print(f"      [include] processing codes: {include_codes}")
             from pipeline.db import get_listings_by_codes
             from pipeline.db_matcher import DBCandidate
             already = {c.listing.code for c in candidates}
+            print(f"      [include] already in top-{TOP_K_CANDIDATES}: "
+                  f"{sorted(already)}")
             to_add  = [code for code in include_codes if code not in already]
+            already_kept = [c for c in include_codes if c in already]
+            if already_kept:
+                print(f"      [include] already shortlisted (no-op): "
+                      f"{already_kept}")
+            print(f"      [include] codes to fetch from DB: {to_add}")
             if to_add:
                 forced_rows = get_listings_by_codes(conn, to_add)
-                found = {row["code"] for row in forced_rows}
-                missing = [c for c in to_add if c not in found]
+                fetched = [r["code"] for r in forced_rows]
+                print(f"      [include] DB lookup returned: {fetched}")
+                missing = [c for c in to_add if c not in fetched]
                 if missing:
-                    print(f"      WARNING: --include codes not in ssa_listings: "
-                          f"{missing}", file=sys.stderr)
+                    print(f"      [include] WARNING: codes not found in "
+                          f"ssa_listings: {missing}", file=sys.stderr)
                 for row in forced_rows:
                     candidates.append(DBCandidate(
                         listing_pk=row["id"],
@@ -242,12 +253,8 @@ def run_from_db(case_id_str: str, *, include_codes: list[str] | None = None) -> 
                         score=0.0,
                         reasoning=[f"forced via --include (not in top-{TOP_K_CANDIDATES})"],
                     ))
-                print(f"      --include: added {len(forced_rows)} forced "
-                      f"candidate(s): {sorted(found)}")
-            already_kept = [c for c in include_codes if c in already]
-            if already_kept:
-                print(f"      --include: already in top-{TOP_K_CANDIDATES} "
-                      f"shortlist: {already_kept}")
+                print(f"      [include] appended {len(forced_rows)} forced "
+                      f"candidate(s); total candidates now {len(candidates)}")
 
         print(f"      Top {len(candidates)} candidates:")
         for c in candidates:
