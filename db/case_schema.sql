@@ -93,9 +93,14 @@ CREATE TABLE IF NOT EXISTS documents (
     facility           VARCHAR(255),
     page_start         INT,                             -- in combined source.pdf
     page_end           INT,
-    source_pdf_id      INT          REFERENCES source_pdfs(id),
+    source_pdf_id      INT          REFERENCES source_pdfs(id) ON DELETE SET NULL,
                                     -- which underlying PDF this sub-doc came from
-                                    -- (matters for multi-PDF ingest)
+                                    -- (matters for multi-PDF ingest). ON DELETE
+                                    -- SET NULL because insert_source_pdfs is
+                                    -- idempotent (delete + insert) and we don't
+                                    -- want documents to block its re-run; the
+                                    -- next insert_documents will repopulate
+                                    -- via page-range inference.
 
     UNIQUE (case_id, doc_id)
 );

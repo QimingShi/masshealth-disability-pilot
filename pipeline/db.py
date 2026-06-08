@@ -112,6 +112,17 @@ def insert_source_pdfs(conn, case_id_pk: int, pdfs: list[dict]) -> dict[str, int
     Idempotent via delete-then-insert scoped to this case.
     """
     cur = conn.cursor()
+    # documents.source_pdf_id has an FK to source_pdfs(id). On databases
+    # where the FK is still ON DELETE NO ACTION (older schema), naively
+    # deleting source_pdfs throws ForeignKeyViolation if any documents
+    # rows still reference us. Null out those refs first — insert_documents
+    # repopulates them via page-range inference on the next step anyway.
+    # On databases that have applied the ON DELETE SET NULL migration this
+    # UPDATE is redundant but cheap (0 rows match for fresh cases).
+    cur.execute(
+        "UPDATE documents SET source_pdf_id = NULL WHERE case_id = %s",
+        (case_id_pk,),
+    )
     cur.execute("DELETE FROM source_pdfs WHERE case_id = %s", (case_id_pk,))
     out: dict[str, int] = {}
     for p in pdfs:
