@@ -565,15 +565,25 @@ def to_pipeline_chunks(records: list[ChunkRecord]) -> list[dict]:
     """Convert rich ChunkRecord -> the dict shape that data/chunks.json uses,
     so the existing loader and matcher can consume Textract output unchanged.
     Drops bbox/confidence/source_block_ids — those go in the DB but aren't
-    needed for the matching pipeline."""
+    needed for the matching pipeline.
+
+    We DO carry is_table + layout_block_type because allegation extraction
+    (pipeline.ingest_real.auto_extract_allegations) branches on them to
+    handle MassHealth Adult Disability Supplement Part 1 / Part 2 tables —
+    without these fields, the per-row supplement table extractor never
+    fires and the allegations table ends up populated only by free-text
+    regex matches against column headers (garbage).
+    """
     return [
         {
-            "chunk_id": r.chunk_id,
-            "doc_id": r.doc_id,
-            "section": r.section,
-            "text": r.text,
-            "page_start": r.page_start,
-            "page_end": r.page_end,
+            "chunk_id":          r.chunk_id,
+            "doc_id":            r.doc_id,
+            "section":           r.section,
+            "text":              r.text,
+            "page_start":        r.page_start,
+            "page_end":          r.page_end,
+            "is_table":          r.is_table,
+            "layout_block_type": r.layout_block_type,
         }
         for r in records
     ]

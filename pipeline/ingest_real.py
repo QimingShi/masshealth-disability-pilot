@@ -627,7 +627,14 @@ def auto_extract_allegations(chunks: list[dict]) -> list[dict]:
                 add(alleg, "supplement_form", c["chunk_id"])
 
         # ---- Supplement-form patterns (high precision) ----
-        if _is_supplement_section(section, text):
+        # SKIP this regex on table chunks. _SUPPLEMENT_REASON_RE captures
+        # everything after "reason for visit" up to the next newline; in a
+        # Part 2 table chunk the literal "Reason for visit" appears in the
+        # COLUMN HEADER line, so the regex captures the rest of the header
+        # text ("| Was this visit in the past year?") as a "claim". The
+        # per-row table extractor above already handles supplement tables
+        # via column-aware extraction.
+        if _is_supplement_section(section, text) and not c.get("is_table"):
             for m in _SUPPLEMENT_REASON_RE.finditer(text):
                 add(m.group(1), "supplement_form", c["chunk_id"])
 
