@@ -31,7 +31,7 @@ from pipeline.annotate_pdf import annotate_pdf, collect_cited_chunk_ids
 HERE = Path(__file__).parent
 OUTPUT_ROOT = HERE / "output"
 TEMPLATES_DIR = HERE / "templates" / "listings"   # hand-crafted UMass DES forms
-TOP_K_CANDIDATES = 5      # how many listings to fully evaluate per case
+TOP_K_CANDIDATES = 10     # how many listings to fully evaluate per case
 
 
 def main(argv: list[str]) -> int:
