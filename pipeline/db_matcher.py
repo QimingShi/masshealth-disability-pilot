@@ -143,114 +143,49 @@ def find_candidates_sql(conn, case_pk: CasePK, *,
     return out
 
 
-def find_candidates_via_chart_keywords(conn, case_pk: CasePK, *,
-                                        top_k: int = 10,
-                                        per_chunk_k: int = 3,
-                                        min_similarity: float = 0.30,
-                                        ) -> list[DBCandidate]:
-    """Fallback candidate identification: chart-keyword grounding.
+def retrieve_chunks_for_allegation_sql(conn, case_pk: CasePK,
+                                        allegation_id: int, *,
+                                        top_k: int = 5,
+                                        ) -> list[dict]:
+    """Find the top-K chart chunks most similar to a specific allegation.
 
-    Used when find_candidates_sql returns nothing (or to widen the net).
-    For each allegation text, find chart chunks whose text contains the
-    allegation as a substring (case-insensitive). Then for each matched
-    chunk, take its top-N most-similar listings by chunk_embedding <->
-    listing_summary_embedding cosine. Aggregate listings by max similarity.
+    Used by run.py's no-listings fallback: when find_candidates_sql
+    returns nothing, we surface allegation-by-allegation evidence so the
+    reviewer can see what the chart actually says about each claim and
+    decide which listings (if any) to manually --include.
 
-    Why this works as a fallback: if the patient writes "Diabetes" on the
-    supplement but the embedding-only path didn't surface listing 9.00,
-    the chart almost certainly contains the word "diabetes" somewhere
-    (problem list, med list, encounter note). That chunk's embedding is
-    much richer than the bare allegation text, so chunk -> listing
-    similarity gives us a candidate the bare allegation -> listing path
-    missed.
-
-    Less precise than find_candidates_sql (chart has incidental mentions),
-    so use as a fallback, not a replacement.
+    Returns chunk dicts with enough metadata for citation rendering:
+    provider (doc_title), date, section, page range, text snippet, and
+    similarity score.
     """
     cur = conn.cursor()
     cur.execute("""
-        WITH allegation_terms AS (
-            SELECT id, text, LOWER(text) AS lc
+        WITH allegation_vec AS (
+            SELECT embedding
             FROM allegations
-            WHERE case_id = %(case_pk)s
-              AND char_length(text) >= 4
-        ),
-        matching_chunks AS (
-            -- one row per (allegation, chunk) where chunk text contains
-            -- the allegation as a substring. DISTINCT to avoid duplicates
-            -- when multiple allegations match the same chunk.
-            SELECT DISTINCT
-                c.id           AS chunk_id,
-                c.embedding    AS chunk_embedding,
-                aw.id          AS allegation_id,
-                aw.text        AS allegation_text
-            FROM allegation_terms aw
-            JOIN chunks c
-                ON c.case_id = %(case_pk)s
-               AND c.embedding IS NOT NULL
-               AND LOWER(c.text) LIKE '%%' || aw.lc || '%%'
-        ),
-        chunk_listing_pairs AS (
-            SELECT
-                mc.chunk_id,
-                mc.allegation_text,
-                l.id AS listing_id,
-                1 - (mc.chunk_embedding <=> l.summary_embedding) AS similarity
-            FROM matching_chunks mc
-            CROSS JOIN ssa_listings l
-            WHERE l.summary_embedding IS NOT NULL
-        ),
-        top_per_chunk AS (
-            SELECT *,
-                   ROW_NUMBER() OVER (PARTITION BY chunk_id ORDER BY similarity DESC) AS rk
-            FROM chunk_listing_pairs
-        ),
-        kept AS (
-            SELECT *
-            FROM top_per_chunk
-            WHERE rk <= %(per_chunk_k)s
-              AND similarity >= %(min_similarity)s
-        ),
-        aggregated AS (
-            SELECT
-                listing_id,
-                MAX(similarity)                                AS best_similarity,
-                COUNT(DISTINCT chunk_id)                       AS n_chunks,
-                array_agg(DISTINCT
-                    allegation_text || ' via chart chunk (' ||
-                    to_char(similarity, 'FM0.00') || ')'
-                )                                              AS reasoning_bits
-            FROM kept
-            GROUP BY listing_id
+            WHERE id = %(allegation_id)s
+              AND embedding IS NOT NULL
         )
-        SELECT ag.listing_id, l.code, l.title, l.body_system, l.summary, l.rule_json,
-               ag.best_similarity, ag.n_chunks, ag.reasoning_bits
-        FROM aggregated ag
-        JOIN ssa_listings l ON l.id = ag.listing_id
-        ORDER BY ag.best_similarity DESC, ag.n_chunks DESC
+        SELECT c.id, c.chunk_id, d.doc_id, d.doc_type, d.doc_title,
+               d.encounter_date, c.section, c.page_start, c.page_end,
+               c.text, c.bbox,
+               1 - (c.embedding <=> av.embedding) AS similarity
+        FROM chunks c
+        JOIN documents d  ON d.id = c.document_id
+        CROSS JOIN allegation_vec av
+        WHERE c.case_id   = %(case_pk)s
+          AND c.embedding IS NOT NULL
+        ORDER BY c.embedding <=> av.embedding
         LIMIT %(top_k)s
     """, {
-        "case_pk":         case_pk,
-        "per_chunk_k":     per_chunk_k,
-        "min_similarity":  min_similarity,
-        "top_k":           top_k,
+        "allegation_id": allegation_id,
+        "case_pk":       case_pk,
+        "top_k":         top_k,
     })
-
-    out: list[DBCandidate] = []
-    for row in cur.fetchall():
-        (listing_id, code, title, body_system, summary, rule_json,
-         best_sim, n_chunks, reasoning_bits) = row
-        listing = Listing(
-            code=code, title=title, body_system=body_system,
-            summary=summary, synonyms={}, rule_json=rule_json,
-        )
-        out.append(DBCandidate(
-            listing_pk=listing_id,
-            listing=listing,
-            score=float(best_sim),
-            reasoning=list(reasoning_bits) if reasoning_bits else [],
-        ))
-    return out
+    cols = ("id", "chunk_id", "doc_id", "doc_type", "doc_title",
+            "encounter_date", "section", "page_start", "page_end",
+            "text", "bbox", "similarity")
+    return [dict(zip(cols, row)) for row in cur.fetchall()]
 
 
 # ---------------------------------------------------------------------------

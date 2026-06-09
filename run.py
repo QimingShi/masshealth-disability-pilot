@@ -209,32 +209,68 @@ def run_from_db(case_id_str: str, *, include_codes: list[str] | None = None) -> 
         candidates = find_candidates_sql(
             conn, case_pk, top_k=TOP_K_CANDIDATES,
         )
-        # Fallback: if allegation -> listing similarity surfaced nothing,
-        # try the chart-keyword path. For each allegation text, find chart
-        # chunks containing that text as a substring, then use the chunks'
-        # embeddings to find listings. Catches cases where the supplement
-        # text is too sparse for the embedding match alone but the chart
-        # mentions the condition by name.
-        if not candidates:
-            print("      No candidates from allegation -> listing similarity. "
-                  "Trying chart-keyword fallback...")
-            from pipeline.db_matcher import find_candidates_via_chart_keywords
-            candidates = find_candidates_via_chart_keywords(
-                conn, case_pk, top_k=TOP_K_CANDIDATES,
-            )
-            if candidates:
-                print(f"      [fallback] surfaced {len(candidates)} candidate(s) "
-                      f"via chart-keyword match")
 
-        # If still nothing (and no --include override), keep going rather
-        # than failing: render an empty case-summary so the reviewer at
-        # least sees that the matcher ran but found nothing to evaluate.
+        # If no listings matched AND the reviewer didn't force-include
+        # anything, fall back to an allegation-vs-chart evidence report:
+        # for each allegation, retrieve its top-5 most-similar chunks and
+        # render those as 0_CASE_SUMMARY.html. No per-listing forms are
+        # written — the reviewer uses the report to decide which listings
+        # to manually --include on a follow-up run.
         if not candidates and not include_codes:
-            print("      WARNING: no candidates surfaced via either path; "
-                  "case-summary will be empty. Verify allegation extraction "
-                  "(see allegations table) and listing/chunk embeddings "
-                  "(compute_listing_embeddings / case ingest).",
-                  file=sys.stderr)
+            print("      No candidate listings matched. Falling back to "
+                  "allegation-vs-chart evidence report (top-5 chunks per "
+                  "allegation, no listings evaluated)...")
+            from pipeline.db_matcher import retrieve_chunks_for_allegation_sql
+            from pipeline.output import render_no_listings_fallback_html
+            allegation_chunks: list[dict] = []
+            for alleg in allegation_rows:
+                chunks = retrieve_chunks_for_allegation_sql(
+                    conn, case_pk,
+                    allegation_id=alleg["id"],
+                    top_k=5,
+                )
+                allegation_chunks.append({
+                    "allegation": alleg,
+                    "chunks":     chunks,
+                })
+                print(f"      [fallback] {alleg.get('text','?')[:60]:<60}  "
+                      f"-> {len(chunks)} chunk(s)")
+            summary_html = render_no_listings_fallback_html(
+                case_id=case_id_str,
+                allegation_chunks=allegation_chunks,
+                source_pdf_path=html_pdf_target,
+            )
+            summary_path = out_dir / "0_CASE_SUMMARY.html"
+            write_form(summary_path, summary_html)
+            print(f"\nCase-summary (fallback): {summary_path}")
+            # Still publish to S3 if configured, and write a case_summaries
+            # row with n_candidates=0 so the audit trail records the run.
+            persist_case_summary(
+                conn,
+                case_pk=case_pk,
+                n_candidates=0,
+                listing_outcomes=[],
+                summary_text=("No SSA listings matched; allegation-vs-chart "
+                              "evidence report rendered instead."),
+                overall_groundedness=None,
+                started_at=run_started_at,
+                elapsed_seconds=time.time() - t_start,
+            )
+            publish_bucket = os.environ.get("OUTPUT_PUBLISH_BUCKET")
+            if publish_bucket:
+                try:
+                    from pipeline.output_publish import publish_to_s3
+                    print(f"\n[publish] Uploading fallback bundle to "
+                          f"s3://{publish_bucket}/{case_id_str}/ ...")
+                    publish_to_s3(
+                        case_id=case_id_str,
+                        out_dir=out_dir,
+                        bucket=publish_bucket,
+                    )
+                except Exception as e:
+                    print(f"[publish] WARNING — upload failed: {e}")
+            print("\nDone.")
+            return 0
 
         # Force-include any listings the operator passed via --include that
         # didn't already make the shortlist. Synthetic score=0.0 and reasoning

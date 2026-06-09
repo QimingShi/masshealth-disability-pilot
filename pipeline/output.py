@@ -203,6 +203,138 @@ def write_form(out_path: Path, content: str):
 
 
 # =============================================================================
+# No-listings-matched fallback HTML
+# =============================================================================
+#
+# Rendered as 0_CASE_SUMMARY.html when find_candidates_sql returns nothing.
+# Shows each allegation with its top-5 most-similar chart chunks so the
+# reviewer has the evidence they need to either:
+#   - Re-run with --include <code> to force-evaluate a specific listing
+#   - Hand-write a reviewer form using these citations
+#
+# No per-listing forms get written (no listings to write); this is the
+# only output the reviewer sees for this case.
+
+
+def render_no_listings_fallback_html(
+    case_id: str,
+    allegation_chunks: list[dict],            # [{allegation: {...}, chunks: [...]}]
+    source_pdf_path: Path | None = None,
+) -> str:
+    """Render an allegation-by-allegation evidence report.
+
+    Args:
+        case_id: human-readable case id
+        allegation_chunks: list of {"allegation": <allegation_row>,
+            "chunks": [<chunk_dict>...]} — chunks ordered by similarity desc
+        source_pdf_path: filename for relative-URL citation links (lives
+            in the same out_dir as this HTML)
+    """
+    def cite_href(page: int) -> str | None:
+        if not source_pdf_path or not page:
+            return None
+        return f"{quote(source_pdf_path.name)}#page={page}"
+
+    sections_html = []
+    for entry in allegation_chunks:
+        alleg = entry["allegation"]
+        chunks = entry["chunks"]
+        alleg_text   = escape(alleg.get("text", ""))
+        alleg_source = escape(alleg.get("source", ""))
+
+        if not chunks:
+            chunks_html = "<p><em>No chart chunks matched.</em></p>"
+        else:
+            rows = []
+            for i, ch in enumerate(chunks, start=1):
+                provider = ch.get("doc_title") or ch.get("doc_type") or "?"
+                if " — " in provider:
+                    provider = provider.split(" — ", 1)[1].strip()
+                date    = ch.get("encounter_date") or "?"
+                section = ch.get("section") or "?"
+                page    = ch.get("page_start") or 0
+                sim     = ch.get("similarity") or 0.0
+                snippet = (ch.get("text") or "")[:400]
+                if len(ch.get("text") or "") > 400:
+                    snippet += "..."
+
+                href = cite_href(page)
+                page_link = (
+                    f'<a href="{escape(href)}" target="_blank" rel="noopener">'
+                    f'page {page}</a>'
+                ) if href else f'page {page}'
+
+                rows.append(
+                    f'<li class="chunk-item">'
+                    f'  <div class="chunk-meta">'
+                    f'    <span class="rank">[{i}]</span>'
+                    f'    <strong>Provider:</strong> {escape(provider)} &middot; '
+                    f'    <strong>Date:</strong> {escape(date)} &middot; '
+                    f'    <strong>Section:</strong> {escape(section)} ({page_link})'
+                    f'    <span class="sim">similarity {sim:.2f}</span>'
+                    f'  </div>'
+                    f'  <blockquote class="chunk-quote">"{escape(snippet)}"</blockquote>'
+                    f'</li>'
+                )
+            chunks_html = '<ol class="chunk-list">' + "".join(rows) + '</ol>'
+
+        sections_html.append(
+            f'<section class="allegation-block">'
+            f'  <h3>{alleg_text} '
+            f'<span class="allegation-source">({alleg_source})</span></h3>'
+            f'  {chunks_html}'
+            f'</section>'
+        )
+
+    body = "\n".join(sections_html) or \
+           "<p><em>No allegations available for this case.</em></p>"
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Case {escape(case_id)} — no listings matched</title>
+<style>
+  body {{ font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+          max-width: 980px; margin: 2em auto; padding: 0 1em; line-height: 1.5;
+          color: #1a1a1a; }}
+  h1 {{ color: #0a0a0a; }}
+  .notice {{ background: #fff4e5; border-left: 4px solid #f9ab00;
+             padding: 1em 1.25em; border-radius: 4px; margin: 1.5em 0; }}
+  .notice strong {{ color: #9a4f00; }}
+  h3 {{ margin-top: 1.8em; color: #1a4480; border-bottom: 1px solid #ddd;
+        padding-bottom: 0.3em; }}
+  .allegation-source {{ color: #888; font-weight: 400; font-size: 0.85em; }}
+  .chunk-list {{ padding-left: 1.2em; }}
+  .chunk-item {{ margin-bottom: 1em; }}
+  .chunk-meta {{ font-size: 0.92em; color: #444; }}
+  .chunk-meta .rank {{ font-weight: 700; color: #1a4480; margin-right: 0.3em; }}
+  .chunk-meta .sim {{ margin-left: 1em; color: #666;
+                      font-family: ui-monospace, monospace; font-size: 0.85em; }}
+  .chunk-quote {{ margin: 0.5em 0 0 0; padding: 0.6em 0.8em;
+                  background: #f5f8fc; border-left: 3px solid #1a4480;
+                  font-style: italic; color: #2a2a2a; }}
+  a {{ color: #1a4480; }}
+</style>
+</head>
+<body>
+  <h1>Case {escape(case_id)} — no SSA listings matched</h1>
+  <div class="notice">
+    <strong>What happened:</strong> the matcher couldn't find SSA listings
+    above the similarity threshold for the allegations in this case. No
+    per-listing forms were generated.
+    <br><br>
+    <strong>What to do:</strong> review the chart evidence per allegation
+    below. To force-evaluate specific listings, re-run with
+    <code>py run.py --from-db {escape(case_id)} --include &lt;code1&gt;,&lt;code2&gt;</code>.
+  </div>
+  {body}
+</body>
+</html>
+"""
+
+
+# =============================================================================
 # HTML renderer with clickable page-level citations
 # =============================================================================
 
