@@ -250,7 +250,12 @@ def render_no_listings_fallback_html(
                 provider = ch.get("doc_title") or ch.get("doc_type") or "?"
                 if " — " in provider:
                     provider = provider.split(" — ", 1)[1].strip()
-                date    = ch.get("encounter_date") or "?"
+                # encounter_date comes back as a datetime.date from psycopg2,
+                # which html.escape() chokes on (date.replace("&","&amp;")
+                # would interpret the args as year/month). Stringify defensively.
+                raw_date = ch.get("encounter_date")
+                date    = raw_date.isoformat() if hasattr(raw_date, "isoformat") \
+                          else (str(raw_date) if raw_date else "?")
                 section = ch.get("section") or "?"
                 page    = ch.get("page_start") or 0
                 sim     = ch.get("similarity") or 0.0

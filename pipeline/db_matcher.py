@@ -185,7 +185,16 @@ def retrieve_chunks_for_allegation_sql(conn, case_pk: CasePK,
     cols = ("id", "chunk_id", "doc_id", "doc_type", "doc_title",
             "encounter_date", "section", "page_start", "page_end",
             "text", "bbox", "similarity")
-    return [dict(zip(cols, row)) for row in cur.fetchall()]
+    out = []
+    for row in cur.fetchall():
+        d = dict(zip(cols, row))
+        # psycopg2 returns DATE columns as datetime.date; downstream html
+        # rendering expects a string. Match the convention in
+        # pipeline.db.get_chunks_for_case.
+        if d.get("encounter_date") and hasattr(d["encounter_date"], "isoformat"):
+            d["encounter_date"] = d["encounter_date"].isoformat()
+        out.append(d)
+    return out
 
 
 # ---------------------------------------------------------------------------
