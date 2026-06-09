@@ -293,10 +293,15 @@ def run_from_db(case_id_str: str, *,
                 })
                 print(f"      [fallback] {alleg.get('text','?')[:60]:<60}  "
                       f"-> {len(chunks)} chunk(s)")
+            # IMPORTANT: link citations to the PLAIN source.pdf, not the
+            # annotated one — in the fallback path we early-return before
+            # the annotate_pdf step, so source_annotated.pdf never gets
+            # written and any link to it would 404. source_pdf_path is the
+            # combined chart that ensure_source_pdf bundled into out_dir.
             summary_html = render_no_listings_fallback_html(
                 case_id=case_id_str,
                 allegation_chunks=allegation_chunks,
-                source_pdf_path=html_pdf_target,
+                source_pdf_path=source_pdf_path,
             )
             summary_path = out_dir / "0_CASE_SUMMARY.html"
             write_form(summary_path, summary_html)
