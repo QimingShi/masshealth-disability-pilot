@@ -4,6 +4,21 @@ Run once after `db/switch_to_titan_embeddings.sql` upgrades the column to
 vector(1024). Idempotent: re-run anytime to fill in newly-added listings or
 to refresh after a model swap.
 
+Embedding source (enriched):
+    code + title + body_system + summary + synonym variants
+
+    Embedding the BARE summary text produced embeddings that didn't match
+    common diagnostic terms — e.g. allegation "Depression" or "mood
+    disorder" had cosine ~0.17 against 12.04 because the summary phrases
+    a clinical description that doesn't contain those everyday words.
+    Enriching with title (always names the diagnosis category) and
+    synonym variants brings those queries up into the 0.5-0.7 range.
+
+CLI:
+    py db\\compute_listing_embeddings.py              # embed only rows with NULL embedding
+    py db\\compute_listing_embeddings.py --force      # re-embed ALL listings
+                                                       # (use after enriching the source text)
+
 Dependencies:
     pip install pgvector psycopg2-binary boto3 numpy
 
@@ -21,6 +36,7 @@ Embedding model:
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import sys
@@ -95,7 +111,52 @@ def connect_pg():
 #  Main
 # ---------------------------------------------------------------------------
 
+def _build_embed_text(code: str, title: str, body_system: str | None,
+                       summary: str | None, synonyms: list[str] | None) -> str:
+    """Concatenate the fields we want to embed so a bare query like
+    "Depression" or "mood disorder" lands close to the right listing.
+
+    Format:
+        <code> <title>
+        Body system: <body_system>
+
+        <summary>
+
+        Common terms: <synonym1>, <synonym2>, ...
+
+    Title is the biggest single win: it always names the diagnosis category
+    (e.g. "Depressive, bipolar and related disorders") in the same
+    vocabulary patients/reviewers use. Summary alone often misses that.
+    """
+    parts = [f"{code} {title}".strip()]
+    if body_system:
+        parts.append(f"Body system: {body_system}")
+    if summary:
+        parts.append(summary)
+    if synonyms:
+        # Dedupe + cap to keep the input under Titan's 8K token limit on
+        # listings with many synonyms (rare; defensive).
+        uniq = []
+        seen = set()
+        for s in synonyms:
+            sl = s.strip().lower()
+            if sl and sl not in seen:
+                seen.add(sl)
+                uniq.append(s.strip())
+        if uniq:
+            parts.append("Common terms: " + ", ".join(uniq[:50]))
+    return "\n\n".join(parts)
+
+
 def main() -> int:
+    p = argparse.ArgumentParser(description="Compute Titan v2 embeddings "
+                                            "for SSA listings.")
+    p.add_argument("--force", action="store_true",
+                   help="Re-embed all listings (default: only rows with "
+                        "summary_embedding IS NULL). Use after changing the "
+                        "embedding source text.")
+    args = p.parse_args()
+
     # ---- Set up Bedrock client ----
     print(f"Setting up Bedrock client (profile=user, region=us-east-1)...")
     session = boto3.Session(profile_name="user", region_name="us-east-1")
@@ -145,26 +206,47 @@ def main() -> int:
           f"{float(np.linalg.norm(test_vec)):.4f}")
 
     # ---- Fetch listings needing embeddings ----
-    cur.execute("""
-        SELECT id, code, summary
-        FROM ssa_listings
-        WHERE summary_embedding IS NULL
-        ORDER BY code
+    # Pull title + body_system + summary + aggregated synonyms in one query
+    # so we can build the enriched embedding input per listing.
+    where_clause = "" if args.force else "WHERE l.summary_embedding IS NULL"
+    cur.execute(f"""
+        SELECT l.id,
+               l.code,
+               l.title,
+               l.body_system,
+               l.summary,
+               (
+                   SELECT array_agg(DISTINCT v ORDER BY v)
+                   FROM (
+                       SELECT canonical AS v FROM ssa_listing_synonyms
+                           WHERE listing_id = l.id
+                       UNION
+                       SELECT variant   AS v FROM ssa_listing_synonyms
+                           WHERE listing_id = l.id
+                   ) sub
+               ) AS synonyms
+        FROM ssa_listings l
+        {where_clause}
+        ORDER BY l.code
     """)
     rows = cur.fetchall()
-    print(f"Listings needing embeddings: {len(rows)}")
+    mode = "ALL (--force)" if args.force else "rows with NULL embedding"
+    print(f"Listings to embed: {len(rows)}  ({mode})")
     if not rows:
-        print("All listings already have embeddings. Done.")
+        print("Nothing to do. Pass --force to re-embed everything.")
         return 0
 
     # ---- Embed each listing (Titan has no batch API; one call per text) ----
-    print("Embedding via Bedrock Titan v2...")
+    print("Embedding via Bedrock Titan v2 (enriched source: title + body "
+          "system + summary + synonyms)...")
     start = time.time()
     success = 0
     failed: list[tuple[str, str]] = []
-    for i, (listing_id, code, summary) in enumerate(rows, 1):
+    for i, (listing_id, code, title, body_system, summary, synonyms) in enumerate(rows, 1):
+        embed_input = _build_embed_text(code, title, body_system, summary,
+                                         list(synonyms) if synonyms else None)
         try:
-            vec = embed_text(bedrock, summary)
+            vec = embed_text(bedrock, embed_input)
         except Exception as e:
             failed.append((code, f"{type(e).__name__}: {e}"))
             print(f"  [{i:>3}/{len(rows)}] {code:<8} FAILED — {e}",
