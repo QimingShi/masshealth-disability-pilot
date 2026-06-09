@@ -328,10 +328,6 @@ def render_no_listings_fallback_html(
     <strong>What happened:</strong> the matcher couldn't find SSA listings
     above the similarity threshold for the allegations in this case. No
     per-listing forms were generated.
-    <br><br>
-    <strong>What to do:</strong> review the chart evidence per allegation
-    below. To force-evaluate specific listings, re-run with
-    <code>py run.py --from-db {escape(case_id)} --include &lt;code1&gt;,&lt;code2&gt;</code>.
   </div>
   {body}
 </body>
