@@ -54,8 +54,14 @@ class DBCandidate:
 def find_candidates_sql(conn, case_pk: CasePK, *,
                         top_k: int = 5,
                         per_allegation_k: int = 5,
-                        min_similarity: float = 0.35
+                        min_similarity: float = 0.20,
                         ) -> list[DBCandidate]:
+    # min_similarity is permissive (0.20) on purpose. Titan v2 cosine scores
+    # for short medical allegations against listing summaries tend to land
+    # in the 0.2-0.5 range even for clearly-relevant pairs. The LLM
+    # pre-filter (pipeline/prefilter.py) drops obviously-wrong candidates
+    # downstream, so being generous here surfaces more recall without
+    # surviving false positives reaching the per-leaf eval.
     """For each allegation, find the top-K closest listings by cosine; UNION
     across allegations, weight by max similarity, return the global top-K.
 

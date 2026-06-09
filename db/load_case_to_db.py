@@ -206,8 +206,34 @@ def main() -> int:
             bedrock, [c["text"] for c in chunks], label="chunks",
         )
         if allegations:
+            # Enrich the allegation text before embedding (mirrors what
+            # compute_listing_embeddings does on the listing side). A bare
+            # one-word allegation like "Depression" has noisy semantics;
+            # framing it as a stated diagnosis gives Titan v2 enough
+            # context to land much closer to listings like 12.04 "Depressive,
+            # bipolar and related disorders". Same trick on both sides
+            # produces the biggest cosine lift.
+            def _enrich_allegation(a: dict) -> str:
+                src = a.get("source") or "unknown_source"
+                text = (a.get("text") or "").strip()
+                # Friendly source labels so the embedding context is human-
+                # readable medical language rather than internal tags.
+                src_label = {
+                    "supplement_part1":      "Patient-claimed health problem from disability supplement Part 1",
+                    "supplement_part2":      "Patient-listed reason for medical visit (supplement Part 2)",
+                    "supplement_form":       "Patient-claimed condition from disability supplement",
+                    "past_medical_history":  "Past medical history diagnosis",
+                    "visit_diagnoses":       "Visit diagnosis from medical record",
+                    "chief_complaint":       "Chief complaint from medical record",
+                    "narrative_phrase":      "Condition mentioned in narrative",
+                    "manual":                "Manually entered allegation",
+                }.get(src, "Patient-claimed condition")
+                return f"{src_label}: {text}"
+
             allegation_embeddings = embed_batch(
-                bedrock, [a["text"] for a in allegations], label="allegations",
+                bedrock,
+                [_enrich_allegation(a) for a in allegations],
+                label="allegations",
             )
         else:
             allegation_embeddings = None
