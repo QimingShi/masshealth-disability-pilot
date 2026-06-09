@@ -429,6 +429,12 @@ _ALLEGATION_GARBAGE_WORDS = frozenset({
     "orders", "orders placed", "interval history", "problem list",
     "procedure/surgical history", "initiating author",
     "health maintenance", "health status",
+    # More column / order / location labels surfaced from real cases
+    "procedure", "laterality", "relevant orders", "view", "views",
+    "operating room", "hospital", "campus", "pavilion",
+    "medical center", "medical record", "preferred name",
+    "preferred pharmacy", "appointment", "encounters", "alerts",
+    "filed orders", "active orders", "imaging", "labs",
 })
 
 # Regex patterns that flag garbage entries even if the word stoplist misses them.
@@ -444,7 +450,95 @@ _ALLEGATION_GARBAGE_PATTERNS = [
     re.compile(r"^mads-?\w+_\d", re.IGNORECASE),           # MassHealth form codes
     re.compile(r"^\W*$"),                                  # punctuation/whitespace only
     re.compile(r"^\d+(\.\d+)?\s*$"),                       # bare numbers
+
+    # --- Medications: dose, dosage form, route, instructions ---
+    re.compile(r"\b\d+\s*(mg|mcg|µg|ml|cc|g|iu|units?|%)\b", re.IGNORECASE),
+    re.compile(r"\b(tablet|tab|capsule|cap|inhaler|injection|injectable|"
+               r"syrup|cream|ointment|patch|lozenge|drops?|solution|"
+               r"suspension|spray|gel|nebulizer|suppository)s?\b", re.IGNORECASE),
+    re.compile(r"^(take|inhale|apply|administer|infuse|inject|use|swallow|"
+               r"chew|dissolve|instill|insert|sprinkle)\s", re.IGNORECASE),
+    re.compile(r"\b(by\s+mouth|po\b|p\.o\.|intravenous|iv\b|subcutaneous|"
+               r"sc\b|intramuscular|im\b|topical|rectal|sublingual)\b",
+               re.IGNORECASE),
+    re.compile(r"\bevery\s+\d+\s+hours?\b", re.IGNORECASE),
+    re.compile(r"\b(once|twice|three\s+times|four\s+times)\s+"
+               r"(a\s+day|daily|weekly)\b", re.IGNORECASE),
+    # Brand-name medications usually written as "drug (BRAND, BRAND)" in EHRs
+    re.compile(r"\b[A-Za-z]+\s+\([A-Z][A-Z\s,]+\)\s+\d", re.IGNORECASE),
+
+    # --- Imaging / procedures (orders, not diagnoses) ---
+    re.compile(r"^(xr|x-ray|ct|mri|us|pet|ekg|ecg|eeg|emg|dexa|fluoro)\b",
+               re.IGNORECASE),
+    re.compile(r"\b(cesarean\s+section|colonoscopy|endoscopy|biopsy|"
+               r"appendectomy|cholecystectomy|hysterectomy|laparotomy|"
+               r"thoracotomy|craniotomy|low\s+transverse)\b",
+               re.IGNORECASE),
+
+    # --- Facility / location names (footers, headers, signatures) ---
+    re.compile(r"\b(medical\s+center|hospital|clinic|campus|operating\s+room|"
+               r"pavilion|emergency\s+(room|department)|er\b|ed\b|"
+               r"outpatient|inpatient)\b", re.IGNORECASE),
+    re.compile(r"\b(umass|partners|brigham|mass\s+general|beth\s+israel|"
+               r"hahnemann|memorial|methodist|presbyterian|baptist|"
+               r"st\.?\s+\w+\s+hospital)\b", re.IGNORECASE),
+
+    # --- US street addresses: "281 LINCOLN ST", "100 MAIN AVE", etc. ---
+    re.compile(r"^\d+\s+[A-Za-z][\w\s\.]+(?:\bst\b|\bave\b|\bavenue\b|"
+               r"\brd\b|\broad\b|\bblvd\b|\bboulevard\b|\bln\b|\blane\b|"
+               r"\bdr\b|\bdrive\b|\bway\b|\bct\b|\bcourt\b|\bpkwy\b|"
+               r"\bplaza\b|\bsq\b|\bsquare\b)\.?$", re.IGNORECASE),
+
+    # --- Document audit / metadata lines ---
+    re.compile(r"^generated\s+by\b", re.IGNORECASE),
+    re.compile(r"^printed\s+by\b", re.IGNORECASE),
+    re.compile(r"^signed\s+by\b", re.IGNORECASE),
+    re.compile(r"^electronically\s+signed\b", re.IGNORECASE),
+    re.compile(r"\b(radams|epic|cerner|meditech|nextgen|allscripts)\b",
+               re.IGNORECASE),
+    # Date + time stamps "11/26/2025 7:33 PM" / ISO timestamps
+    re.compile(r"\d{1,2}/\d{1,2}/\d{2,4}\s+\d{1,2}:\d{2}", re.IGNORECASE),
+    re.compile(r"\d{4}-\d{2}-\d{2}t\d{2}:\d{2}", re.IGNORECASE),
+    # Section headers w/ "as of <date>" suffix — e.g.
+    # "Current Medications as of 6/23/2025", "Active Orders as of 4/1/24"
+    re.compile(r"\bas\s+of\s+\d{1,2}/\d{1,2}/\d{2,4}\b", re.IGNORECASE),
+
+    # --- Pure dosing fragments wrapped from continuation lines ---
+    re.compile(r"^(mcg|mg|ml|cc)\s+(inhaler|tablet|capsule|solution)\b",
+               re.IGNORECASE),
+    re.compile(r"^(breath|wheezing|shortness)\b", re.IGNORECASE),
 ]
+
+# Chart sections that NEVER contain allegations (they contain orders,
+# meds, vitals, imaging — extracting "allegations" from these surfaces
+# medication dosing, procedure names, lab values etc. as garbage).
+# Checked as a substring of the lowercased section name.
+_NEVER_ALLEGATION_SECTIONS = (
+    "current medication",
+    "medication list",
+    "active medication",
+    "medications by class",
+    "relevant order",
+    "active order",
+    "filed order",
+    "order list",
+    "procedure list",
+    "recent procedure",
+    "imaging result",
+    "lab result",
+    "laboratory",
+    "vital signs",
+    "review of system",
+    "physical exam",
+    "physical examination",
+    "allergies",
+    "immunization",
+    "health maintenance",
+    "preferred pharmacy",
+    "appointment",
+    "facility",
+    "encounter info",
+)
 
 
 def _is_garbage_allegation(text: str) -> bool:
@@ -598,6 +692,15 @@ def auto_extract_allegations(chunks: list[dict]) -> list[dict]:
         section = c.get("section", "")
         section_lc = section.lower()
         text = c.get("text", "")
+
+        # Skip chunks whose section is a known non-allegation zone
+        # (orders, meds, vitals, imaging, etc.). Extracting line-by-line
+        # from these surfaces medication dosing, procedure names, lab
+        # values etc. as garbage allegations — there's no real signal
+        # in them and the per-line filter alone can't always catch the
+        # boundary cases.
+        if any(s in section_lc for s in _NEVER_ALLEGATION_SECTIONS):
+            continue
 
         # ---- MassHealth Adult Disability Supplement: PART 1 / PART 2 tables ----
         # Textract renders TABLE blocks as pipe-separated lines (see
