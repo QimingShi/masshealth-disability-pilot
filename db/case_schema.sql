@@ -207,7 +207,10 @@ CREATE TABLE IF NOT EXISTS allegations (
     case_id             INT          NOT NULL REFERENCES cases(id) ON DELETE CASCADE,
     text                TEXT         NOT NULL,
     source              VARCHAR(40),                    -- "chief_complaint" | "visit_diagnoses" |
-                                                        -- "past_medical_history" | "supplement_form" |
+                                                        -- "past_medical_history" |
+                                                        -- "supplement_part1"   (Part 1: health problems table) |
+                                                        -- "supplement_part2"   (Part 2: provider/reason table) |
+                                                        -- "supplement_form"    (regex match in supplement section) |
                                                         -- "narrative_phrase" | "manual"
     source_chunk_id     INT          REFERENCES chunks(id) ON DELETE SET NULL,
                                                         -- Allegation text is the member's claim and

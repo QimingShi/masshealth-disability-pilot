@@ -532,21 +532,19 @@ def _split_table_row(line: str) -> list[str]:
     return [cell.strip() for cell in line.split("|")]
 
 
-def _extract_supplement_table_allegations(table_text: str) -> list[str]:
+def _extract_supplement_table_allegations(table_text: str) -> list[tuple[str, str]]:
     """Parse a pipe-separated table chunk; pull allegations from PART 1 / PART 2.
 
-    Returns a list of raw allegation strings (no garbage filtering — caller's
-    add() applies that). Empty list if the table doesn't look like a known
-    supplement section.
+    Returns a list of (allegation_text, source_tag) tuples where source_tag is:
+      - "supplement_part1"  → patient's listed health problem (Part 1 col 1)
+      - "supplement_part2"  → reason for provider visit (Part 2 col 2)
 
-    Strategy:
-      - The first non-empty line is the column header. Match keywords to
-        decide which table this is.
-      - For PART 1 ("list your medical and mental health problems"), the
-        diagnoses live in column 1.
-      - For PART 2 ("name of medical providers" + "reason for visit"),
-        the reason for visit is in column 2.
-      - Header itself isn't emitted.
+    Tagging Part 1 vs Part 2 separately lets downstream filters (e.g. the
+    no-listings fallback report) include only the patient's diagnoses
+    section without the provider-reason entries that tend to be terse and
+    less diagnostically useful (e.g. "Kidneys", "Cancer Center").
+
+    Empty list if the table doesn't look like a known supplement section.
     """
     lines = [ln for ln in table_text.split("\n") if ln.strip()]
     if len(lines) < 2:
@@ -559,19 +557,17 @@ def _extract_supplement_table_allegations(table_text: str) -> list[str]:
     if not (is_part1 or is_part2):
         return []
 
-    out: list[str] = []
+    out: list[tuple[str, str]] = []
     for line in lines[1:]:
         cells = _split_table_row(line)
         if not cells:
             continue
         if is_part1:
-            # Column 1 = patient's listed health problem
             if cells and cells[0]:
-                out.append(cells[0])
+                out.append((cells[0], "supplement_part1"))
         elif is_part2:
-            # Column 2 = reason for visit (e.g. "Kidneys", "Oncology Surgeon")
             if len(cells) >= 2 and cells[1]:
-                out.append(cells[1])
+                out.append((cells[1], "supplement_part2"))
     return out
 
 
@@ -623,8 +619,8 @@ def auto_extract_allegations(chunks: list[dict]) -> list[dict]:
         # already going to come up; if not, Claude returns 'insufficient'.
         if c.get("is_table") and text:
             allegs_from_table = _extract_supplement_table_allegations(text)
-            for alleg in allegs_from_table:
-                add(alleg, "supplement_form", c["chunk_id"])
+            for alleg_text, source_tag in allegs_from_table:
+                add(alleg_text, source_tag, c["chunk_id"])
 
         # ---- Supplement-form patterns (high precision) ----
         # SKIP this regex on table chunks. _SUPPLEMENT_REASON_RE captures

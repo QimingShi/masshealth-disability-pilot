@@ -263,20 +263,21 @@ def run_from_db(case_id_str: str, *,
         # allegation-vs-chart evidence report instead of running expensive
         # per-leaf eval on nothing.
         if not candidates and not include_codes:
-            # Use ONLY the patient's supplement-form allegations (Part 1 +
-            # Part 2 tables, supplement reason patterns) — not the
-            # chart-derived ones like PMH / visit_diagnoses / chief_complaint
-            # which would surface every incidental chart mention and clutter
-            # the report.
+            # Use ONLY supplement Part 1 entries — the "Your health problems"
+            # table where the patient lists their actual claimed diagnoses.
+            # Skip Part 2 (provider names / reasons-for-visit which are terse
+            # and less diagnostic, e.g. "Kidneys", "Cancer Center") and all
+            # chart-derived sources (PMH / visit_diagnoses / chief_complaint /
+            # narrative_phrase / supplement_form regex matches).
             supplement_allegations = [
                 a for a in allegation_rows
-                if a.get("source") == "supplement_form"
+                if a.get("source") == "supplement_part1"
             ]
             print(f"      No candidate listings to evaluate. Falling back to "
                   f"allegation-vs-chart evidence report ("
-                  f"{len(supplement_allegations)} supplement-sourced "
+                  f"{len(supplement_allegations)} supplement Part 1 "
                   f"allegation(s), {len(allegation_rows) - len(supplement_allegations)} "
-                  f"chart-derived skipped)...")
+                  f"other-sourced allegations skipped)...")
             from pipeline.db_matcher import retrieve_chunks_for_allegation_sql
             from pipeline.output import render_no_listings_fallback_html
             allegation_chunks: list[dict] = []
