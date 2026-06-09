@@ -507,6 +507,47 @@ _ALLEGATION_GARBAGE_PATTERNS = [
     re.compile(r"^(mcg|mg|ml|cc)\s+(inhaler|tablet|capsule|solution)\b",
                re.IGNORECASE),
     re.compile(r"^(breath|wheezing|shortness)\b", re.IGNORECASE),
+
+    # --- US ZIP codes (5 or 5+4) anywhere in the line ---
+    re.compile(r"\b\d{5}(-\d{4})?\b"),
+    # "City, MA 01610" / "Worcester MA 01610-2473" — city + 2-letter state + ZIP
+    re.compile(r"\b(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|"
+               r"ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|"
+               r"PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY|DC)\b\s+\d{5}",
+               re.IGNORECASE),
+
+    # --- "of <Capital>" / "in <Capital>" — wrapped fragments from address
+    #     blocks ("Family Health Center / of Worcester")
+    re.compile(r"^of\s+[A-Z][a-z]+\s*$"),
+    re.compile(r"^in\s+[A-Z][a-z]+\s*$"),
+
+    # --- Street addresses with spelled-out street types ---
+    # Covers "26 Queen Street", "100 Main Avenue", "5 Park Road", etc.
+    re.compile(r"^\d+\s+[\w\s\.]+\b("
+               r"street|avenue|road|boulevard|lane|drive|court|plaza|"
+               r"square|parkway|circle|place|terrace|highway|turnpike|"
+               r"trail|crossing|alley)\b", re.IGNORECASE),
+
+    # --- Account / MRN / billing / chart identifiers ---
+    re.compile(r"^(acct|account|mrn|patient\s+id|record\s+(number|id)|"
+               r"chart\s*#?|ssn|dob|insurance\s+id)\s*#?\s*:", re.IGNORECASE),
+    # MRN: anywhere in the line followed by digits
+    re.compile(r"\b(mrn|patient\s+id|chart\s*#)\s*:?\s*\d{4,}", re.IGNORECASE),
+    # "Acct #: 7045889980" / "Account #: ..."
+    re.compile(r"\b(acct|account)\s*#\s*:?\s*\d{4,}", re.IGNORECASE),
+
+    # --- Date labels like "Visit date: 1/22/2025", "DOB: ...", "DOS: ..." ---
+    re.compile(r"^(visit|appointment|service|admission|discharge|encounter|"
+               r"dos|appt)\s+date\s*:", re.IGNORECASE),
+    re.compile(r"^(dob|date\s+of\s+birth)\b", re.IGNORECASE),
+
+    # --- More facility / admin-office variations ---
+    re.compile(r"\b(health\s+center|family\s+practice|billing\s+office|"
+               r"administrative\s+office|admin\s+office|registration|"
+               r"patient\s+services?|insurance\s+(office|verification)|"
+               r"medical\s+records?\s+(department|dept))\b", re.IGNORECASE),
+    # Free-standing healthcare-organization abbreviations (FHCW, CHA, MGH...)
+    re.compile(r"\b(fhcw|cha|mgh|bwh|bidmc|umms)\b", re.IGNORECASE),
 ]
 
 # Chart sections that NEVER contain allegations (they contain orders,
