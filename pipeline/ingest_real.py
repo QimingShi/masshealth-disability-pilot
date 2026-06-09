@@ -766,6 +766,27 @@ def auto_extract_allegations(chunks: list[dict]) -> list[dict]:
                 )
                 add(cleaned, "past_medical_history", c["chunk_id"])
 
+        # ---- Problem List / Active Problems: one allegation per item ----
+        # Common EHR layout: a numbered or bulleted list of active diagnoses
+        # under headings like "Problem List", "Active Problem List",
+        # "Active Problems", "Hospital Problem List".
+        if ("problem list" in section_lc
+            or section_lc in ("active problems", "problems",
+                              "hospital problem list")):
+            for line in re.split(r"[\n•·;]", text):
+                cleaned = re.sub(r"^[-\s*•·]+", "", line).strip().rstrip(",.;:")
+                # Strip leading "Problem List:" / "Active Problem List:" / etc.
+                cleaned = re.sub(
+                    r"^(active\s+|hospital\s+)?problem\s+list\s*[:\-]?\s*",
+                    "", cleaned, flags=re.IGNORECASE,
+                )
+                # Strip leading numbering "1. " / "2) " (EHRs commonly number
+                # problem list items).
+                cleaned = re.sub(r"^\d+[\.\)]\s*", "", cleaned)
+                # Strip embedded ICD-10 codes.
+                cleaned = _ICD_RE.sub("", cleaned).strip().rstrip(",.;:")
+                add(cleaned, "problem_list", c["chunk_id"])
+
         # ---- Free-text "complications following ...", "history of ...", etc.
         # These often appear in supplement comment sections or interview narratives.
         if _is_supplement_section(section, text) or "complaint" in section_lc:

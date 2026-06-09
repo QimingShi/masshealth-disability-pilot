@@ -208,6 +208,7 @@ CREATE TABLE IF NOT EXISTS allegations (
     text                TEXT         NOT NULL,
     source              VARCHAR(40),                    -- "chief_complaint" | "visit_diagnoses" |
                                                         -- "past_medical_history" |
+                                                        -- "problem_list"       (Problem List / Active Problems) |
                                                         -- "supplement_part1"   (Part 1: health problems table) |
                                                         -- "supplement_part2"   (Part 2: provider/reason table) |
                                                         -- "supplement_form"    (regex match in supplement section) |
