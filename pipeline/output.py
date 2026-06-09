@@ -221,78 +221,71 @@ def render_no_listings_fallback_html(
     allegation_chunks: list[dict],            # [{allegation: {...}, chunks: [...]}]
     source_pdf_path: Path | None = None,
 ) -> str:
-    """Render an allegation-by-allegation evidence report.
+    """Render the no-listings fallback as a 3-column summary table.
+
+    Uses the same visual structure as render_case_summary_html so the
+    reviewer experience is consistent whether listings were matched or not.
+    Column 3 just reads "No listing found" for every row.
 
     Args:
         case_id: human-readable case id
         allegation_chunks: list of {"allegation": <allegation_row>,
-            "chunks": [<chunk_dict>...]} — chunks ordered by similarity desc
-        source_pdf_path: filename for relative-URL citation links (lives
-            in the same out_dir as this HTML)
+            "chunks": [<chunk_dict>...]} — chunks ordered by similarity desc;
+            chunks from the Supplement file itself are already excluded by
+            retrieve_chunks_for_allegation_sql
+        source_pdf_path: filename for relative-URL citation links
     """
     def cite_href(page: int) -> str | None:
         if not source_pdf_path or not page:
             return None
         return f"{quote(source_pdf_path.name)}#page={page}"
 
-    sections_html = []
-    for entry in allegation_chunks:
-        alleg = entry["allegation"]
-        chunks = entry["chunks"]
-        alleg_text   = escape(alleg.get("text", ""))
-        alleg_source = escape(alleg.get("source", ""))
-
-        if not chunks:
-            chunks_html = "<p><em>No chart chunks matched.</em></p>"
-        else:
-            rows = []
-            for i, ch in enumerate(chunks, start=1):
-                provider = ch.get("doc_title") or ch.get("doc_type") or "?"
-                if " — " in provider:
-                    provider = provider.split(" — ", 1)[1].strip()
-                # encounter_date comes back as a datetime.date from psycopg2,
-                # which html.escape() chokes on (date.replace("&","&amp;")
-                # would interpret the args as year/month). Stringify defensively.
-                raw_date = ch.get("encounter_date")
-                date    = raw_date.isoformat() if hasattr(raw_date, "isoformat") \
-                          else (str(raw_date) if raw_date else "?")
-                section = ch.get("section") or "?"
-                page    = ch.get("page_start") or 0
-                sim     = ch.get("similarity") or 0.0
-                snippet = (ch.get("text") or "")[:400]
-                if len(ch.get("text") or "") > 400:
-                    snippet += "..."
-
-                href = cite_href(page)
-                page_link = (
-                    f'<a href="{escape(href)}" target="_blank" rel="noopener">'
-                    f'page {page}</a>'
-                ) if href else f'page {page}'
-
-                rows.append(
-                    f'<li class="chunk-item">'
-                    f'  <div class="chunk-meta">'
-                    f'    <span class="rank">[{i}]</span>'
-                    f'    <strong>Provider:</strong> {escape(provider)} &middot; '
-                    f'    <strong>Date:</strong> {escape(date)} &middot; '
-                    f'    <strong>Section:</strong> {escape(section)} ({page_link})'
-                    f'    <span class="sim">similarity {sim:.2f}</span>'
-                    f'  </div>'
-                    f'  <blockquote class="chunk-quote">"{escape(snippet)}"</blockquote>'
-                    f'</li>'
-                )
-            chunks_html = '<ol class="chunk-list">' + "".join(rows) + '</ol>'
-
-        sections_html.append(
-            f'<section class="allegation-block">'
-            f'  <h3>{alleg_text} '
-            f'<span class="allegation-source">({alleg_source})</span></h3>'
-            f'  {chunks_html}'
-            f'</section>'
+    def render_evidence_cell(ch: dict | None) -> str:
+        if not ch:
+            return '<em style="color: #888;">No chart evidence found</em>'
+        provider = ch.get("doc_title") or ch.get("doc_type") or "?"
+        if " — " in provider:
+            provider = provider.split(" — ", 1)[1].strip()
+        raw_date = ch.get("encounter_date")
+        date    = raw_date.isoformat() if hasattr(raw_date, "isoformat") \
+                  else (str(raw_date) if raw_date else "?")
+        section = ch.get("section") or "?"
+        page    = ch.get("page_start") or 0
+        href    = cite_href(page) if page else None
+        link_html = (
+            f'<a href="{escape(href)}" target="_blank" rel="noopener">'
+            f'page {page}</a>'
+        ) if href else f'page {page}'
+        quote_short = (ch.get("text") or "")[:200]
+        if len(ch.get("text") or "") > 200:
+            quote_short += "..."
+        return (
+            f'<div class="ev-meta">'
+            f'<strong>Provider:</strong> {escape(provider)}<br>'
+            f'<strong>Date of Service:</strong> {escape(date)}<br>'
+            f'<strong>Section:</strong> {escape(section)} ({link_html})'
+            f'</div>'
+            f'<div class="ev-quote">"<em>{escape(quote_short)}</em>"</div>'
         )
 
-    body = "\n".join(sections_html) or \
-           "<p><em>No allegations available for this case.</em></p>"
+    # Build one row per supplement allegation; top chunk in column 2;
+    # "No listing found" placeholder in column 3.
+    table_rows = []
+    for entry in allegation_chunks:
+        alleg  = entry["allegation"]
+        chunks = entry["chunks"] or []
+        alleg_text = escape(alleg.get("text", ""))
+        ev_cell    = render_evidence_cell(chunks[0] if chunks else None)
+        listing_cell = (
+            '<span style="color: #888; font-style: italic;">No listing found</span>'
+        )
+        table_rows.append(
+            f'<tr><td>{alleg_text}</td><td>{ev_cell}</td><td>{listing_cell}</td></tr>'
+        )
+    rows_html = "\n".join(table_rows) or \
+                '<tr><td colspan="3"><em>No supplement allegations in this case.</em></td></tr>'
+
+    n_allegations = len(allegation_chunks)
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -301,35 +294,59 @@ def render_no_listings_fallback_html(
 <title>Case {escape(case_id)} — no listings matched</title>
 <style>
   body {{ font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
-          max-width: 980px; margin: 2em auto; padding: 0 1em; line-height: 1.5;
-          color: #1a1a1a; }}
-  h1 {{ color: #0a0a0a; }}
+          max-width: 1100px; margin: 2em auto; padding: 0 1.5em;
+          line-height: 1.5; color: #1a1a1a; }}
+  h1, h2 {{ color: #0a0a0a; }}
+  h1 {{ font-size: 1.6em; margin-bottom: 0; }}
+  .org {{ color: #555; font-size: 0.95em; margin-top: 0.3em; margin-bottom: 1.5em; }}
+  .case-headline {{ background: #f5f5f5; padding: 1em 1.5em; border-radius: 6px;
+                    margin: 1em 0 2em 0; font-size: 1.05em; }}
+  .case-headline .num {{ font-weight: 700; font-size: 1.4em; color: #1a56c4; }}
   .notice {{ background: #fff4e5; border-left: 4px solid #f9ab00;
              padding: 1em 1.25em; border-radius: 4px; margin: 1.5em 0; }}
   .notice strong {{ color: #9a4f00; }}
-  h3 {{ margin-top: 1.8em; color: #1a4480; border-bottom: 1px solid #ddd;
-        padding-bottom: 0.3em; }}
-  .allegation-source {{ color: #888; font-weight: 400; font-size: 0.85em; }}
-  .chunk-list {{ padding-left: 1.2em; }}
-  .chunk-item {{ margin-bottom: 1em; }}
-  .chunk-meta {{ font-size: 0.92em; color: #444; }}
-  .chunk-meta .rank {{ font-weight: 700; color: #1a4480; margin-right: 0.3em; }}
-  .chunk-meta .sim {{ margin-left: 1em; color: #666;
-                      font-family: ui-monospace, monospace; font-size: 0.85em; }}
-  .chunk-quote {{ margin: 0.5em 0 0 0; padding: 0.6em 0.8em;
-                  background: #f5f8fc; border-left: 3px solid #1a4480;
-                  font-style: italic; color: #2a2a2a; }}
+  table.summary {{ width: 100%; border-collapse: collapse; margin: 1em 0 2em 0; }}
+  table.summary th {{ background: #1a3a5c; color: #fff; padding: 0.8em 1em;
+                       text-align: left; font-size: 0.95em; vertical-align: top; }}
+  table.summary td {{ padding: 0.8em 1em; border: 1px solid #d0d4d9;
+                       vertical-align: top; font-size: 0.92em; }}
+  table.summary tr:nth-child(even) td {{ background: #f8f9fa; }}
+  .ev-meta {{ font-size: 0.88em; line-height: 1.45; margin-bottom: 0.4em; }}
+  .ev-quote {{ background: #fafafa; padding: 0.4em 0.6em;
+                border-left: 3px solid #aac4f5; font-size: 0.88em; }}
   a {{ color: #1a4480; }}
 </style>
 </head>
 <body>
-  <h1>Case {escape(case_id)} — no SSA listings matched</h1>
-  <div class="notice">
-    <strong>What happened:</strong> the matcher couldn't find SSA listings
-    above the similarity threshold for the allegations in this case. No
-    per-listing forms were generated.
-  </div>
-  {body}
+
+<h1>Case {escape(case_id)} — no SSA listings matched</h1>
+<div class="org">UMass Chan Medical School &middot; Disability Evaluation Services</div>
+
+<div class="case-headline">
+  <span class="num">{n_allegations}</span> supplement allegation(s);
+  <span class="num">0</span> SSI listings matched.
+</div>
+
+<div class="notice">
+  <strong>What happened:</strong> the matcher couldn't find SSA listings
+  above the similarity threshold for the allegations in this case. No
+  per-listing forms were generated.
+</div>
+
+<h2>Possible Visualization of Output Report</h2>
+<table class="summary">
+  <thead>
+    <tr>
+      <th style="width: 22%;">1. List of Impairments Alleged in Supplement</th>
+      <th style="width: 53%;">2. Medical Evidence Found</th>
+      <th style="width: 25%;">3. SSI Listing Met<br>(blue book or "Cheat Sheet")</th>
+    </tr>
+  </thead>
+  <tbody>
+{rows_html}
+  </tbody>
+</table>
+
 </body>
 </html>
 """

@@ -159,6 +159,11 @@ def retrieve_chunks_for_allegation_sql(conn, case_pk: CasePK,
     similarity score.
     """
     cur = conn.cursor()
+    # Exclude chunks that originated from the Supplement file itself
+    # (source_pdfs.role = 'allegation_source'). The Supplement IS the
+    # allegation; using its text as the allegation's "supporting evidence"
+    # would be circular and isn't a chart citation. Reviewer expects column 2
+    # to show actual medical-record corroboration.
     cur.execute("""
         WITH allegation_vec AS (
             SELECT embedding
@@ -172,9 +177,11 @@ def retrieve_chunks_for_allegation_sql(conn, case_pk: CasePK,
                1 - (c.embedding <=> av.embedding) AS similarity
         FROM chunks c
         JOIN documents d  ON d.id = c.document_id
+        LEFT JOIN source_pdfs sp ON sp.id = d.source_pdf_id
         CROSS JOIN allegation_vec av
         WHERE c.case_id   = %(case_pk)s
           AND c.embedding IS NOT NULL
+          AND (sp.role IS NULL OR sp.role != 'allegation_source')
         ORDER BY c.embedding <=> av.embedding
         LIMIT %(top_k)s
     """, {
