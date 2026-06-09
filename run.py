@@ -263,13 +263,24 @@ def run_from_db(case_id_str: str, *,
         # allegation-vs-chart evidence report instead of running expensive
         # per-leaf eval on nothing.
         if not candidates and not include_codes:
-            print("      No candidate listings to evaluate. Falling back to "
-                  "allegation-vs-chart evidence report (top-5 chunks per "
-                  "allegation, no listings evaluated)...")
+            # Use ONLY the patient's supplement-form allegations (Part 1 +
+            # Part 2 tables, supplement reason patterns) — not the
+            # chart-derived ones like PMH / visit_diagnoses / chief_complaint
+            # which would surface every incidental chart mention and clutter
+            # the report.
+            supplement_allegations = [
+                a for a in allegation_rows
+                if a.get("source") == "supplement_form"
+            ]
+            print(f"      No candidate listings to evaluate. Falling back to "
+                  f"allegation-vs-chart evidence report ("
+                  f"{len(supplement_allegations)} supplement-sourced "
+                  f"allegation(s), {len(allegation_rows) - len(supplement_allegations)} "
+                  f"chart-derived skipped)...")
             from pipeline.db_matcher import retrieve_chunks_for_allegation_sql
             from pipeline.output import render_no_listings_fallback_html
             allegation_chunks: list[dict] = []
-            for alleg in allegation_rows:
+            for alleg in supplement_allegations:
                 chunks = retrieve_chunks_for_allegation_sql(
                     conn, case_pk,
                     allegation_id=alleg["id"],
