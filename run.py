@@ -61,14 +61,28 @@ def main(argv: list[str]) -> int:
         help=("comma-separated listing codes to force-evaluate even if they "
               "didn't make the top-K shortlist, e.g. --include 1.18,2.04"),
     )
+    p.add_argument(
+        "--no-prefilter", action="store_true",
+        help=("skip the LLM relevance pre-filter (~$0.05/case). The "
+              "pre-filter asks Claude to drop candidates that aren't "
+              "plausibly related to any allegation (e.g. Anxiety -> 8.09)."),
+    )
     args = p.parse_args(argv[1:])
     include_codes = [c.strip() for c in args.include.split(",") if c.strip()]
     if include_codes:
         print(f"--include codes received: {include_codes}")
-    return run_from_db(args.case_id, include_codes=include_codes)
+    if args.no_prefilter:
+        print("--no-prefilter: LLM relevance pre-filter disabled")
+    return run_from_db(
+        args.case_id,
+        include_codes=include_codes,
+        prefilter=not args.no_prefilter,
+    )
 
 
-def run_from_db(case_id_str: str, *, include_codes: list[str] | None = None) -> int:
+def run_from_db(case_id_str: str, *,
+                 include_codes: list[str] | None = None,
+                 prefilter: bool = True) -> int:
     """Run the matcher against a case that's already loaded into Postgres.
 
     Reads chunks, allegations, and the listing reference data from the DB,
@@ -210,14 +224,46 @@ def run_from_db(case_id_str: str, *, include_codes: list[str] | None = None) -> 
             conn, case_pk, top_k=TOP_K_CANDIDATES,
         )
 
-        # If no listings matched AND the reviewer didn't force-include
-        # anything, fall back to an allegation-vs-chart evidence report:
-        # for each allegation, retrieve its top-5 most-similar chunks and
-        # render those as 0_CASE_SUMMARY.html. No per-listing forms are
-        # written — the reviewer uses the report to decide which listings
-        # to manually --include on a follow-up run.
+        # LLM relevance pre-filter: kill candidates that embedding similarity
+        # surfaced but that don't plausibly match any allegation (e.g. the
+        # classic "Anxiety -> 8.09 Chronic skin conditions" cosine miss).
+        # One batched Bedrock call per case; the resulting decisions are
+        # logged for transparency.
+        #
+        # Runs BEFORE --include so reviewer-forced codes always bypass the
+        # filter (the operator's explicit override wins).
+        prefilter_decisions: dict[str, dict] = {}
+        if prefilter and candidates:
+            print(f"[3.5/6] LLM relevance pre-filter "
+                  f"(checking {len(candidates)} candidate(s))...")
+            from pipeline.prefilter import prefilter_candidates_with_llm
+            before = candidates
+            candidates, prefilter_decisions = prefilter_candidates_with_llm(
+                candidates, allegation_rows,
+            )
+            kept = {c.listing.code for c in candidates}
+            for c in before:
+                d = prefilter_decisions.get(c.listing.code, {})
+                tag = "KEEP" if c.listing.code in kept else "DROP"
+                reason = d.get("reason", "?")
+                matched = d.get("matched_allegations") or []
+                if matched:
+                    print(f"      [prefilter] {tag}  {c.listing.code:>6}  "
+                          f"matched={matched}  ({reason})")
+                else:
+                    print(f"      [prefilter] {tag}  {c.listing.code:>6}  "
+                          f"({reason})")
+            dropped = [c.listing.code for c in before if c.listing.code not in kept]
+            print(f"      [prefilter] kept {len(candidates)}/{len(before)}; "
+                  f"dropped {dropped or 'none'}")
+
+        # If candidates list is empty at this point (either find_candidates_sql
+        # returned nothing, OR the LLM pre-filter dropped everything), AND
+        # the reviewer didn't force-include anything, fall back to an
+        # allegation-vs-chart evidence report instead of running expensive
+        # per-leaf eval on nothing.
         if not candidates and not include_codes:
-            print("      No candidate listings matched. Falling back to "
+            print("      No candidate listings to evaluate. Falling back to "
                   "allegation-vs-chart evidence report (top-5 chunks per "
                   "allegation, no listings evaluated)...")
             from pipeline.db_matcher import retrieve_chunks_for_allegation_sql
@@ -243,8 +289,6 @@ def run_from_db(case_id_str: str, *, include_codes: list[str] | None = None) -> 
             summary_path = out_dir / "0_CASE_SUMMARY.html"
             write_form(summary_path, summary_html)
             print(f"\nCase-summary (fallback): {summary_path}")
-            # Still publish to S3 if configured, and write a case_summaries
-            # row with n_candidates=0 so the audit trail records the run.
             persist_case_summary(
                 conn,
                 case_pk=case_pk,
@@ -275,7 +319,7 @@ def run_from_db(case_id_str: str, *, include_codes: list[str] | None = None) -> 
         # Force-include any listings the operator passed via --include that
         # didn't already make the shortlist. Synthetic score=0.0 and reasoning
         # tag flags them so the printed output makes it obvious they're
-        # reviewer-forced, not similarity-driven.
+        # reviewer-forced, not similarity-driven. Bypasses the pre-filter.
         if include_codes:
             print(f"      [include] processing codes: {include_codes}")
             from pipeline.db import get_listings_by_codes
