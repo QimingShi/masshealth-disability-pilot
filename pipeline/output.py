@@ -207,29 +207,50 @@ def write_form(out_path: Path, content: str):
     out_path.write_text(content, encoding="utf-8")
 
 
-# Runtime helper injected into every rendered HTML. When SharePoint serves
-# our HTML via Forms/AllItems.aspx, relative URLs (source_annotated.pdf#page=12)
-# resolve against the .aspx wrapper instead of the file's actual folder.
-# Result: citation clicks hit a 404. This JS reads the ?id= query param
-# (which SharePoint sets to the actual file path), derives the parent
-# folder, and rewrites <a> hrefs to absolute SharePoint URLs.
+# Runtime helper injected into every rendered HTML. SharePoint can serve
+# our HTML two different ways and we have to handle both:
 #
-# Safe to run unconditionally — on local browser opens (file:// or direct
-# https), there's no ?id= param so the function exits without modifying
-# anything.
+#   A) Iframe — window.location.href is the file's actual SP URL
+#      (e.g. .../7777777_EXPEDITESummary/foo.html). parentUrl = file's folder.
+#   B) Wrapper — window.location.href is Forms/AllItems.aspx?id=...
+#      (no iframe; HTML loaded into the AllItems page). parentUrl must be
+#      derived from the ?id= query param, NOT from window.location.pathname
+#      (which is just .../Forms/AllItems.aspx).
+#
+# We detect case B by the presence of ?id= pointing at our HTML; otherwise
+# fall back to case A. Also sets target="_blank" so clicks open in a new
+# tab (otherwise SharePoint navigates the wrapper instead of opening the
+# PDF). Safe to run unconditionally:
+#   - Local file:// — early-return (browser already resolves).
+#   - Local https direct — case A path.
+#   - SharePoint iframe — case A path.
+#   - SharePoint wrapper — case B path.
 _SHAREPOINT_LINK_REWRITE_JS = """<script>
 (function () {
-  function rewrite() {
+  function resolveParentUrl() {
     try {
       var u = new URL(window.location.href);
+      // Case B: SharePoint wrapper (Forms/AllItems.aspx?id=/sites/.../foo.html)
       var id = u.searchParams.get('id');
-      if (!id) return;
-      if (u.pathname.toLowerCase().indexOf('allitems.aspx') < 0 &&
-          u.pathname.toLowerCase().indexOf('forms/') < 0) return;
-      var lastSlash = id.lastIndexOf('/');
-      if (lastSlash < 0) return;
-      var parentPath = id.substring(0, lastSlash + 1);
-      var origin = u.protocol + '//' + u.host;
+      if (id && /\\.html?$/i.test(id)) {
+        var lastSlash = id.lastIndexOf('/');
+        if (lastSlash > 0) {
+          return u.protocol + '//' + u.host + encodeURI(id.substring(0, lastSlash + 1));
+        }
+      }
+    } catch (e) {}
+    // Case A: direct file URL — use this document's own parent folder
+    var pageUrl = window.location.href.split('#')[0].split('?')[0];
+    var lastSlash = pageUrl.lastIndexOf('/');
+    if (lastSlash < 0) return null;
+    return pageUrl.substring(0, lastSlash + 1);
+  }
+
+  function rewrite() {
+    try {
+      if (window.location.protocol === 'file:') return;
+      var parentUrl = resolveParentUrl();
+      if (!parentUrl) return;
       var links = document.querySelectorAll('a[href]');
       var n = 0;
       for (var i = 0; i < links.length; i++) {
@@ -241,11 +262,14 @@ _SHAREPOINT_LINK_REWRITE_JS = """<script>
         var hashAt = href.indexOf('#');
         var path = hashAt >= 0 ? href.substring(0, hashAt) : href;
         var fragment = hashAt >= 0 ? href.substring(hashAt) : '';
-        links[i].href = origin + encodeURI(parentPath + path) + fragment;
+        links[i].href = parentUrl + encodeURI(path) + fragment;
+        // Open in new tab so SharePoint doesn't navigate the wrapper iframe.
+        links[i].setAttribute('target', '_blank');
+        links[i].setAttribute('rel', 'noopener');
         n++;
       }
-      if (n > 0 && window.console) {
-        console.log('[SharePoint] rewrote ' + n + ' citation link(s) to absolute URLs');
+      if (window.console) {
+        console.log('[SharePoint] rewrote ' + n + ' citation link(s); base=' + parentUrl);
       }
     } catch (e) {
       if (window.console) console.warn('SharePoint link rewrite failed:', e);
