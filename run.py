@@ -361,7 +361,7 @@ def run_from_db(case_id_str: str, *,
                 allegation_chunks=allegation_chunks,
                 source_pdf_path=source_pdf_path,
             )
-            summary_path = out_dir / "0_CASE_SUMMARY.html"
+            summary_path = out_dir / f"{case_id_str}_EXPEDITESummary.html"
             write_form(summary_path, summary_html)
             print(f"\nCase-summary (fallback): {summary_path}")
             persist_case_summary(
@@ -680,7 +680,7 @@ def run_from_db(case_id_str: str, *,
             root_verdicts_by_code=root_verdicts_by_code,
             source_pdf_path=html_pdf_target,
         )
-        summary_path = out_dir / "0_CASE_SUMMARY.html"
+        summary_path = out_dir / f"{case_id_str}_EXPEDITESummary.html"
         write_form(summary_path, summary_html)
         print(f"\nCase-summary HTML: {summary_path}")
 

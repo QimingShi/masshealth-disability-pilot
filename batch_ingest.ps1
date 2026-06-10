@@ -4,7 +4,7 @@
 #   .\batch_ingest.ps1            # skip cases that already completed
 #   .\batch_ingest.ps1 -Force     # re-run everything regardless
 #
-# Resumable: a case is considered "done" if output/<case_id>/0_CASE_SUMMARY.html
+# Resumable: a case is considered "done" if output/<case_id>/<case_id>_EXPEDITESummary.html
 # exists. After an SSO expiry / network blip, just re-login and re-run --
 # completed cases get skipped, only the rest re-ingest.
 #
@@ -22,7 +22,7 @@
 # Time: ~5-10 min per case sequentially → ~1.5-2.5 hours total.
 
 param(
-    [switch]$Force   # re-run cases even if output/<case>/0_CASE_SUMMARY.html exists
+    [switch]$Force   # re-run cases even if output/<case>/<case>_EXPEDITESummary.html exists
 )
 
 $bucket  = "umasschan-forhealth-expedite-incoming-data-nonprod"
@@ -86,7 +86,7 @@ foreach ($folder in $folders) {
     # HTML. Lets you re-run the batch after an SSO expiry / network blip
     # without paying for already-completed Textract jobs again. Override
     # by passing -Force or by deleting output/<case_id>/.
-    $marker = Join-Path "output" $case_id | Join-Path -ChildPath "0_CASE_SUMMARY.html"
+    $marker = Join-Path "output" $case_id | Join-Path -ChildPath "${case_id}_EXPEDITESummary.html"
     if ((Test-Path $marker) -and (-not $Force)) {
         Write-Host ""
         Write-Host "[$($folders.IndexOf($folder) + 1)/$($folders.Count)] SKIP $case_id  (already has $marker; pass -Force to re-run)"
@@ -135,5 +135,5 @@ Write-Host "Full log: $logFile"
 if ($failed.Count -gt 0) {
     Write-Host ""
     Write-Host "To retry just the failures: re-run .\batch_ingest.ps1 -- failed"
-    Write-Host "cases will be retried automatically (they don't have a 0_CASE_SUMMARY.html)."
+    Write-Host "cases will be retried automatically (they don't have a <case>_EXPEDITESummary.html)."
 }

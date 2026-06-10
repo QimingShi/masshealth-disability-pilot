@@ -277,7 +277,7 @@ def _inject_sharepoint_link_rewriter(html: str) -> str:
 # No-listings-matched fallback HTML
 # =============================================================================
 #
-# Rendered as 0_CASE_SUMMARY.html when find_candidates_sql returns nothing.
+# Rendered as <case_id>_EXPEDITESummary.html when find_candidates_sql returns nothing.
 # Shows each allegation with its top-5 most-similar chart chunks so the
 # reviewer has the evidence they need to either:
 #   - Re-run with --include <code> to force-evaluate a specific listing
@@ -616,7 +616,7 @@ def _checkbox_html(verdict: str) -> str:
 # Case-level summary HTML — one document aggregating all listings
 # =============================================================================
 #
-# Output: a single 0_CASE_SUMMARY.html per case containing:
+# Output: a single <case_id>_EXPEDITESummary.html per case containing:
 #   1. Headline summary (overall verdict, groundedness, candidate count)
 #   2. 3-column table: Impairment Alleged | Medical Evidence Found | SSI Listing Met
 #      (one row per allegation; cell content links to the detailed listing section)

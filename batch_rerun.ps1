@@ -24,7 +24,7 @@ param(
     [switch]$SkipRechunk,        # skip Stage 1 (use existing chunks.json)
     [switch]$SkipLoad,           # skip Stage 2 (DB already current)
     [switch]$SkipMatcher,        # skip Stage 3 (no matcher re-run)
-    [switch]$Force               # re-run even if output/<case>/0_CASE_SUMMARY.html exists
+    [switch]$Force               # re-run even if output/<case>/<case>_EXPEDITESummary.html exists
 )
 
 $logFile = "batch_rerun_$(Get-Date -Format 'yyyyMMdd-HHmmss').log"
@@ -77,7 +77,7 @@ foreach ($case_id in $CaseIds) {
     $sep = "=" * 75
 
     # Resumability check
-    $marker = Join-Path "output" $case_id | Join-Path -ChildPath "0_CASE_SUMMARY.html"
+    $marker = Join-Path "output" $case_id | Join-Path -ChildPath "${case_id}_EXPEDITESummary.html"
     if ((Test-Path $marker) -and (-not $Force)) {
         Write-Host ""
         Write-Host "[$($CaseIds.IndexOf($case_id) + 1)/$($CaseIds.Count)] SKIP $case_id  (already has $marker; pass -Force to re-run)"
