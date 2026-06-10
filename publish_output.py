@@ -12,6 +12,17 @@ Usage:
     py publish_output.py <case_id> --bucket <name> # override OUTPUT_PUBLISH_BUCKET
     py publish_output.py --all                     # publish every case in output/
 
+SharePoint URL baking — opt in via SHAREPOINT_PUBLISH_BASE_URL env var
+(or --sharepoint-base-url) so citation links work in the SharePoint
+web viewer. With the base URL set, every uploaded .html has its
+relative <a href="*.pdf"> rewritten to absolute SharePoint URLs:
+    set SHAREPOINT_PUBLISH_BASE_URL=https://tenant.sharepoint.com/sites/X/Y/Inbound%20from%20AWS/
+The case's actual SharePoint folder is computed as
+    <base><case_id>_EXPEDITESummary/
+Override the suffix with --sharepoint-folder-suffix if your tenant lays
+folders out differently. Without these flags the upload is byte-identical
+to the local files (works for the local browser / download workflow).
+
 Idempotent: re-running on the same case_id overwrites existing S3 objects
 (same key = same content); cost is just the PUT requests.
 """
@@ -49,6 +60,18 @@ def main(argv: list[str]) -> int:
                    help="AWS region (default: $AWS_REGION or 'us-east-1')")
     p.add_argument("--dry-run", action="store_true",
                    help="log what would be uploaded, don't actually upload")
+    p.add_argument("--sharepoint-base-url",
+                   default=os.environ.get("SHAREPOINT_PUBLISH_BASE_URL"),
+                   help="If set, rewrite relative .pdf hrefs in uploaded HTML "
+                        "to absolute SharePoint URLs (needed for citation "
+                        "clicks in the SharePoint web viewer). Should be the "
+                        "parent URL ending with '/', e.g. "
+                        "https://tenant.sharepoint.com/.../Inbound%20from%20AWS/. "
+                        "Defaults to $SHAREPOINT_PUBLISH_BASE_URL.")
+    p.add_argument("--sharepoint-folder-suffix",
+                   default="_EXPEDITESummary",
+                   help="Suffix appended to case_id to form the SharePoint "
+                        "sub-folder name. Default '_EXPEDITESummary'.")
     args = p.parse_args(argv[1:])
 
     if not args.bucket:
@@ -105,6 +128,8 @@ def main(argv: list[str]) -> int:
                 profile_name=args.profile,
                 region_name=args.region,
                 dry_run=args.dry_run,
+                sharepoint_base_url=args.sharepoint_base_url,
+                sharepoint_folder_suffix=args.sharepoint_folder_suffix,
             )
             total_keys += len(keys)
         except Exception as e:
