@@ -389,6 +389,8 @@ def run_from_db(case_id_str: str, *,
                         case_id=case_id_str,
                         out_dir=out_dir,
                         bucket=publish_bucket,
+                        sharepoint_base_url=os.environ.get(
+                            "SHAREPOINT_PUBLISH_BASE_URL"),
                     )
                 except Exception as e:
                     print(f"[publish] WARNING — upload failed: {e}")
@@ -708,6 +710,8 @@ def run_from_db(case_id_str: str, *,
                     case_id=case_id_str,
                     out_dir=out_dir,
                     bucket=publish_bucket,
+                    sharepoint_base_url=os.environ.get(
+                        "SHAREPOINT_PUBLISH_BASE_URL"),
                 )
             except Exception as e:
                 # Don't fail the whole run if publish hits a transient AWS
