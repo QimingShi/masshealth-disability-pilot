@@ -48,8 +48,9 @@ runs all 10 stages above. Output lands in:
 
 - `data/1234567/chunks.json` — lite chunks shape
 - `_phi/1234567/` — source PDFs, Textract raw, bbox sidecar, annotated PDF (PHI)
-- `output/1234567_EXPEDITESummary/0_1234567_EXPEDITESummary.html` ← **open this first**
-- `output/1234567_EXPEDITESummary/{1_MEETS,2_INSUFFICIENT,3_DOES_NOT_MEET}_<code>.html` — one per candidate listing
+- `output/1234567_EXPEDITESummary/0_1234567_EXPEDITESummary.html` ← **the single HTML — open this**
+- `output/1234567_EXPEDITESummary/<code> <listing title>.docx` — fillable UMass DES form per candidate listing
+- `output/1234567_EXPEDITESummary/source.pdf`, `source_annotated.pdf` — bundled chart for citation links
 
 ### Useful flags
 

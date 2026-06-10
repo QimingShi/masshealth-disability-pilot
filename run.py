@@ -578,36 +578,18 @@ def run_from_db(case_id_str: str, *,
                 "candidate_rank":      cand_rank,
             })
 
-            priority_prefix = {
-                "Meets": "1_MEETS",
-                "Insufficient evidence (review chart)": "2_INSUFFICIENT",
-                "Does not meet/equal": "3_DOES_NOT_MEET",
-            }.get(verdict_label, "9_UNKNOWN")
-            file_stem = f"{priority_prefix}_{listing.code}"
+            # Per-listing HTML + MD files used to be written here. They've
+            # been removed — the case-summary HTML (0_<case>_EXPEDITESummary.html)
+            # embeds every listing's full form inline, so the per-listing
+            # files were just duplicate content cluttering the bundle.
+            # Reviewer sees everything in the single summary file.
+            #
+            # The reviewer-facing DOCX forms (one per listing, filled-in
+            # UMass Blue Book templates) ARE still written below — those
+            # are a different artifact (printable forms, not browseable
+            # HTML) and are the reviewer's signoff document.
 
-            print(f"[6/6] Writing form for {listing.code}...")
-            content = render_form(
-                listing=listing,
-                root_verdict=root,
-                leaf_results=leaf_results,
-                case_id=case_id_str,
-                chunks_by_id=chunks_by_id,
-            )
-            out_path = out_dir / f"{file_stem}.md"
-            write_form(out_path, content)
-            print(f"      -> {out_path}")
-
-            html = render_form_html(
-                listing=listing,
-                root_verdict=root,
-                leaf_results=leaf_results,
-                case_id=case_id_str,
-                chunks_by_id=chunks_by_id,
-                source_pdf_path=html_pdf_target,
-            )
-            html_path = out_dir / f"{file_stem}.html"
-            write_form(html_path, html)
-            print(f"      -> {html_path}")
+            print(f"[6/6] Writing docx form for {listing.code}...")
 
             # Render the UMass Chan DES Word form by filling the hand-crafted
             # template under templates/listings/<code> *.docx. The docx is the
