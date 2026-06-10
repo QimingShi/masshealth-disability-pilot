@@ -228,6 +228,14 @@ def retrieve_chunks_for_leaf_sql(conn, case_pk: CasePK, leaf_db_id: LeafPK, *,
     Internal/no-criterion leaves return [] — we never embedded them.
     """
     cur = conn.cursor()
+    # IMPORTANT: exclude chunks from the Supplement file itself
+    # (source_pdfs.role = 'allegation_source'). The Supplement IS the
+    # allegation; using its text as "medical evidence" for the leaf
+    # criterion is circular reasoning -- the chart needs to corroborate
+    # the patient's claim, not the patient's claim re-stating itself.
+    # This filter mirrors the one already in
+    # retrieve_chunks_for_allegation_sql (used by the no-listings
+    # fallback path). Both retrieval functions now agree.
     cur.execute("""
         WITH leaf AS (
             SELECT criterion_embedding AS qvec
@@ -240,11 +248,13 @@ def retrieve_chunks_for_leaf_sql(conn, case_pk: CasePK, leaf_db_id: LeafPK, *,
                1 - (c.embedding <=> leaf.qvec) AS similarity
         FROM chunks c
         JOIN documents d ON d.id = c.document_id
+        LEFT JOIN source_pdfs sp ON sp.id = d.source_pdf_id
         CROSS JOIN leaf
         WHERE c.case_id = %(case_pk)s
           AND c.embedding IS NOT NULL
           AND leaf.qvec IS NOT NULL
           AND 1 - (c.embedding <=> leaf.qvec) >= %(min_similarity)s
+          AND (sp.role IS NULL OR sp.role != 'allegation_source')
         ORDER BY c.embedding <=> leaf.qvec
         LIMIT %(top_k)s
     """, {
