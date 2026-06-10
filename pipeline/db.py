@@ -564,21 +564,35 @@ def get_listing_criteria_tree(conn, listing_pk) -> dict:
 
 def _parse_date(s: str | None) -> str | None:
     """Best-effort parse of a date string into ISO format (YYYY-MM-DD).
-    Returns None if input is None or can't be parsed; psycopg2 will INSERT
-    None as SQL NULL."""
+    Returns None if input is None, can't be parsed, or fails calendar
+    validation (e.g. OCR misread '2025-21-18' — month 21 doesn't exist).
+    psycopg2 will INSERT None as SQL NULL."""
     if not s:
         return None
-    # Accept ISO already, MM/DD/YY, MM/DD/YYYY, MM-DD-YYYY
     import re
+    from datetime import date
     s = s.strip()
-    # ISO already
-    if re.match(r"^\d{4}-\d{2}-\d{2}", s):
-        return s[:10]
-    # US format with 2- or 4-digit year
+
+    def _safe(y: int, mo: int, da: int) -> str | None:
+        """Construct date(y, mo, da); return ISO string on success, None
+        if any component is out of calendar range. date() raises ValueError
+        on invalid month/day combinations (e.g. month 13, Feb 30, etc.)."""
+        try:
+            return date(y, mo, da).isoformat()
+        except ValueError:
+            return None
+
+    # ISO YYYY-MM-DD (or YYYY/MM/DD), possibly followed by time
+    m = re.match(r"^(\d{4})[-/](\d{1,2})[-/](\d{1,2})", s)
+    if m:
+        return _safe(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+
+    # US format MM/DD/YYYY or MM-DD-YY (2-digit year heuristic: <70 = 20xx)
     m = re.match(r"^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})", s)
     if m:
-        mo, da, yr = m.group(1), m.group(2), m.group(3)
-        if len(yr) == 2:
-            yr = "20" + yr if int(yr) < 70 else "19" + yr
-        return f"{yr.zfill(4)}-{mo.zfill(2)}-{da.zfill(2)}"
+        mo, da, yr = int(m.group(1)), int(m.group(2)), int(m.group(3))
+        if yr < 100:
+            yr = 2000 + yr if yr < 70 else 1900 + yr
+        return _safe(yr, mo, da)
+
     return None
