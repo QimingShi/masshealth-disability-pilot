@@ -95,7 +95,7 @@ foreach ($case_id in $CaseIds) {
     # Stage 1: rechunk from saved Textract
     if (-not $SkipRechunk) {
         Write-Host "  [1/3] rechunk_from_raw('$case_id')..."
-        py -c "from pipeline.ingest_real import rechunk_from_raw; rechunk_from_raw('$case_id')" 2>&1 |
+        python -c "from pipeline.ingest_real import rechunk_from_raw; rechunk_from_raw('$case_id')" 2>&1 |
             Tee-Object -FilePath $logFile -Append
         if ($LASTEXITCODE -ne 0) {
             Write-Host "    FAILED rechunk for $case_id"
@@ -108,7 +108,7 @@ foreach ($case_id in $CaseIds) {
     # Stage 2: re-load to DB with fresh embeddings
     if (-not $SkipLoad) {
         Write-Host "  [2/3] load_case_to_db.py $case_id..."
-        py db\load_case_to_db.py $case_id 2>&1 |
+        python db\load_case_to_db.py $case_id 2>&1 |
             Tee-Object -FilePath $logFile -Append
         if ($LASTEXITCODE -ne 0) {
             Write-Host "    FAILED load for $case_id"
@@ -121,7 +121,7 @@ foreach ($case_id in $CaseIds) {
     # Stage 3: re-run matcher
     if (-not $SkipMatcher) {
         Write-Host "  [3/3] run.py --from-db $case_id..."
-        py run.py --from-db $case_id 2>&1 |
+        python run.py --from-db $case_id 2>&1 |
             Tee-Object -FilePath $logFile -Append
         if ($LASTEXITCODE -ne 0) {
             Write-Host "    FAILED matcher for $case_id"

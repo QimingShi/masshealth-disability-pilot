@@ -236,12 +236,24 @@ text. The annotated PDF is generated at the end of the matcher run.
   ingest path; legacy hand-transcribed cases get page-level (not bbox-level)
   citations.
 - HTML citations use *relative* URLs to a copy of the source PDF placed
-  alongside the HTML in `output/<case_id>/`. The case bundle is therefore
-  self-contained: zip or copy the folder and every citation still resolves
-  in a local browser (Edge/Chrome/Firefox). SharePoint's browser-side HTML
-  preview may still strip the `#page=N` fragment when opened through the
-  web viewer — for SharePoint hand-off, expect reviewers to download the
-  folder and open `0_<case_id>_EXPEDITESummary.html` locally.
+  alongside the HTML in `output/<case_id>_EXPEDITESummary/`. The local
+  bundle is therefore self-contained: zip or copy the folder and every
+  citation still resolves in a local browser (Edge/Chrome/Firefox).
+- SharePoint hand-off is supported directly. When
+  `SHAREPOINT_PUBLISH_BASE_URL` is set, `publish_output.py` (and
+  `run.py`'s auto-publish) does two extra things at upload time:
+    1. **Rewrites every relative `<a href="*.pdf">` to an absolute
+       SharePoint URL** so citation links work in the SharePoint web
+       viewer (SharePoint's NoScript / Custom Script policy breaks
+       relative resolution and strips inline `<script>` blocks).
+    2. **Generates a PDF companion** via headless Edge from the
+       rewritten HTML and uploads it alongside the HTML. The PDF renders
+       inline in SharePoint for *every* reviewer regardless of role,
+       while the HTML only renders for site collection admins (Custom
+       Script policy again). The PDF has absolute link annotations so
+       citation clicks navigate to `source_annotated.pdf` in a new tab.
+  Local files in `output/` are untouched — relative URLs stay for the
+  local-browser workflow; the absolute URLs only exist in S3/SharePoint.
 
 ## Setup notes (first-time)
 
@@ -264,12 +276,29 @@ text. The annotated PDF is generated at the end of the matcher run.
 7. Load SSA listings + compute their embeddings (one-time):
 
 ```cmd
-py "SSA JSON\load_all_listings.py"
-py db\compute_listing_embeddings.py
-py db\compute_criterion_embeddings.py
+python "SSA JSON\load_all_listings.py"
+python db\compute_listing_embeddings.py
+python db\compute_criterion_embeddings.py
 ```
 
-8. You're ready to run case ingests via `py db\ingest_s3_to_db.py --folder ...`
+8. (Optional) Set the publish env vars in your shell so case bundles
+   auto-upload after each `run.py`:
+
+   ```cmd
+   set OUTPUT_PUBLISH_BUCKET=umasschan-forhealth-expedite-outgoing-data-nonprod
+   set SHAREPOINT_PUBLISH_BASE_URL=https://tenant.sharepoint.com/sites/.../Inbound%20from%20AWS/
+   ```
+
+   `OUTPUT_PUBLISH_BUCKET` alone uploads the case bundle verbatim.
+   Adding `SHAREPOINT_PUBLISH_BASE_URL` also rewrites HTML citations to
+   absolute SharePoint URLs and generates a PDF companion via headless
+   Edge (auto-detected) — see the "Per-case output" section above.
+
+9. You're ready to run case ingests:
+
+   ```cmd
+   python db\ingest_s3_to_db.py --folder "<bucket>/<case-folder>/"
+   ```
 
 ## License
 

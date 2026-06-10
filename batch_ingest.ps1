@@ -17,6 +17,11 @@
 #   $env:DATABASE_URL = "postgresql://<user>@<host>:5432/<db>"
 #   $env:PGPASSWORD   = "<your password>"
 #   $env:OUTPUT_PUBLISH_BUCKET = "umasschan-forhealth-expedite-outgoing-data-nonprod"
+#   $env:SHAREPOINT_PUBLISH_BASE_URL = "https://tenant.sharepoint.com/sites/.../Inbound%20from%20AWS/"
+#       # (optional) enables: HTML hrefs rewritten to absolute SharePoint URLs +
+#       # an auto-generated PDF companion (via headless Edge) uploaded alongside
+#       # each case-summary HTML. PDFs render inline in SharePoint for all
+#       # reviewers (HTML is admin-only under the Custom Script policy).
 #
 # Cost: ~$5-7 per case (Textract is the dominant cost). For 16 cases ≈ $80-110.
 # Time: ~5-10 min per case sequentially → ~1.5-2.5 hours total.
@@ -101,7 +106,7 @@ foreach ($folder in $folders) {
     Write-Host "  log -> $logFile"
 
     # Tee the per-case output to the log file
-    py db\ingest_s3_to_db.py $case_id --folder "$bucket/$folder" 2>&1 | Tee-Object -FilePath $logFile -Append
+    python db\ingest_s3_to_db.py $case_id --folder "$bucket/$folder" 2>&1 | Tee-Object -FilePath $logFile -Append
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "  FAILED $case_id (exit $LASTEXITCODE)"
