@@ -31,7 +31,29 @@ from pipeline.annotate_pdf import annotate_pdf, collect_cited_chunk_ids
 HERE = Path(__file__).parent
 OUTPUT_ROOT = HERE / "output"
 TEMPLATES_DIR = HERE / "templates" / "listings"   # hand-crafted UMass DES forms
-TOP_K_CANDIDATES = 10     # how many listings to fully evaluate per case
+# Candidate-shortlist sizes — split by allegation source so chart-derived
+# diagnoses (typically the larger, more authoritative pool) and patient-
+# supplement claims both get representation. The two buckets are deduped
+# on listing_id before the LLM prefilter, so the effective max sent for
+# review is MEDICAL_TOP_K + SUPPLEMENT_TOP_K but the actual count is
+# usually lower (overlapping listings get merged).
+MEDICAL_TOP_K     = 10    # top listings from chart-derived allegations
+SUPPLEMENT_TOP_K  = 5     # top listings from supplement allegations
+TOP_K_CANDIDATES  = MEDICAL_TOP_K + SUPPLEMENT_TOP_K   # legacy alias
+
+# Which `allegations.source` values count as which bucket.
+MEDICAL_ALLEGATION_SOURCES = [
+    "visit_diagnoses",
+    "past_medical_history",
+    "problem_list",
+    "chief_complaint",
+    "narrative_phrase",
+]
+SUPPLEMENT_ALLEGATION_SOURCES = [
+    "supplement_part1",
+    "supplement_part2",
+    "supplement_form",
+]
 
 
 def main(argv: list[str]) -> int:
@@ -219,10 +241,46 @@ def run_from_db(case_id_str: str, *,
 
         print("[2/6] (skipped: embeddings already in DB)")
 
-        print("[3/6] Identifying candidate listings via SQL pgvector...")
-        candidates = find_candidates_sql(
-            conn, case_pk, top_k=TOP_K_CANDIDATES,
+        print("[3/6] Identifying candidate listings via SQL pgvector "
+              "(split by allegation source: medical + supplement)...")
+        # Run TWO separate top-K queries — one bucket per allegation source
+        # family — then merge by listing_id. Keeps supplement-claimed
+        # listings from getting pushed out of the shortlist by the
+        # typically-larger chart-derived pool, while still letting strong
+        # chart signals come through.
+        medical_cands = find_candidates_sql(
+            conn, case_pk,
+            top_k=MEDICAL_TOP_K,
+            allegation_sources=MEDICAL_ALLEGATION_SOURCES,
         )
+        supplement_cands = find_candidates_sql(
+            conn, case_pk,
+            top_k=SUPPLEMENT_TOP_K,
+            allegation_sources=SUPPLEMENT_ALLEGATION_SOURCES,
+        )
+        print(f"      medical bucket    ({MEDICAL_TOP_K} max): "
+              f"{len(medical_cands)} candidate(s)")
+        print(f"      supplement bucket ({SUPPLEMENT_TOP_K} max): "
+              f"{len(supplement_cands)} candidate(s)")
+
+        # Merge: dedupe on listing_pk, combine reasoning, keep max score.
+        by_pk: dict = {}
+        for c in medical_cands:
+            c.reasoning = [f"[medical] {r}" for r in c.reasoning]
+            by_pk[c.listing_pk] = c
+        for c in supplement_cands:
+            tagged = [f"[supplement] {r}" for r in c.reasoning]
+            if c.listing_pk in by_pk:
+                existing = by_pk[c.listing_pk]
+                existing.score = max(existing.score, c.score)
+                existing.reasoning = existing.reasoning + tagged
+            else:
+                c.reasoning = tagged
+                by_pk[c.listing_pk] = c
+        candidates = sorted(by_pk.values(), key=lambda x: -x.score)
+        overlap = (len(medical_cands) + len(supplement_cands)) - len(candidates)
+        print(f"      merged unique listings: {len(candidates)} "
+              f"(overlap deduped: {overlap})")
 
         # LLM relevance pre-filter: kill candidates that embedding similarity
         # surfaced but that don't plausibly match any allegation (e.g. the

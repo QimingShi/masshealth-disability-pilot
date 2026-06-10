@@ -55,6 +55,7 @@ def find_candidates_sql(conn, case_pk: CasePK, *,
                         top_k: int = 5,
                         per_allegation_k: int = 5,
                         min_similarity: float = 0.20,
+                        allegation_sources: list[str] | None = None,
                         ) -> list[DBCandidate]:
     # min_similarity is permissive (0.20) on purpose. Titan v2 cosine scores
     # for short medical allegations against listing summaries tend to land
@@ -65,20 +66,20 @@ def find_candidates_sql(conn, case_pk: CasePK, *,
     """For each allegation, find the top-K closest listings by cosine; UNION
     across allegations, weight by max similarity, return the global top-K.
 
-    This replaces the embedding-cosine portion of pipeline/candidates.py
-    (signal A: allegation → listing summary). For now keyword/synonym/ICD
-    signals stay in the Python path — they can move to SQL later if needed,
-    but embedding-based is the dominant signal in practice.
+    Args:
+        allegation_sources: optional list of allegations.source values to
+            restrict scoring to (e.g. ['supplement_part1', 'supplement_part2']
+            for supplement-only, or ['visit_diagnoses', 'past_medical_history',
+            'problem_list', 'chief_complaint', 'narrative_phrase'] for chart-
+            only). None = use all allegations (legacy behaviour).
     """
     cur = conn.cursor()
-    # Note on the query shape:
-    #   ssa_listings.rule_json is column type JSON (not JSONB). PostgreSQL's
-    #   JSON type has no equality operator, so rule_json can't appear in
-    #   GROUP BY. We aggregate on listing_id alone (it's the PK and
-    #   functionally determines all other listing columns) and then JOIN
-    #   ssa_listings back in to fetch the metadata + rule_json. Cheap — the
-    #   join hits the PK index for at most top_k rows.
-    cur.execute("""
+    # Build the source filter clause. Pass None as the SQL value when no
+    # filter so the WHERE clause is a no-op; pass the tuple otherwise.
+    source_clause = ""
+    if allegation_sources:
+        source_clause = "AND a.source IN %(allegation_sources)s"
+    cur.execute(f"""
         WITH allegation_listing_pairs AS (
             SELECT a.id        AS allegation_id,
                    a.text      AS allegation_text,
@@ -89,6 +90,7 @@ def find_candidates_sql(conn, case_pk: CasePK, *,
             WHERE a.case_id = %(case_pk)s
               AND a.embedding IS NOT NULL
               AND l.summary_embedding IS NOT NULL
+              {source_clause}
         ),
         top_per_allegation AS (
             SELECT *,
@@ -122,10 +124,11 @@ def find_candidates_sql(conn, case_pk: CasePK, *,
         ORDER BY ag.best_similarity DESC, ag.n_allegations DESC
         LIMIT %(top_k)s
     """, {
-        "case_pk":           case_pk,
-        "per_allegation_k":  per_allegation_k,
-        "min_similarity":    min_similarity,
-        "top_k":             top_k,
+        "case_pk":             case_pk,
+        "per_allegation_k":    per_allegation_k,
+        "min_similarity":      min_similarity,
+        "top_k":               top_k,
+        "allegation_sources":  tuple(allegation_sources) if allegation_sources else None,
     })
 
     out: list[DBCandidate] = []
