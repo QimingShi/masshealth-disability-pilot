@@ -26,6 +26,9 @@ from __future__ import annotations
 import mimetypes
 import os
 import re
+import shutil
+import subprocess
+import tempfile
 from pathlib import Path
 from urllib.parse import quote
 
@@ -125,6 +128,81 @@ def _rewrite_html_for_sharepoint(html: str, folder_url: str) -> tuple[str, int]:
     return rewritten, n
 
 
+# Microsoft Edge install locations probed for headless HTML->PDF conversion.
+# Edge ships pre-installed on Win 10 1809+ and all Win 11, and supports
+# Chromium's --print-to-pdf flag natively — so this avoids dragging in
+# WeasyPrint (GTK runtime DLLs) or Playwright (browser download) for what
+# is ultimately a "render this HTML to PDF" call.
+_EDGE_CANDIDATES = (
+    r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+    r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+    r"C:\Program Files (x86)\Microsoft\Edge Beta\Application\msedge.exe",
+    r"C:\Program Files (x86)\Microsoft\Edge Dev\Application\msedge.exe",
+)
+
+
+def _find_edge_exe() -> str | None:
+    """Return absolute path to msedge.exe, or None if not found."""
+    on_path = shutil.which("msedge")
+    if on_path:
+        return on_path
+    for candidate in _EDGE_CANDIDATES:
+        if Path(candidate).is_file():
+            return candidate
+    return None
+
+
+def _render_html_bytes_to_pdf(html_bytes: bytes, edge_exe: str,
+                              *, timeout_sec: int = 120) -> bytes | None:
+    """Render HTML bytes to PDF bytes via headless Edge.
+
+    Writes html_bytes to a temp .html file (Edge needs a file URL, not
+    stdin or data: URLs — those run into argv length / encoding limits
+    once the case summary embeds large tables), runs msedge headless
+    with --print-to-pdf, reads the resulting PDF, and cleans up.
+
+    Returns None on any Edge failure (timeout, non-zero exit, missing
+    output). PDF generation is a "nice to have" — never block the HTML
+    upload because of it.
+
+    Uses an isolated --user-data-dir so we don't fight with the user's
+    own Edge session (avoids races + first-run / sign-in prompts).
+    """
+    with tempfile.TemporaryDirectory(prefix="sp-pdf-") as tmp_str:
+        tmp = Path(tmp_str)
+        html_path = tmp / "input.html"
+        pdf_path  = tmp / "output.pdf"
+        user_dir  = tmp / "edge-profile"
+        html_path.write_bytes(html_bytes)
+
+        cmd = [
+            edge_exe,
+            "--headless=new",
+            "--disable-gpu",
+            f"--user-data-dir={user_dir}",
+            f"--print-to-pdf={pdf_path}",
+            "--no-pdf-header-footer",
+            html_path.as_uri(),
+        ]
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True,
+                                    timeout=timeout_sec)
+        except subprocess.TimeoutExpired:
+            print(f"      publish: WARN Edge timed out after {timeout_sec}s")
+            return None
+
+        if result.returncode != 0 or not pdf_path.exists():
+            print(f"      publish: WARN Edge failed "
+                  f"(rc={result.returncode}, exists={pdf_path.exists()})")
+            if result.stderr:
+                first_lines = "\n        ".join(
+                    result.stderr.splitlines()[:5])
+                print(f"      publish: stderr: {first_lines}")
+            return None
+
+        return pdf_path.read_bytes()
+
+
 def publish_to_s3(
     case_id: str,
     out_dir: Path,
@@ -157,6 +235,14 @@ def publish_to_s3(
             sub-folder name. Default '_EXPEDITESummary' matches the layout
             run.py writes locally. Ignored when sharepoint_base_url is None.
 
+    PDF companion: when sharepoint_base_url is set AND headless Edge is
+    detected on this machine, every rewritten HTML also gets converted
+    to a sibling .pdf (same key, .pdf suffix) and uploaded. PDFs render
+    inline in SharePoint for all users regardless of the Custom Script
+    policy, so non-admin reviewers get a viewable artifact without
+    needing OneDrive sync or admin escalation. Missing Edge or a render
+    failure logs a warning but never blocks the HTML upload.
+
     Returns:
         List of S3 keys that were uploaded (or would be, in dry-run).
     """
@@ -185,9 +271,23 @@ def publish_to_s3(
         print(f"      publish: SharePoint URL bake enabled  "
               f"base={sp_folder_url}")
 
+    # Detect Edge once for HTML->PDF companion generation. Only relevant
+    # when SP URLs are being baked (otherwise the local-folder relative
+    # PDF citations would render as dead links inside any generated PDF).
+    edge_exe: str | None = None
+    if sp_folder_url and not dry_run:
+        edge_exe = _find_edge_exe()
+        if edge_exe:
+            print(f"      publish: HTML->PDF companion enabled  "
+                  f"edge={edge_exe}")
+        else:
+            print(f"      publish: Microsoft Edge not found in PATH or "
+                  f"standard install locations; PDF companions skipped")
+
     uploaded: list[str] = []
     total_bytes = 0
     total_links_rewritten = 0
+    total_pdfs_generated = 0
     for path in sorted(out_dir.rglob("*")):
         if not path.is_file():
             continue
@@ -224,8 +324,11 @@ def publish_to_s3(
         if dry_run:
             ct_label = ct or "(no content-type)"
             marker = " [SP-rewritten]" if rewritten_body is not None else ""
+            pdf_marker = (" [+pdf companion]"
+                          if rewritten_body is not None and edge_exe
+                          else "")
             print(f"      publish: [dry-run] s3://{bucket}/{key}  "
-                  f"({size // 1024} KB, {ct_label}){marker}")
+                  f"({size // 1024} KB, {ct_label}){marker}{pdf_marker}")
         elif rewritten_body is not None:
             put_kwargs = {"Bucket": bucket, "Key": key,
                           "Body": rewritten_body}
@@ -243,9 +346,35 @@ def publish_to_s3(
         uploaded.append(key)
         total_bytes += size
 
+        # PDF companion: generate from the SP-rewritten HTML so the PDF's
+        # internal link annotations are absolute URLs (relative URLs in
+        # a PDF are dead — there's no "current page URL" for a PDF the
+        # way browsers have for HTML).
+        if (not dry_run and rewritten_body is not None and edge_exe
+                and is_html):
+            pdf_bytes = _render_html_bytes_to_pdf(rewritten_body, edge_exe)
+            if pdf_bytes is not None:
+                pdf_key = key[:-len(path.suffix)] + ".pdf"
+                s3.put_object(
+                    Bucket=bucket,
+                    Key=pdf_key,
+                    Body=pdf_bytes,
+                    ContentType="application/pdf",
+                )
+                pdf_size = len(pdf_bytes)
+                print(f"      publish: {rel.with_suffix('.pdf')}  "
+                      f"->  s3://{bucket}/{pdf_key}  "
+                      f"({pdf_size // 1024} KB, pdf-from-html)")
+                uploaded.append(pdf_key)
+                total_bytes += pdf_size
+                total_pdfs_generated += 1
+
     if sp_folder_url and total_links_rewritten > 0:
         print(f"      publish: rewrote {total_links_rewritten} total "
               f"citation href(s) across HTML files")
+    if total_pdfs_generated > 0:
+        print(f"      publish: generated {total_pdfs_generated} PDF "
+              f"companion(s) via headless Edge")
 
     if uploaded and not dry_run:
         print(f"      publish: uploaded {len(uploaded)} file(s) "
