@@ -199,7 +199,78 @@ def _compose_narrative(
 
 def write_form(out_path: Path, content: str):
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    # Inject SharePoint-compatible link rewriter so citation URLs resolve
+    # against the file's actual folder when the HTML is served via
+    # SharePoint's Forms/AllItems.aspx wrapper (where relative URLs would
+    # otherwise 404). No-op for local file:// or direct-https serves.
+    content = _inject_sharepoint_link_rewriter(content)
     out_path.write_text(content, encoding="utf-8")
+
+
+# Runtime helper injected into every rendered HTML. When SharePoint serves
+# our HTML via Forms/AllItems.aspx, relative URLs (source_annotated.pdf#page=12)
+# resolve against the .aspx wrapper instead of the file's actual folder.
+# Result: citation clicks hit a 404. This JS reads the ?id= query param
+# (which SharePoint sets to the actual file path), derives the parent
+# folder, and rewrites <a> hrefs to absolute SharePoint URLs.
+#
+# Safe to run unconditionally — on local browser opens (file:// or direct
+# https), there's no ?id= param so the function exits without modifying
+# anything.
+_SHAREPOINT_LINK_REWRITE_JS = """<script>
+(function () {
+  function rewrite() {
+    try {
+      var u = new URL(window.location.href);
+      var id = u.searchParams.get('id');
+      if (!id) return;
+      if (u.pathname.toLowerCase().indexOf('allitems.aspx') < 0 &&
+          u.pathname.toLowerCase().indexOf('forms/') < 0) return;
+      var lastSlash = id.lastIndexOf('/');
+      if (lastSlash < 0) return;
+      var parentPath = id.substring(0, lastSlash + 1);
+      var origin = u.protocol + '//' + u.host;
+      var links = document.querySelectorAll('a[href]');
+      var n = 0;
+      for (var i = 0; i < links.length; i++) {
+        var href = links[i].getAttribute('href');
+        if (!href) continue;
+        if (href.indexOf('http') === 0 || href.indexOf('//') === 0) continue;
+        if (href.indexOf('#') === 0) continue;
+        if (!/\\.pdf($|[#?])/i.test(href)) continue;
+        var hashAt = href.indexOf('#');
+        var path = hashAt >= 0 ? href.substring(0, hashAt) : href;
+        var fragment = hashAt >= 0 ? href.substring(hashAt) : '';
+        links[i].href = origin + encodeURI(parentPath + path) + fragment;
+        n++;
+      }
+      if (n > 0 && window.console) {
+        console.log('[SharePoint] rewrote ' + n + ' citation link(s) to absolute URLs');
+      }
+    } catch (e) {
+      if (window.console) console.warn('SharePoint link rewrite failed:', e);
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', rewrite);
+  } else {
+    rewrite();
+  }
+})();
+</script>"""
+
+
+def _inject_sharepoint_link_rewriter(html: str) -> str:
+    """Inject the link-rewriter <script> immediately before </body>.
+
+    Safe to call on any HTML — if there's no </body> tag (unusual but
+    possible for tiny test outputs), the original is returned unchanged.
+    Idempotent against re-injection (no-op if already present)."""
+    if "[SharePoint] rewrote" in html:
+        return html
+    if "</body>" not in html:
+        return html
+    return html.replace("</body>", _SHAREPOINT_LINK_REWRITE_JS + "\n</body>", 1)
 
 
 # =============================================================================
