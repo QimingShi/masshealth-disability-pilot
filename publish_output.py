@@ -66,7 +66,7 @@ def main(argv: list[str]) -> int:
                         "to absolute SharePoint URLs (needed for citation "
                         "clicks in the SharePoint web viewer). Should be the "
                         "parent URL ending with '/', e.g. "
-                        "https://tenant.sharepoint.com/.../Inbound%20from%20AWS/. "
+                        "https://tenant.sharepoint.com/.../Inbound%%20from%%20AWS/. "
                         "Defaults to $SHAREPOINT_PUBLISH_BASE_URL.")
     p.add_argument("--sharepoint-folder-suffix",
                    default="_EXPEDITESummary",
