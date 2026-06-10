@@ -63,12 +63,19 @@ def main(argv: list[str]) -> int:
         p.print_help()
         return 2
 
-    # Resolve the set of case folders to publish
+    # Resolve the set of case folders to publish. Local folders are named
+    # "<case_id>_EXPEDITESummary"; strip the suffix to recover the bare
+    # case_id (used as the S3 prefix, matching what SharePoint already
+    # has for inbound bundles).
+    SUFFIX = "_EXPEDITESummary"
     if args.all:
         if not OUTPUT_ROOT.exists():
             print(f"No output/ directory at {OUTPUT_ROOT}", file=sys.stderr)
             return 1
-        cases = sorted(p.name for p in OUTPUT_ROOT.iterdir() if p.is_dir())
+        cases = sorted(
+            p.name.removesuffix(SUFFIX) if p.name.endswith(SUFFIX) else p.name
+            for p in OUTPUT_ROOT.iterdir() if p.is_dir()
+        )
         if not cases:
             print(f"No case folders under {OUTPUT_ROOT}", file=sys.stderr)
             return 1
@@ -79,9 +86,14 @@ def main(argv: list[str]) -> int:
     total_keys = 0
     failed: list[str] = []
     for cid in cases:
-        out_dir = OUTPUT_ROOT / cid
+        # Try the new "<case_id>_EXPEDITESummary" folder first; fall back to
+        # the legacy "<case_id>" folder name for backwards compatibility
+        # with cases rendered before the rename.
+        out_dir = OUTPUT_ROOT / f"{cid}{SUFFIX}"
         if not out_dir.exists():
-            print(f"  skip {cid}: {out_dir} does not exist")
+            out_dir = OUTPUT_ROOT / cid
+        if not out_dir.exists():
+            print(f"  skip {cid}: no {cid}{SUFFIX}/ or {cid}/ under {OUTPUT_ROOT}")
             failed.append(cid)
             continue
         print(f"\nCase {cid}:")

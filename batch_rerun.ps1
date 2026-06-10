@@ -77,7 +77,7 @@ foreach ($case_id in $CaseIds) {
     $sep = "=" * 75
 
     # Resumability check
-    $marker = Join-Path "output" $case_id | Join-Path -ChildPath "${case_id}_EXPEDITESummary.html"
+    $marker = Join-Path "output" "${case_id}_EXPEDITESummary" | Join-Path -ChildPath "0_${case_id}_EXPEDITESummary.html"
     if ((Test-Path $marker) -and (-not $Force)) {
         Write-Host ""
         Write-Host "[$($CaseIds.IndexOf($case_id) + 1)/$($CaseIds.Count)] SKIP $case_id  (already has $marker; pass -Force to re-run)"

@@ -86,7 +86,7 @@ foreach ($folder in $folders) {
     # HTML. Lets you re-run the batch after an SSO expiry / network blip
     # without paying for already-completed Textract jobs again. Override
     # by passing -Force or by deleting output/<case_id>/.
-    $marker = Join-Path "output" $case_id | Join-Path -ChildPath "${case_id}_EXPEDITESummary.html"
+    $marker = Join-Path "output" "${case_id}_EXPEDITESummary" | Join-Path -ChildPath "0_${case_id}_EXPEDITESummary.html"
     if ((Test-Path $marker) -and (-not $Force)) {
         Write-Host ""
         Write-Host "[$($folders.IndexOf($folder) + 1)/$($folders.Count)] SKIP $case_id  (already has $marker; pass -Force to re-run)"

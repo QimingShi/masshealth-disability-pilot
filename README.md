@@ -48,8 +48,8 @@ runs all 10 stages above. Output lands in:
 
 - `data/1234567/chunks.json` — lite chunks shape
 - `_phi/1234567/` — source PDFs, Textract raw, bbox sidecar, annotated PDF (PHI)
-- `output/1234567/1234567_EXPEDITESummary.html` ← **open this first**
-- `output/1234567/{1_MEETS,2_INSUFFICIENT,3_DOES_NOT_MEET}_<code>.html` — one per candidate listing
+- `output/1234567_EXPEDITESummary/0_1234567_EXPEDITESummary.html` ← **open this first**
+- `output/1234567_EXPEDITESummary/{1_MEETS,2_INSUFFICIENT,3_DOES_NOT_MEET}_<code>.html` — one per candidate listing
 
 ### Useful flags
 
@@ -202,7 +202,7 @@ No accumulating cruft from prior runs.
 
 ## Per-case output: what reviewers see
 
-The case-summary HTML (`output/<case_id>/<case_id>_EXPEDITESummary.html`) is the
+The case-summary HTML (`output/<case_id>_EXPEDITESummary/0_<case_id>_EXPEDITESummary.html`) is the
 reviewer's single-page entry point:
 
 - **Headline**: N candidates evaluated, breakdown of Meets / Does not meet /
@@ -240,7 +240,7 @@ text. The annotated PDF is generated at the end of the matcher run.
   in a local browser (Edge/Chrome/Firefox). SharePoint's browser-side HTML
   preview may still strip the `#page=N` fragment when opened through the
   web viewer — for SharePoint hand-off, expect reviewers to download the
-  folder and open `<case_id>_EXPEDITESummary.html` locally.
+  folder and open `0_<case_id>_EXPEDITESummary.html` locally.
 
 ## Setup notes (first-time)
 

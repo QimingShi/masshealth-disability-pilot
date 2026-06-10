@@ -176,7 +176,11 @@ def run_from_db(case_id_str: str, *,
             r["chunk_id"]: r["id"] for r in chunk_rows
         }
 
-        out_dir = OUTPUT_ROOT / case_id_str
+        # Bundle layout: output/<case_id>_EXPEDITESummary/ — the case_id +
+        # project tag makes the folder name self-identifying when downloaded
+        # standalone (e.g. on SharePoint, where the path context above the
+        # folder is often hidden in the file listing).
+        out_dir = OUTPUT_ROOT / f"{case_id_str}_EXPEDITESummary"
         out_dir.mkdir(parents=True, exist_ok=True)
 
         # Source PDF + bbox sidecar. The matcher cites chunks by chunks.page_start,
@@ -361,7 +365,7 @@ def run_from_db(case_id_str: str, *,
                 allegation_chunks=allegation_chunks,
                 source_pdf_path=source_pdf_path,
             )
-            summary_path = out_dir / f"{case_id_str}_EXPEDITESummary.html"
+            summary_path = out_dir / f"0_{case_id_str}_EXPEDITESummary.html"
             write_form(summary_path, summary_html)
             print(f"\nCase-summary (fallback): {summary_path}")
             persist_case_summary(
