@@ -79,6 +79,21 @@ DURATION_LASTING_RE = re.compile(
 DURATION_YEARS_RE = re.compile(
     r"(?:over\s+a\s+period\s+of\s+)?at\s+least\s+(\d+)\s+years?",
     re.IGNORECASE)
+# Cancer "consider under a disability" pattern — 13.02, 13.07, 13.14,
+# 13.28: "until at least N months from the date of [diagnosis/transplant/treatment]"
+DURATION_UNTIL_RE = re.compile(
+    r"until\s+at\s+least\s+(\d+)\s+months?\s+from\s+the\s+date",
+    re.IGNORECASE)
+# Cochlear implant pattern — 2.11: "for 1 year after initial implantation"
+DURATION_FOR_YEAR_AFTER_RE = re.compile(
+    r"for\s+(\d+)\s+years?\s+after",
+    re.IGNORECASE)
+# "Within / during (the same / a / a consecutive) N-month period" — 3.03,
+# 5.06, 6.05, 6.06, 7.05, 7.10. Used for episode-frequency requirements
+# where N-month is the observation window.
+DURATION_WITHIN_PERIOD_RE = re.compile(
+    r"(?:within|during)\s+(?:the\s+same\s+|a\s+)?(?:consecutive\s+)?(\d+)[-\s]month\s+period",
+    re.IGNORECASE)
 DURATION_GENERIC_RE = re.compile(
     r"(\d+)\s+(?:consecutive\s+)?months?",
     re.IGNORECASE)
@@ -160,12 +175,33 @@ def extract_template(docx_path: Path) -> dict | None:
             "raw":    lasting_match.group(0),
         }
     else:
-        years_match = DURATION_YEARS_RE.search(full_text)
+        years_match       = DURATION_YEARS_RE.search(full_text)
+        until_match       = DURATION_UNTIL_RE.search(full_text)
+        for_year_match    = DURATION_FOR_YEAR_AFTER_RE.search(full_text)
+        within_match      = DURATION_WITHIN_PERIOD_RE.search(full_text)
         if years_match:
             duration_info = {
-                "type": "documented_history",   # SSA's "serious and persistent" pattern
+                "type":   "documented_history",   # SSA's "serious and persistent" pattern
                 "months": int(years_match.group(1)) * 12,
                 "raw":    years_match.group(0),
+            }
+        elif until_match:
+            duration_info = {
+                "type":   "presumptive_disability",  # 13.xx cancer pattern
+                "months": int(until_match.group(1)),
+                "raw":    until_match.group(0),
+            }
+        elif for_year_match:
+            duration_info = {
+                "type":   "presumptive_disability",
+                "months": int(for_year_match.group(1)) * 12,
+                "raw":    for_year_match.group(0),
+            }
+        elif within_match:
+            duration_info = {
+                "type":   "observation_window",   # episode-frequency criterion
+                "months": int(within_match.group(1)),
+                "raw":    within_match.group(0),
             }
 
     # Cross-references — list distinct ones
