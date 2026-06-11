@@ -7164,8 +7164,8 @@
     "code": "11.14",
     "title": "Peripheral neuropathy",
     "body_system": "neurological",
-    "version": 1,
-    "summary": "Peripheral neuropathy with disorganization of motor function in two extremities, OR marked limitation in physical functioning AND in one mental functioning area.",
+    "version": 2,
+    "summary": "Peripheral neuropathy with disorganization of motor function in two extremities causing extreme limitation in standing/balancing/upper-extremity use, OR marked limitation in physical functioning AND in one of four mental functioning areas (understanding/interacting/concentrating/adapting).",
     "synonyms": {
       "peripheral neuropathy": [
         "polyneuropathy",
@@ -7226,36 +7226,75 @@
         {
           "logic": "OR",
           "path": "ALTERNATIVES",
-          "criterion": "Motor disorganization OR marked limitation pattern",
+          "criterion": "Paragraph A (motor disorganization) OR Paragraph B (marked limitation + mental area)",
           "children": [
             {
               "path": "A",
-              "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities, despite ≥3 months prescribed treatment",
+              "criterion": "Disorganization of motor function in two extremities (see 11.00D1), resulting in an extreme limitation (see 11.00D2) in the ability to stand up from a seated position, balance while standing or walking, or use the upper extremities",
               "keywords": [
                 "motor weakness",
                 "two extremity weakness",
                 "extreme limitation",
-                "despite treatment"
-              ],
-              "duration_months_required": 3
+                "stand from seated",
+                "balance walking",
+                "upper extremity use"
+              ]
             },
             {
               "logic": "AND",
               "path": "B",
-              "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+              "criterion": "Marked limitation (see 11.00G2) in physical functioning (see 11.00G3a), AND in one of four mental functioning areas",
               "children": [
                 {
                   "path": "B.1",
-                  "criterion": "Marked limitation in physical functioning",
+                  "criterion": "Marked limitation in physical functioning (see 11.00G3a)",
                   "keywords": [
                     "marked physical limitation"
                   ]
                 },
                 {
+                  "logic": "OR",
                   "path": "B.2",
-                  "criterion": "Marked limitation in one mental functioning area",
-                  "keywords": [
-                    "marked cognitive limitation"
+                  "criterion": "Marked limitation in ONE of four mental functioning areas",
+                  "children": [
+                    {
+                      "path": "B.2.a",
+                      "criterion": "Marked limitation in understanding, remembering, or applying information (see 11.00G3b(i))",
+                      "keywords": [
+                        "understanding",
+                        "remembering",
+                        "applying information",
+                        "cognitive deficit"
+                      ]
+                    },
+                    {
+                      "path": "B.2.b",
+                      "criterion": "Marked limitation in interacting with others (see 11.00G3b(ii))",
+                      "keywords": [
+                        "social interaction",
+                        "interacting",
+                        "social limitation"
+                      ]
+                    },
+                    {
+                      "path": "B.2.c",
+                      "criterion": "Marked limitation in concentrating, persisting, or maintaining pace (see 11.00G3b(iii))",
+                      "keywords": [
+                        "concentration",
+                        "persistence",
+                        "pace",
+                        "attention"
+                      ]
+                    },
+                    {
+                      "path": "B.2.d",
+                      "criterion": "Marked limitation in adapting or managing oneself (see 11.00G3b(iv))",
+                      "keywords": [
+                        "adapting",
+                        "managing oneself",
+                        "self-management"
+                      ]
+                    }
                   ]
                 }
               ]
