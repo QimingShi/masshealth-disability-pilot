@@ -6821,8 +6821,8 @@
     "code": "11.11",
     "title": "Post-polio syndrome",
     "body_system": "neurological",
-    "version": 1,
-    "summary": "Post-polio syndrome with disorganization of motor function in two extremities, OR bulbar/neuromuscular dysfunction, OR significant respiratory motor function impairment, OR marked physical AND mental limitation.",
+    "version": 2,
+    "summary": "Post-polio syndrome with one of: A) disorganization of motor function in two extremities, B) unintelligible speech, C) bulbar/neuromuscular dysfunction requiring mechanical ventilation or supplemental nutrition, or D) marked limitation in physical functioning AND in one of four mental functioning areas.",
     "synonyms": {
       "post-polio syndrome": [
         "PPS",
@@ -6850,66 +6850,125 @@
       "children": [
         {
           "path": "PRECONDITION",
-          "criterion": "Documented history of poliomyelitis with subsequent post-polio syndrome",
+          "criterion": "Post-polio syndrome diagnosis (history of prior acute paralytic poliomyelitis)",
           "keywords": [
             "post-polio syndrome",
             "PPS",
-            "polio history",
-            "poliomyelitis"
+            "prior poliomyelitis",
+            "polio history"
           ]
         },
         {
           "logic": "OR",
           "path": "ALTERNATIVES",
-          "criterion": "Motor/bulbar/respiratory dysfunction OR marked limitation pattern",
+          "criterion": "Any one paragraph (A/B/C/D as applicable)",
           "children": [
             {
               "path": "A",
-              "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities",
+              "criterion": "Disorganization of motor function in two extremities (see 11.00D1), resulting in an extreme limitation (see 11.00D2) in the ability to stand up from a seated position, balance while standing or walking, or use the upper extremities",
               "keywords": [
                 "motor weakness",
                 "two extremity weakness",
-                "extreme limitation"
+                "extreme limitation",
+                "stand from seated",
+                "balance walking",
+                "upper extremity use"
               ]
             },
             {
               "path": "B",
-              "criterion": "Bulbar and neuromuscular dysfunction with significant difficulty swallowing, breathing, or speaking",
+              "criterion": "Unintelligible speech (see 11.00E3)",
               "keywords": [
-                "dysphagia",
+                "unintelligible speech",
                 "dysarthria",
-                "bulbar dysfunction",
-                "swallowing difficulty"
+                "speech unintelligible"
               ]
             },
             {
+              "logic": "OR",
               "path": "C",
-              "criterion": "Significant respiratory motor function impairment requiring respiratory support",
-              "keywords": [
-                "respiratory weakness",
-                "ventilatory failure",
-                "BiPAP",
-                "ventilator",
-                "respiratory support"
+              "criterion": "Bulbar and neuromuscular dysfunction (see 11.00F), resulting in mechanical ventilation OR supplemental nutrition",
+              "children": [
+                {
+                  "path": "C.1",
+                  "criterion": "Acute respiratory failure requiring mechanical ventilation",
+                  "keywords": [
+                    "mechanical ventilation",
+                    "respiratory failure",
+                    "intubation",
+                    "ventilator"
+                  ]
+                },
+                {
+                  "path": "C.2",
+                  "criterion": "Need for supplemental enteral nutrition via a gastrostomy or parenteral nutrition via a central venous catheter",
+                  "keywords": [
+                    "gastrostomy",
+                    "G-tube",
+                    "PEG tube",
+                    "enteral nutrition",
+                    "parenteral nutrition",
+                    "TPN",
+                    "central venous catheter"
+                  ]
+                }
               ]
             },
             {
               "logic": "AND",
               "path": "D",
-              "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+              "criterion": "Marked limitation (see 11.00G2) in physical functioning (see 11.00G3a), AND in one of four mental functioning areas",
               "children": [
                 {
                   "path": "D.1",
-                  "criterion": "Marked limitation in physical functioning",
+                  "criterion": "Marked limitation in physical functioning (see 11.00G3a)",
                   "keywords": [
                     "marked physical limitation"
                   ]
                 },
                 {
+                  "logic": "OR",
                   "path": "D.2",
-                  "criterion": "Marked limitation in one mental functioning area",
-                  "keywords": [
-                    "marked cognitive limitation"
+                  "criterion": "Marked limitation in ONE of four mental functioning areas",
+                  "children": [
+                    {
+                      "path": "D.2.a",
+                      "criterion": "Marked limitation in understanding, remembering, or applying information (see 11.00G3b(i))",
+                      "keywords": [
+                        "understanding",
+                        "remembering",
+                        "applying information",
+                        "cognitive deficit"
+                      ]
+                    },
+                    {
+                      "path": "D.2.b",
+                      "criterion": "Marked limitation in interacting with others (see 11.00G3b(ii))",
+                      "keywords": [
+                        "social interaction",
+                        "interacting",
+                        "social limitation"
+                      ]
+                    },
+                    {
+                      "path": "D.2.c",
+                      "criterion": "Marked limitation in concentrating, persisting, or maintaining pace (see 11.00G3b(iii))",
+                      "keywords": [
+                        "concentration",
+                        "persistence",
+                        "pace",
+                        "attention"
+                      ]
+                    },
+                    {
+                      "path": "D.2.d",
+                      "criterion": "Marked limitation in adapting or managing oneself (see 11.00G3b(iv))",
+                      "keywords": [
+                        "adapting",
+                        "managing oneself",
+                        "self-management"
+                      ]
+                    }
                   ]
                 }
               ]
@@ -6923,8 +6982,8 @@
     "code": "11.12",
     "title": "Myasthenia gravis",
     "body_system": "neurological",
-    "version": 1,
-    "summary": "Myasthenia gravis despite ≥3 months of prescribed treatment, with disorganization of motor function in two extremities, OR bulbar/neuromuscular dysfunction, OR marked physical AND mental limitation.",
+    "version": 2,
+    "summary": "Myasthenia gravis (any of A/B/C) despite adherence to prescribed treatment for at least 3 months (see 11.00C): A) disorganization of motor function in two extremities, B) bulbar/neuromuscular dysfunction (myasthenic crisis or supplemental nutrition), or C) marked limitation in physical functioning AND in one of four mental functioning areas.",
     "synonyms": {
       "myasthenia gravis": [
         "MG",
@@ -6978,74 +7037,121 @@
       "children": [
         {
           "path": "PRECONDITION",
-          "criterion": "Myasthenia gravis diagnosis with persistent symptoms despite ≥3 consecutive months of prescribed treatment",
+          "criterion": "Myasthenia gravis diagnosis (positive anti-AChR or anti-MuSK antibodies, abnormal EMG with decremental response, or edrophonium test) AND adherence to prescribed treatment for at least 3 months (see 11.00C)",
           "keywords": [
             "myasthenia gravis",
-            "MG",
-            "AChR antibody",
-            "MuSK antibody",
-            "RNS",
-            "single-fiber EMG",
-            "Mestinon",
-            "pyridostigmine",
-            "despite treatment"
+            "anti-AChR",
+            "anti-MuSK",
+            "decremental response",
+            "edrophonium",
+            "Tensilon",
+            "3 months treatment",
+            "treatment adherence"
           ],
           "duration_months_required": 3
         },
         {
           "logic": "OR",
           "path": "ALTERNATIVES",
-          "criterion": "Motor disorganization OR bulbar dysfunction OR respiratory dysfunction OR marked limitation pattern",
+          "criterion": "Any one paragraph (A/B/C/D as applicable)",
           "children": [
             {
               "path": "A",
-              "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities",
+              "criterion": "Disorganization of motor function in two extremities (see 11.00D1), resulting in an extreme limitation (see 11.00D2) in the ability to stand up from a seated position, balance while standing or walking, or use the upper extremities",
               "keywords": [
-                "fatigability",
-                "muscle weakness",
+                "motor weakness",
                 "two extremity weakness",
-                "extreme limitation"
+                "extreme limitation",
+                "stand from seated",
+                "balance walking",
+                "upper extremity use"
               ]
             },
             {
+              "logic": "OR",
               "path": "B",
-              "criterion": "Bulbar and neuromuscular dysfunction with difficulty swallowing, breathing, or speaking",
-              "keywords": [
-                "dysphagia",
-                "dysarthria",
-                "bulbar dysfunction",
-                "ptosis",
-                "diplopia"
-              ]
-            },
-            {
-              "path": "C",
-              "criterion": "Significant respiratory motor impairment requiring respiratory support (myasthenic crisis history)",
-              "keywords": [
-                "myasthenic crisis",
-                "respiratory failure",
-                "intubation",
-                "BiPAP",
-                "ventilator"
+              "criterion": "Bulbar and neuromuscular dysfunction (see 11.00F), resulting in mechanical ventilation OR supplemental nutrition",
+              "children": [
+                {
+                  "path": "B.1",
+                  "criterion": "One myasthenic crisis requiring mechanical ventilation",
+                  "keywords": [
+                    "mechanical ventilation",
+                    "respiratory failure",
+                    "intubation",
+                    "ventilator"
+                  ]
+                },
+                {
+                  "path": "B.2",
+                  "criterion": "Need for supplemental enteral nutrition via a gastrostomy or parenteral nutrition via a central venous catheter",
+                  "keywords": [
+                    "gastrostomy",
+                    "G-tube",
+                    "PEG tube",
+                    "enteral nutrition",
+                    "parenteral nutrition",
+                    "TPN",
+                    "central venous catheter"
+                  ]
+                }
               ]
             },
             {
               "logic": "AND",
-              "path": "D",
-              "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+              "path": "C",
+              "criterion": "Marked limitation (see 11.00G2) in physical functioning (see 11.00G3a), AND in one of four mental functioning areas",
               "children": [
                 {
-                  "path": "D.1",
-                  "criterion": "Marked limitation in physical functioning",
+                  "path": "C.1",
+                  "criterion": "Marked limitation in physical functioning (see 11.00G3a)",
                   "keywords": [
                     "marked physical limitation"
                   ]
                 },
                 {
-                  "path": "D.2",
-                  "criterion": "Marked limitation in one mental functioning area",
-                  "keywords": [
-                    "marked cognitive limitation"
+                  "logic": "OR",
+                  "path": "C.2",
+                  "criterion": "Marked limitation in ONE of four mental functioning areas",
+                  "children": [
+                    {
+                      "path": "C.2.a",
+                      "criterion": "Marked limitation in understanding, remembering, or applying information (see 11.00G3b(i))",
+                      "keywords": [
+                        "understanding",
+                        "remembering",
+                        "applying information",
+                        "cognitive deficit"
+                      ]
+                    },
+                    {
+                      "path": "C.2.b",
+                      "criterion": "Marked limitation in interacting with others (see 11.00G3b(ii))",
+                      "keywords": [
+                        "social interaction",
+                        "interacting",
+                        "social limitation"
+                      ]
+                    },
+                    {
+                      "path": "C.2.c",
+                      "criterion": "Marked limitation in concentrating, persisting, or maintaining pace (see 11.00G3b(iii))",
+                      "keywords": [
+                        "concentration",
+                        "persistence",
+                        "pace",
+                        "attention"
+                      ]
+                    },
+                    {
+                      "path": "C.2.d",
+                      "criterion": "Marked limitation in adapting or managing oneself (see 11.00G3b(iv))",
+                      "keywords": [
+                        "adapting",
+                        "managing oneself",
+                        "self-management"
+                      ]
+                    }
                   ]
                 }
               ]
@@ -7059,8 +7165,8 @@
     "code": "11.13",
     "title": "Muscular dystrophy",
     "body_system": "neurological",
-    "version": 1,
-    "summary": "Muscular dystrophy with disorganization of motor function in two extremities, OR marked limitation in physical functioning AND in one mental functioning area.",
+    "version": 2,
+    "summary": "Muscular dystrophy with one of: A) disorganization of motor function in two extremities, or B) marked limitation in physical functioning AND in one of four mental functioning areas.",
     "synonyms": {
       "muscular dystrophy": [
         "MD",
@@ -7103,54 +7209,93 @@
       "children": [
         {
           "path": "PRECONDITION",
-          "criterion": "Muscular dystrophy diagnosis (clinical, EMG, biopsy, or genetic testing)",
+          "criterion": "Muscular dystrophy diagnosis (clinical exam, genetic testing, EMG, or muscle biopsy showing dystrophic changes)",
           "keywords": [
             "muscular dystrophy",
             "Duchenne",
             "Becker",
-            "myotonic dystrophy",
+            "myotonic",
             "limb-girdle",
+            "fascioscapulohumeral",
             "FSHD",
+            "dystrophin",
+            "genetic testing",
             "muscle biopsy",
-            "elevated CK",
-            "genetic testing"
+            "EMG"
           ]
         },
         {
           "logic": "OR",
           "path": "ALTERNATIVES",
-          "criterion": "Motor disorganization OR marked limitation pattern",
+          "criterion": "Any one paragraph (A/B/C/D as applicable)",
           "children": [
             {
               "path": "A",
-              "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities",
+              "criterion": "Disorganization of motor function in two extremities (see 11.00D1), resulting in an extreme limitation (see 11.00D2) in the ability to stand up from a seated position, balance while standing or walking, or use the upper extremities",
               "keywords": [
-                "muscle weakness",
-                "proximal weakness",
+                "motor weakness",
                 "two extremity weakness",
                 "extreme limitation",
-                "Gowers sign"
+                "stand from seated",
+                "balance walking",
+                "upper extremity use"
               ]
             },
             {
               "logic": "AND",
               "path": "B",
-              "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+              "criterion": "Marked limitation (see 11.00G2) in physical functioning (see 11.00G3a), AND in one of four mental functioning areas",
               "children": [
                 {
                   "path": "B.1",
-                  "criterion": "Marked limitation in physical functioning",
+                  "criterion": "Marked limitation in physical functioning (see 11.00G3a)",
                   "keywords": [
-                    "marked physical limitation",
-                    "decreased mobility"
+                    "marked physical limitation"
                   ]
                 },
                 {
+                  "logic": "OR",
                   "path": "B.2",
-                  "criterion": "Marked limitation in one mental functioning area",
-                  "keywords": [
-                    "cognitive impairment",
-                    "myotonic dystrophy cognitive symptoms"
+                  "criterion": "Marked limitation in ONE of four mental functioning areas",
+                  "children": [
+                    {
+                      "path": "B.2.a",
+                      "criterion": "Marked limitation in understanding, remembering, or applying information (see 11.00G3b(i))",
+                      "keywords": [
+                        "understanding",
+                        "remembering",
+                        "applying information",
+                        "cognitive deficit"
+                      ]
+                    },
+                    {
+                      "path": "B.2.b",
+                      "criterion": "Marked limitation in interacting with others (see 11.00G3b(ii))",
+                      "keywords": [
+                        "social interaction",
+                        "interacting",
+                        "social limitation"
+                      ]
+                    },
+                    {
+                      "path": "B.2.c",
+                      "criterion": "Marked limitation in concentrating, persisting, or maintaining pace (see 11.00G3b(iii))",
+                      "keywords": [
+                        "concentration",
+                        "persistence",
+                        "pace",
+                        "attention"
+                      ]
+                    },
+                    {
+                      "path": "B.2.d",
+                      "criterion": "Marked limitation in adapting or managing oneself (see 11.00G3b(iv))",
+                      "keywords": [
+                        "adapting",
+                        "managing oneself",
+                        "self-management"
+                      ]
+                    }
                   ]
                 }
               ]
@@ -7308,8 +7453,8 @@
     "code": "11.17",
     "title": "Neurodegenerative disorders of the central nervous system",
     "body_system": "neurological",
-    "version": 1,
-    "summary": "Neurodegenerative disorders such as Huntington's disease, Friedreich's ataxia, or spinocerebellar degeneration with disorganization of motor function in two extremities, OR marked physical AND mental limitation.",
+    "version": 2,
+    "summary": "Neurodegenerative disorders of the CNS (e.g., Huntington's disease, Friedreich's ataxia, spinocerebellar degeneration) with one of: A) disorganization of motor function in two extremities, or B) marked limitation in physical functioning AND in one of four mental functioning areas.",
     "synonyms": {
       "Huntington's disease": [
         "HD",
@@ -7346,54 +7491,93 @@
       "children": [
         {
           "path": "PRECONDITION",
-          "criterion": "Documented neurodegenerative CNS disorder (Huntington's, Friedreich's ataxia, spinocerebellar degeneration, etc.)",
+          "criterion": "Neurodegenerative CNS disorder diagnosis (e.g., Huntington's disease, Friedreich's ataxia, spinocerebellar degeneration; clinical exam, genetic testing, or MRI)",
           "keywords": [
-            "Huntington's disease",
+            "Huntington disease",
+            "Huntington's",
             "HD",
-            "Friedreich's ataxia",
-            "FRDA",
+            "Friedreich ataxia",
+            "Friedreich's",
+            "spinocerebellar degeneration",
             "spinocerebellar ataxia",
             "SCA",
-            "neurodegenerative disorder",
-            "genetic testing"
+            "neurodegenerative",
+            "genetic testing",
+            "MRI brain"
           ]
         },
         {
           "logic": "OR",
           "path": "ALTERNATIVES",
-          "criterion": "Motor disorganization OR marked limitation pattern",
+          "criterion": "Any one paragraph (A/B/C/D as applicable)",
           "children": [
             {
               "path": "A",
-              "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities",
+              "criterion": "Disorganization of motor function in two extremities (see 11.00D1), resulting in an extreme limitation (see 11.00D2) in the ability to stand up from a seated position, balance while standing or walking, or use the upper extremities",
               "keywords": [
-                "ataxia",
-                "chorea",
                 "motor weakness",
                 "two extremity weakness",
-                "extreme limitation"
+                "extreme limitation",
+                "stand from seated",
+                "balance walking",
+                "upper extremity use"
               ]
             },
             {
               "logic": "AND",
               "path": "B",
-              "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+              "criterion": "Marked limitation (see 11.00G2) in physical functioning (see 11.00G3a), AND in one of four mental functioning areas",
               "children": [
                 {
                   "path": "B.1",
-                  "criterion": "Marked limitation in physical functioning",
+                  "criterion": "Marked limitation in physical functioning (see 11.00G3a)",
                   "keywords": [
                     "marked physical limitation"
                   ]
                 },
                 {
+                  "logic": "OR",
                   "path": "B.2",
-                  "criterion": "Marked limitation in one mental functioning area",
-                  "keywords": [
-                    "cognitive impairment",
-                    "Huntington's dementia",
-                    "executive dysfunction",
-                    "depression"
+                  "criterion": "Marked limitation in ONE of four mental functioning areas",
+                  "children": [
+                    {
+                      "path": "B.2.a",
+                      "criterion": "Marked limitation in understanding, remembering, or applying information (see 11.00G3b(i))",
+                      "keywords": [
+                        "understanding",
+                        "remembering",
+                        "applying information",
+                        "cognitive deficit"
+                      ]
+                    },
+                    {
+                      "path": "B.2.b",
+                      "criterion": "Marked limitation in interacting with others (see 11.00G3b(ii))",
+                      "keywords": [
+                        "social interaction",
+                        "interacting",
+                        "social limitation"
+                      ]
+                    },
+                    {
+                      "path": "B.2.c",
+                      "criterion": "Marked limitation in concentrating, persisting, or maintaining pace (see 11.00G3b(iii))",
+                      "keywords": [
+                        "concentration",
+                        "persistence",
+                        "pace",
+                        "attention"
+                      ]
+                    },
+                    {
+                      "path": "B.2.d",
+                      "criterion": "Marked limitation in adapting or managing oneself (see 11.00G3b(iv))",
+                      "keywords": [
+                        "adapting",
+                        "managing oneself",
+                        "self-management"
+                      ]
+                    }
                   ]
                 }
               ]
@@ -7407,8 +7591,8 @@
     "code": "11.18",
     "title": "Traumatic brain injury",
     "body_system": "neurological",
-    "version": 1,
-    "summary": "Traumatic brain injury with disorganization of motor function in two extremities persisting ≥3 months, OR marked limitation in physical functioning AND in one mental functioning area persisting ≥3 months.",
+    "version": 2,
+    "summary": "Traumatic brain injury with one of (persisting for at least 3 consecutive months after the injury): A) disorganization of motor function in two extremities, or B) marked limitation in physical functioning AND in one of four mental functioning areas. The 3-month duration is POST-INJURY persistence, NOT treatment adherence.",
     "synonyms": {
       "TBI": [
         "traumatic brain injury",
@@ -7449,80 +7633,99 @@
       "children": [
         {
           "path": "PRECONDITION",
-          "criterion": "Documented traumatic brain injury",
+          "criterion": "Traumatic brain injury diagnosis (clinical history of head trauma, imaging or exam findings)",
           "keywords": [
             "traumatic brain injury",
             "TBI",
             "head injury",
+            "head trauma",
             "concussion",
-            "MRI brain",
-            "CT head",
-            "GCS"
+            "subdural hematoma",
+            "intracranial hemorrhage",
+            "diffuse axonal injury"
           ]
         },
         {
           "logic": "OR",
           "path": "ALTERNATIVES",
-          "criterion": "Motor disorganization persisting ≥3 months OR marked limitation pattern persisting ≥3 months",
+          "criterion": "Any one paragraph (A/B/C/D as applicable)",
           "children": [
             {
-              "logic": "AND",
               "path": "A",
-              "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities, persisting ≥3 months",
-              "children": [
-                {
-                  "path": "A.1",
-                  "criterion": "Motor function disorganization in two extremities",
-                  "keywords": [
-                    "motor weakness",
-                    "hemiparesis",
-                    "two extremity weakness",
-                    "extreme limitation"
-                  ]
-                },
-                {
-                  "path": "A.2",
-                  "criterion": "Persisting at least 3 months post-injury",
-                  "keywords": [
-                    "3 months post-TBI",
-                    "persistent"
-                  ],
-                  "duration_months_required": 3
-                }
-              ]
+              "criterion": "Disorganization of motor function in two extremities (see 11.00D1), resulting in an extreme limitation (see 11.00D2) in the ability to stand up from a seated position, balance while standing or walking, or use the upper extremities, persisting for at least 3 consecutive months after the injury",
+              "keywords": [
+                "motor weakness",
+                "two extremity weakness",
+                "extreme limitation",
+                "stand from seated",
+                "balance walking",
+                "upper extremity use",
+                "3 months post-injury",
+                "persisting after injury"
+              ],
+              "duration_months_required": 3,
+              "duration_basis": "post_injury_persistence"
             },
             {
               "logic": "AND",
               "path": "B",
-              "criterion": "Marked limitation in physical functioning AND in one mental functioning area, persisting ≥3 months",
+              "criterion": "Marked limitation (see 11.00G2) in physical functioning (see 11.00G3a), AND in one of four mental functioning areas, persisting for at least 3 consecutive months after the injury",
               "children": [
                 {
                   "path": "B.1",
-                  "criterion": "Marked limitation in physical functioning",
+                  "criterion": "Marked limitation in physical functioning (see 11.00G3a)",
                   "keywords": [
                     "marked physical limitation"
                   ]
                 },
                 {
+                  "logic": "OR",
                   "path": "B.2",
-                  "criterion": "Marked limitation in one mental functioning area",
-                  "keywords": [
-                    "post-TBI cognitive impairment",
-                    "memory deficit",
-                    "executive dysfunction",
-                    "post-concussive symptoms"
+                  "criterion": "Marked limitation in ONE of four mental functioning areas",
+                  "children": [
+                    {
+                      "path": "B.2.a",
+                      "criterion": "Marked limitation in understanding, remembering, or applying information (see 11.00G3b(i))",
+                      "keywords": [
+                        "understanding",
+                        "remembering",
+                        "applying information",
+                        "cognitive deficit"
+                      ]
+                    },
+                    {
+                      "path": "B.2.b",
+                      "criterion": "Marked limitation in interacting with others (see 11.00G3b(ii))",
+                      "keywords": [
+                        "social interaction",
+                        "interacting",
+                        "social limitation"
+                      ]
+                    },
+                    {
+                      "path": "B.2.c",
+                      "criterion": "Marked limitation in concentrating, persisting, or maintaining pace (see 11.00G3b(iii))",
+                      "keywords": [
+                        "concentration",
+                        "persistence",
+                        "pace",
+                        "attention"
+                      ]
+                    },
+                    {
+                      "path": "B.2.d",
+                      "criterion": "Marked limitation in adapting or managing oneself (see 11.00G3b(iv))",
+                      "keywords": [
+                        "adapting",
+                        "managing oneself",
+                        "self-management"
+                      ]
+                    }
                   ]
-                },
-                {
-                  "path": "B.3",
-                  "criterion": "Persisting at least 3 months post-injury",
-                  "keywords": [
-                    "3 months",
-                    "post-injury"
-                  ],
-                  "duration_months_required": 3
                 }
-              ]
+              ],
+              "duration_months_required": 3,
+              "duration_basis": "post_injury_persistence"
             }
           ]
         }
@@ -7585,8 +7788,8 @@
     "code": "11.22",
     "title": "Motor neuron disorders other than ALS",
     "body_system": "neurological",
-    "version": 1,
-    "summary": "Motor neuron disorders (other than ALS) including spinal muscular atrophy, primary lateral sclerosis, progressive muscular atrophy, with motor disorganization OR bulbar dysfunction OR respiratory dysfunction OR marked limitation pattern.",
+    "version": 2,
+    "summary": "Motor neuron disorders other than ALS with one of: A) disorganization of motor function in two extremities, B) bulbar/neuromuscular dysfunction (acute respiratory failure requiring invasive mechanical ventilation, or supplemental nutrition), or C) marked limitation in physical functioning AND in one of four mental functioning areas.",
     "synonyms": {
       "motor neuron disorder": [
         "MND",
@@ -7620,69 +7823,122 @@
       "children": [
         {
           "path": "PRECONDITION",
-          "criterion": "Motor neuron disorder other than ALS, documented by clinical findings, EMG, and/or genetic testing",
+          "criterion": "Motor neuron disorder other than ALS diagnosis (e.g., primary lateral sclerosis, progressive muscular atrophy, spinal muscular atrophy; clinical exam, EMG/NCS, or genetic testing)",
           "keywords": [
-            "motor neuron disease",
-            "spinal muscular atrophy",
-            "SMA",
+            "motor neuron disorder",
             "primary lateral sclerosis",
             "PLS",
-            "Kennedy disease",
+            "progressive muscular atrophy",
+            "PMA",
+            "spinal muscular atrophy",
+            "SMA",
             "EMG",
-            "genetic testing"
+            "NCS",
+            "fasciculations"
           ]
         },
         {
           "logic": "OR",
           "path": "ALTERNATIVES",
-          "criterion": "Motor disorganization OR bulbar/respiratory dysfunction OR marked limitation pattern",
+          "criterion": "Any one paragraph (A/B/C/D as applicable)",
           "children": [
             {
               "path": "A",
-              "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities",
+              "criterion": "Disorganization of motor function in two extremities (see 11.00D1), resulting in an extreme limitation (see 11.00D2) in the ability to stand up from a seated position, balance while standing or walking, or use the upper extremities",
               "keywords": [
                 "motor weakness",
-                "atrophy",
-                "fasciculations",
                 "two extremity weakness",
-                "extreme limitation"
+                "extreme limitation",
+                "stand from seated",
+                "balance walking",
+                "upper extremity use"
               ]
             },
             {
+              "logic": "OR",
               "path": "B",
-              "criterion": "Bulbar and neuromuscular dysfunction with significant difficulty swallowing, breathing, or speaking",
-              "keywords": [
-                "dysphagia",
-                "dysarthria",
-                "bulbar dysfunction"
-              ]
-            },
-            {
-              "path": "C",
-              "criterion": "Significant respiratory motor function impairment requiring respiratory support",
-              "keywords": [
-                "respiratory weakness",
-                "BiPAP",
-                "ventilator"
+              "criterion": "Bulbar and neuromuscular dysfunction (see 11.00F), resulting in mechanical ventilation OR supplemental nutrition",
+              "children": [
+                {
+                  "path": "B.1",
+                  "criterion": "Acute respiratory failure requiring invasive mechanical ventilation",
+                  "keywords": [
+                    "mechanical ventilation",
+                    "respiratory failure",
+                    "intubation",
+                    "ventilator"
+                  ]
+                },
+                {
+                  "path": "B.2",
+                  "criterion": "Need for supplemental enteral nutrition via a gastrostomy or parenteral nutrition via a central venous catheter",
+                  "keywords": [
+                    "gastrostomy",
+                    "G-tube",
+                    "PEG tube",
+                    "enteral nutrition",
+                    "parenteral nutrition",
+                    "TPN",
+                    "central venous catheter"
+                  ]
+                }
               ]
             },
             {
               "logic": "AND",
-              "path": "D",
-              "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+              "path": "C",
+              "criterion": "Marked limitation (see 11.00G2) in physical functioning (see 11.00G3a), AND in one of four mental functioning areas",
               "children": [
                 {
-                  "path": "D.1",
-                  "criterion": "Marked limitation in physical functioning",
+                  "path": "C.1",
+                  "criterion": "Marked limitation in physical functioning (see 11.00G3a)",
                   "keywords": [
                     "marked physical limitation"
                   ]
                 },
                 {
-                  "path": "D.2",
-                  "criterion": "Marked limitation in one mental functioning area",
-                  "keywords": [
-                    "marked cognitive limitation"
+                  "logic": "OR",
+                  "path": "C.2",
+                  "criterion": "Marked limitation in ONE of four mental functioning areas",
+                  "children": [
+                    {
+                      "path": "C.2.a",
+                      "criterion": "Marked limitation in understanding, remembering, or applying information (see 11.00G3b(i))",
+                      "keywords": [
+                        "understanding",
+                        "remembering",
+                        "applying information",
+                        "cognitive deficit"
+                      ]
+                    },
+                    {
+                      "path": "C.2.b",
+                      "criterion": "Marked limitation in interacting with others (see 11.00G3b(ii))",
+                      "keywords": [
+                        "social interaction",
+                        "interacting",
+                        "social limitation"
+                      ]
+                    },
+                    {
+                      "path": "C.2.c",
+                      "criterion": "Marked limitation in concentrating, persisting, or maintaining pace (see 11.00G3b(iii))",
+                      "keywords": [
+                        "concentration",
+                        "persistence",
+                        "pace",
+                        "attention"
+                      ]
+                    },
+                    {
+                      "path": "C.2.d",
+                      "criterion": "Marked limitation in adapting or managing oneself (see 11.00G3b(iv))",
+                      "keywords": [
+                        "adapting",
+                        "managing oneself",
+                        "self-management"
+                      ]
+                    }
                   ]
                 }
               ]

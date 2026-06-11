@@ -2,15 +2,43 @@
   "code": "11.13",
   "title": "Muscular dystrophy",
   "body_system": "neurological",
-  "version": 1,
-  "summary": "Muscular dystrophy with disorganization of motor function in two extremities, OR marked limitation in physical functioning AND in one mental functioning area.",
+  "version": 2,
+  "summary": "Muscular dystrophy with one of: A) disorganization of motor function in two extremities, or B) marked limitation in physical functioning AND in one of four mental functioning areas.",
   "synonyms": {
-    "muscular dystrophy":      ["MD", "Duchenne muscular dystrophy", "DMD", "Becker muscular dystrophy", "BMD", "myotonic dystrophy", "DM1", "DM2", "limb-girdle muscular dystrophy", "LGMD", "FSHD", "facioscapulohumeral muscular dystrophy"],
-    "muscle biopsy":           ["biopsy of muscle"],
-    "EMG":                     ["electromyography", "myopathic EMG"],
-    "CK":                      ["creatine kinase", "elevated CK", "CPK"],
-    "genetic testing":         ["gene panel", "DMD gene", "dystrophin gene"],
-    "Gowers sign":             ["Gowers maneuver"]
+    "muscular dystrophy": [
+      "MD",
+      "Duchenne muscular dystrophy",
+      "DMD",
+      "Becker muscular dystrophy",
+      "BMD",
+      "myotonic dystrophy",
+      "DM1",
+      "DM2",
+      "limb-girdle muscular dystrophy",
+      "LGMD",
+      "FSHD",
+      "facioscapulohumeral muscular dystrophy"
+    ],
+    "muscle biopsy": [
+      "biopsy of muscle"
+    ],
+    "EMG": [
+      "electromyography",
+      "myopathic EMG"
+    ],
+    "CK": [
+      "creatine kinase",
+      "elevated CK",
+      "CPK"
+    ],
+    "genetic testing": [
+      "gene panel",
+      "DMD gene",
+      "dystrophin gene"
+    ],
+    "Gowers sign": [
+      "Gowers maneuver"
+    ]
   },
   "rule_json": {
     "logic": "AND",
@@ -18,25 +46,95 @@
     "children": [
       {
         "path": "PRECONDITION",
-        "criterion": "Muscular dystrophy diagnosis (clinical, EMG, biopsy, or genetic testing)",
-        "keywords": ["muscular dystrophy", "Duchenne", "Becker", "myotonic dystrophy", "limb-girdle", "FSHD", "muscle biopsy", "elevated CK", "genetic testing"]
+        "criterion": "Muscular dystrophy diagnosis (clinical exam, genetic testing, EMG, or muscle biopsy showing dystrophic changes)",
+        "keywords": [
+          "muscular dystrophy",
+          "Duchenne",
+          "Becker",
+          "myotonic",
+          "limb-girdle",
+          "fascioscapulohumeral",
+          "FSHD",
+          "dystrophin",
+          "genetic testing",
+          "muscle biopsy",
+          "EMG"
+        ]
       },
       {
         "logic": "OR",
         "path": "ALTERNATIVES",
-        "criterion": "Motor disorganization OR marked limitation pattern",
+        "criterion": "Any one paragraph (A/B/C/D as applicable)",
         "children": [
-          {"path": "A", "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities",
-           "keywords": ["muscle weakness", "proximal weakness", "two extremity weakness", "extreme limitation", "Gowers sign"]},
+          {
+            "path": "A",
+            "criterion": "Disorganization of motor function in two extremities (see 11.00D1), resulting in an extreme limitation (see 11.00D2) in the ability to stand up from a seated position, balance while standing or walking, or use the upper extremities",
+            "keywords": [
+              "motor weakness",
+              "two extremity weakness",
+              "extreme limitation",
+              "stand from seated",
+              "balance walking",
+              "upper extremity use"
+            ]
+          },
           {
             "logic": "AND",
             "path": "B",
-            "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+            "criterion": "Marked limitation (see 11.00G2) in physical functioning (see 11.00G3a), AND in one of four mental functioning areas",
             "children": [
-              {"path": "B.1", "criterion": "Marked limitation in physical functioning",
-               "keywords": ["marked physical limitation", "decreased mobility"]},
-              {"path": "B.2", "criterion": "Marked limitation in one mental functioning area",
-               "keywords": ["cognitive impairment", "myotonic dystrophy cognitive symptoms"]}
+              {
+                "path": "B.1",
+                "criterion": "Marked limitation in physical functioning (see 11.00G3a)",
+                "keywords": [
+                  "marked physical limitation"
+                ]
+              },
+              {
+                "logic": "OR",
+                "path": "B.2",
+                "criterion": "Marked limitation in ONE of four mental functioning areas",
+                "children": [
+                  {
+                    "path": "B.2.a",
+                    "criterion": "Marked limitation in understanding, remembering, or applying information (see 11.00G3b(i))",
+                    "keywords": [
+                      "understanding",
+                      "remembering",
+                      "applying information",
+                      "cognitive deficit"
+                    ]
+                  },
+                  {
+                    "path": "B.2.b",
+                    "criterion": "Marked limitation in interacting with others (see 11.00G3b(ii))",
+                    "keywords": [
+                      "social interaction",
+                      "interacting",
+                      "social limitation"
+                    ]
+                  },
+                  {
+                    "path": "B.2.c",
+                    "criterion": "Marked limitation in concentrating, persisting, or maintaining pace (see 11.00G3b(iii))",
+                    "keywords": [
+                      "concentration",
+                      "persistence",
+                      "pace",
+                      "attention"
+                    ]
+                  },
+                  {
+                    "path": "B.2.d",
+                    "criterion": "Marked limitation in adapting or managing oneself (see 11.00G3b(iv))",
+                    "keywords": [
+                      "adapting",
+                      "managing oneself",
+                      "self-management"
+                    ]
+                  }
+                ]
+              }
             ]
           }
         ]

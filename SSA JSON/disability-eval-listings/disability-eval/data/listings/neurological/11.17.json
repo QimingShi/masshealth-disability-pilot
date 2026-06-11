@@ -2,15 +2,37 @@
   "code": "11.17",
   "title": "Neurodegenerative disorders of the central nervous system",
   "body_system": "neurological",
-  "version": 1,
-  "summary": "Neurodegenerative disorders such as Huntington's disease, Friedreich's ataxia, or spinocerebellar degeneration with disorganization of motor function in two extremities, OR marked physical AND mental limitation.",
+  "version": 2,
+  "summary": "Neurodegenerative disorders of the CNS (e.g., Huntington's disease, Friedreich's ataxia, spinocerebellar degeneration) with one of: A) disorganization of motor function in two extremities, or B) marked limitation in physical functioning AND in one of four mental functioning areas.",
   "synonyms": {
-    "Huntington's disease":    ["HD", "Huntington disease", "Huntington's chorea"],
-    "Friedreich's ataxia":     ["FA", "FRDA", "Friedreich ataxia"],
-    "spinocerebellar":         ["SCA", "spinocerebellar ataxia", "spinocerebellar degeneration"],
-    "ataxia":                  ["incoordination", "cerebellar ataxia", "gait ataxia"],
-    "chorea":                  ["choreiform movements", "involuntary movements"],
-    "MRI brain":               ["MRI of brain", "brain MRI"]
+    "Huntington's disease": [
+      "HD",
+      "Huntington disease",
+      "Huntington's chorea"
+    ],
+    "Friedreich's ataxia": [
+      "FA",
+      "FRDA",
+      "Friedreich ataxia"
+    ],
+    "spinocerebellar": [
+      "SCA",
+      "spinocerebellar ataxia",
+      "spinocerebellar degeneration"
+    ],
+    "ataxia": [
+      "incoordination",
+      "cerebellar ataxia",
+      "gait ataxia"
+    ],
+    "chorea": [
+      "choreiform movements",
+      "involuntary movements"
+    ],
+    "MRI brain": [
+      "MRI of brain",
+      "brain MRI"
+    ]
   },
   "rule_json": {
     "logic": "AND",
@@ -18,25 +40,95 @@
     "children": [
       {
         "path": "PRECONDITION",
-        "criterion": "Documented neurodegenerative CNS disorder (Huntington's, Friedreich's ataxia, spinocerebellar degeneration, etc.)",
-        "keywords": ["Huntington's disease", "HD", "Friedreich's ataxia", "FRDA", "spinocerebellar ataxia", "SCA", "neurodegenerative disorder", "genetic testing"]
+        "criterion": "Neurodegenerative CNS disorder diagnosis (e.g., Huntington's disease, Friedreich's ataxia, spinocerebellar degeneration; clinical exam, genetic testing, or MRI)",
+        "keywords": [
+          "Huntington disease",
+          "Huntington's",
+          "HD",
+          "Friedreich ataxia",
+          "Friedreich's",
+          "spinocerebellar degeneration",
+          "spinocerebellar ataxia",
+          "SCA",
+          "neurodegenerative",
+          "genetic testing",
+          "MRI brain"
+        ]
       },
       {
         "logic": "OR",
         "path": "ALTERNATIVES",
-        "criterion": "Motor disorganization OR marked limitation pattern",
+        "criterion": "Any one paragraph (A/B/C/D as applicable)",
         "children": [
-          {"path": "A", "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities",
-           "keywords": ["ataxia", "chorea", "motor weakness", "two extremity weakness", "extreme limitation"]},
+          {
+            "path": "A",
+            "criterion": "Disorganization of motor function in two extremities (see 11.00D1), resulting in an extreme limitation (see 11.00D2) in the ability to stand up from a seated position, balance while standing or walking, or use the upper extremities",
+            "keywords": [
+              "motor weakness",
+              "two extremity weakness",
+              "extreme limitation",
+              "stand from seated",
+              "balance walking",
+              "upper extremity use"
+            ]
+          },
           {
             "logic": "AND",
             "path": "B",
-            "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+            "criterion": "Marked limitation (see 11.00G2) in physical functioning (see 11.00G3a), AND in one of four mental functioning areas",
             "children": [
-              {"path": "B.1", "criterion": "Marked limitation in physical functioning",
-               "keywords": ["marked physical limitation"]},
-              {"path": "B.2", "criterion": "Marked limitation in one mental functioning area",
-               "keywords": ["cognitive impairment", "Huntington's dementia", "executive dysfunction", "depression"]}
+              {
+                "path": "B.1",
+                "criterion": "Marked limitation in physical functioning (see 11.00G3a)",
+                "keywords": [
+                  "marked physical limitation"
+                ]
+              },
+              {
+                "logic": "OR",
+                "path": "B.2",
+                "criterion": "Marked limitation in ONE of four mental functioning areas",
+                "children": [
+                  {
+                    "path": "B.2.a",
+                    "criterion": "Marked limitation in understanding, remembering, or applying information (see 11.00G3b(i))",
+                    "keywords": [
+                      "understanding",
+                      "remembering",
+                      "applying information",
+                      "cognitive deficit"
+                    ]
+                  },
+                  {
+                    "path": "B.2.b",
+                    "criterion": "Marked limitation in interacting with others (see 11.00G3b(ii))",
+                    "keywords": [
+                      "social interaction",
+                      "interacting",
+                      "social limitation"
+                    ]
+                  },
+                  {
+                    "path": "B.2.c",
+                    "criterion": "Marked limitation in concentrating, persisting, or maintaining pace (see 11.00G3b(iii))",
+                    "keywords": [
+                      "concentration",
+                      "persistence",
+                      "pace",
+                      "attention"
+                    ]
+                  },
+                  {
+                    "path": "B.2.d",
+                    "criterion": "Marked limitation in adapting or managing oneself (see 11.00G3b(iv))",
+                    "keywords": [
+                      "adapting",
+                      "managing oneself",
+                      "self-management"
+                    ]
+                  }
+                ]
+              }
             ]
           }
         ]

@@ -2,14 +2,34 @@
   "code": "11.22",
   "title": "Motor neuron disorders other than ALS",
   "body_system": "neurological",
-  "version": 1,
-  "summary": "Motor neuron disorders (other than ALS) including spinal muscular atrophy, primary lateral sclerosis, progressive muscular atrophy, with motor disorganization OR bulbar dysfunction OR respiratory dysfunction OR marked limitation pattern.",
+  "version": 2,
+  "summary": "Motor neuron disorders other than ALS with one of: A) disorganization of motor function in two extremities, B) bulbar/neuromuscular dysfunction (acute respiratory failure requiring invasive mechanical ventilation, or supplemental nutrition), or C) marked limitation in physical functioning AND in one of four mental functioning areas.",
   "synonyms": {
-    "motor neuron disorder":   ["MND", "spinal muscular atrophy", "SMA", "primary lateral sclerosis", "PLS", "progressive muscular atrophy", "PMA", "Kennedy disease", "spinobulbar muscular atrophy", "SBMA"],
-    "EMG":                     ["electromyography", "needle EMG"],
-    "NCS":                     ["nerve conduction study"],
-    "fasciculations":          ["muscle twitching"],
-    "atrophy":                 ["muscle wasting"]
+    "motor neuron disorder": [
+      "MND",
+      "spinal muscular atrophy",
+      "SMA",
+      "primary lateral sclerosis",
+      "PLS",
+      "progressive muscular atrophy",
+      "PMA",
+      "Kennedy disease",
+      "spinobulbar muscular atrophy",
+      "SBMA"
+    ],
+    "EMG": [
+      "electromyography",
+      "needle EMG"
+    ],
+    "NCS": [
+      "nerve conduction study"
+    ],
+    "fasciculations": [
+      "muscle twitching"
+    ],
+    "atrophy": [
+      "muscle wasting"
+    ]
   },
   "rule_json": {
     "logic": "AND",
@@ -17,29 +37,124 @@
     "children": [
       {
         "path": "PRECONDITION",
-        "criterion": "Motor neuron disorder other than ALS, documented by clinical findings, EMG, and/or genetic testing",
-        "keywords": ["motor neuron disease", "spinal muscular atrophy", "SMA", "primary lateral sclerosis", "PLS", "Kennedy disease", "EMG", "genetic testing"]
+        "criterion": "Motor neuron disorder other than ALS diagnosis (e.g., primary lateral sclerosis, progressive muscular atrophy, spinal muscular atrophy; clinical exam, EMG/NCS, or genetic testing)",
+        "keywords": [
+          "motor neuron disorder",
+          "primary lateral sclerosis",
+          "PLS",
+          "progressive muscular atrophy",
+          "PMA",
+          "spinal muscular atrophy",
+          "SMA",
+          "EMG",
+          "NCS",
+          "fasciculations"
+        ]
       },
       {
         "logic": "OR",
         "path": "ALTERNATIVES",
-        "criterion": "Motor disorganization OR bulbar/respiratory dysfunction OR marked limitation pattern",
+        "criterion": "Any one paragraph (A/B/C/D as applicable)",
         "children": [
-          {"path": "A", "criterion": "Disorganization of motor function in two extremities with extreme limitation in standing, balancing, or using upper extremities",
-           "keywords": ["motor weakness", "atrophy", "fasciculations", "two extremity weakness", "extreme limitation"]},
-          {"path": "B", "criterion": "Bulbar and neuromuscular dysfunction with significant difficulty swallowing, breathing, or speaking",
-           "keywords": ["dysphagia", "dysarthria", "bulbar dysfunction"]},
-          {"path": "C", "criterion": "Significant respiratory motor function impairment requiring respiratory support",
-           "keywords": ["respiratory weakness", "BiPAP", "ventilator"]},
+          {
+            "path": "A",
+            "criterion": "Disorganization of motor function in two extremities (see 11.00D1), resulting in an extreme limitation (see 11.00D2) in the ability to stand up from a seated position, balance while standing or walking, or use the upper extremities",
+            "keywords": [
+              "motor weakness",
+              "two extremity weakness",
+              "extreme limitation",
+              "stand from seated",
+              "balance walking",
+              "upper extremity use"
+            ]
+          },
+          {
+            "logic": "OR",
+            "path": "B",
+            "criterion": "Bulbar and neuromuscular dysfunction (see 11.00F), resulting in mechanical ventilation OR supplemental nutrition",
+            "children": [
+              {
+                "path": "B.1",
+                "criterion": "Acute respiratory failure requiring invasive mechanical ventilation",
+                "keywords": [
+                  "mechanical ventilation",
+                  "respiratory failure",
+                  "intubation",
+                  "ventilator"
+                ]
+              },
+              {
+                "path": "B.2",
+                "criterion": "Need for supplemental enteral nutrition via a gastrostomy or parenteral nutrition via a central venous catheter",
+                "keywords": [
+                  "gastrostomy",
+                  "G-tube",
+                  "PEG tube",
+                  "enteral nutrition",
+                  "parenteral nutrition",
+                  "TPN",
+                  "central venous catheter"
+                ]
+              }
+            ]
+          },
           {
             "logic": "AND",
-            "path": "D",
-            "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+            "path": "C",
+            "criterion": "Marked limitation (see 11.00G2) in physical functioning (see 11.00G3a), AND in one of four mental functioning areas",
             "children": [
-              {"path": "D.1", "criterion": "Marked limitation in physical functioning",
-               "keywords": ["marked physical limitation"]},
-              {"path": "D.2", "criterion": "Marked limitation in one mental functioning area",
-               "keywords": ["marked cognitive limitation"]}
+              {
+                "path": "C.1",
+                "criterion": "Marked limitation in physical functioning (see 11.00G3a)",
+                "keywords": [
+                  "marked physical limitation"
+                ]
+              },
+              {
+                "logic": "OR",
+                "path": "C.2",
+                "criterion": "Marked limitation in ONE of four mental functioning areas",
+                "children": [
+                  {
+                    "path": "C.2.a",
+                    "criterion": "Marked limitation in understanding, remembering, or applying information (see 11.00G3b(i))",
+                    "keywords": [
+                      "understanding",
+                      "remembering",
+                      "applying information",
+                      "cognitive deficit"
+                    ]
+                  },
+                  {
+                    "path": "C.2.b",
+                    "criterion": "Marked limitation in interacting with others (see 11.00G3b(ii))",
+                    "keywords": [
+                      "social interaction",
+                      "interacting",
+                      "social limitation"
+                    ]
+                  },
+                  {
+                    "path": "C.2.c",
+                    "criterion": "Marked limitation in concentrating, persisting, or maintaining pace (see 11.00G3b(iii))",
+                    "keywords": [
+                      "concentration",
+                      "persistence",
+                      "pace",
+                      "attention"
+                    ]
+                  },
+                  {
+                    "path": "C.2.d",
+                    "criterion": "Marked limitation in adapting or managing oneself (see 11.00G3b(iv))",
+                    "keywords": [
+                      "adapting",
+                      "managing oneself",
+                      "self-management"
+                    ]
+                  }
+                ]
+              }
             ]
           }
         ]
