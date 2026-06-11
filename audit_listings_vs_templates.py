@@ -74,6 +74,11 @@ DURATION_LASTING_RE = re.compile(
     r"[^.]{0,120}?"   # allow intervening clauses (commas / "for a continuous period of" / etc.)
     r"(?:at\s+least\s+)?(\d+)\s+(?:consecutive\s+)?months?",
     re.IGNORECASE | re.DOTALL)
+# Year-based duration — 12.02C says "over a period of at least 2 years",
+# 12.03/12.04/12.06 same pattern. Convert years -> months downstream.
+DURATION_YEARS_RE = re.compile(
+    r"(?:over\s+a\s+period\s+of\s+)?at\s+least\s+(\d+)\s+years?",
+    re.IGNORECASE)
 DURATION_GENERIC_RE = re.compile(
     r"(\d+)\s+(?:consecutive\s+)?months?",
     re.IGNORECASE)
@@ -154,6 +159,14 @@ def extract_template(docx_path: Path) -> dict | None:
             "months": int(lasting_match.group(1)),
             "raw":    lasting_match.group(0),
         }
+    else:
+        years_match = DURATION_YEARS_RE.search(full_text)
+        if years_match:
+            duration_info = {
+                "type": "documented_history",   # SSA's "serious and persistent" pattern
+                "months": int(years_match.group(1)) * 12,
+                "raw":    years_match.group(0),
+            }
 
     # Cross-references — list distinct ones
     crossrefs = sorted(set(m.group(1) for m in CROSSREF_RE.finditer(full_text)))
@@ -205,10 +218,14 @@ def extract_json(json_path: Path) -> dict | None:
         if re.fullmatch(r"[A-D]", path or "") and path != "PRECONDITION":
             if path not in top_paragraphs:
                 top_paragraphs.append(path)
-        # Match B.1 / C.2 / B.2.a etc.
-        m = re.fullmatch(r"([A-D])\.(\d)", path or "")
+        # Anything that descends from a paragraph (path starts with "A.",
+        # "B.", etc.) counts as a sub-item for comparison vs the template's
+        # numbered list. JSON structures vary — flat (B.1, B.2), nested
+        # (B.2.a, B.2.b), labeled (A.decline.1). We just count distinct
+        # descendant paths per paragraph.
+        m = re.match(r"^([A-D])\.", path or "")
         if m:
-            sub_items[m.group(1)].append(m.group(2))
+            sub_items[m.group(1)].append(path)
 
     # Walk the raw tree once more for duration fields
     def _find_durations(node):
@@ -273,28 +290,35 @@ def diff_listing(code: str, template: dict, jdata: dict) -> list[dict]:
                        f"JSON has {sorted(j_paras) or 'none'}"),
         })
 
-    # Sub-item count mismatch per shared paragraph
+    # Sub-item count mismatch per shared paragraph. Compare COUNTS, not
+    # sets: template extracts numbers (1/2/3/4) from .docx, JSON stores
+    # full paths (B.1, B.2.a, A.decline.6). Different vocabularies. The
+    # heuristic that catches real bugs: if JSON has FEWER sub-leaves than
+    # template's numbered count, something is missing. Extra structural
+    # nesting (B.1 + B.2.a..d for 11.14's mental-area enumeration) is
+    # logically fine — count check tolerates it.
     for p in (t_paras & j_paras):
-        t_subs = set(template["sub_items"].get(p, []))
-        j_subs_raw = jdata["sub_items"].get(p, [])
-        j_subs = set(j_subs_raw)
-        # Allow JSON's collapsed enumeration if its B.2 has 4 children (a-d pattern)
-        if not t_subs and not j_subs:
+        t_count = len(template["sub_items"].get(p, []))
+        j_count = len(set(jdata["sub_items"].get(p, [])))   # dedupe paths
+        if t_count == 0 and j_count == 0:
             continue
-        if t_subs and not j_subs:
+        if t_count > 0 and j_count == 0:
             findings.append({
                 "severity": "HIGH",
                 "kind": f"PARAGRAPH_{p}_SUBITEMS_MISSING",
-                "detail": (f"template has {sorted(t_subs)} sub-items, "
-                           f"JSON paragraph {p} has none enumerated"),
+                "detail": (f"template has {t_count} sub-items, "
+                           f"JSON paragraph {p} has zero leaf descendants"),
             })
-        elif t_subs != j_subs:
+        elif j_count < t_count:
             findings.append({
-                "severity": "MEDIUM",
-                "kind": f"PARAGRAPH_{p}_SUBITEM_DIFF",
-                "detail": (f"template has {sorted(t_subs)}, "
-                           f"JSON has {sorted(j_subs)}"),
+                "severity": "HIGH",
+                "kind": f"PARAGRAPH_{p}_SUBITEM_UNDERCOUNT",
+                "detail": (f"template enumerates {t_count} sub-items under {p}, "
+                           f"JSON has only {j_count} leaf descendants — likely "
+                           f"a collapsed/missing branch"),
             })
+        # j_count > t_count is OK: JSON may have extra structural nesting
+        # (precondition leaves, OR-of-alternatives wrappers, etc.). Don't flag.
 
     # Duration analysis
     t_dur = template["duration_info"]
