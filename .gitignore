@@ -86,3 +86,7 @@ Thumbs.db
 
 # Memory / session files
 memory/
+
+# Audit outputs — regenerable via audit_listings_vs_templates.py
+audit_report.md
+audit_summary.csv
