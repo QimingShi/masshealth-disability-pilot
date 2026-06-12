@@ -2,28 +2,87 @@
   "code": "13.14",
   "title": "Lung cancer",
   "body_system": "cancer",
-  "version": 1,
+  "version": 2,
   "summary": "Lung cancer: non-small cell lung cancer that is inoperable, unresectable, recurrent, or metastatic to or beyond hilar nodes; small cell carcinoma of the lung; OR carcinoma of the superior sulcus (Pancoast tumor) with multimodal therapy.",
   "synonyms": {
-    "lung cancer":             ["pulmonary cancer", "bronchogenic carcinoma"],
-    "non-small cell lung cancer": ["NSCLC", "adenocarcinoma of lung", "squamous cell carcinoma of lung", "lung squamous cell", "large cell carcinoma"],
-    "small cell lung cancer":  ["SCLC", "small cell carcinoma of lung", "oat cell carcinoma"],
-    "Pancoast tumor":          ["superior sulcus tumor", "Pancoast syndrome"],
-    "biopsy":                  ["bronchoscopy", "lung biopsy", "transbronchial biopsy", "CT-guided biopsy"],
-    "imaging":                 ["chest CT", "PET/CT", "PET-CT", "FDG-PET"],
-    "metastasis":              ["distant metastases", "M1 disease", "stage IV", "metastatic NSCLC"]
+    "lung cancer": [
+      "pulmonary cancer",
+      "bronchogenic carcinoma"
+    ],
+    "non-small cell lung cancer": [
+      "NSCLC",
+      "adenocarcinoma of lung",
+      "squamous cell carcinoma of lung",
+      "lung squamous cell",
+      "large cell carcinoma"
+    ],
+    "small cell lung cancer": [
+      "SCLC",
+      "small cell carcinoma of lung",
+      "oat cell carcinoma"
+    ],
+    "Pancoast tumor": [
+      "superior sulcus tumor",
+      "Pancoast syndrome"
+    ],
+    "biopsy": [
+      "bronchoscopy",
+      "lung biopsy",
+      "transbronchial biopsy",
+      "CT-guided biopsy"
+    ],
+    "imaging": [
+      "chest CT",
+      "PET/CT",
+      "PET-CT",
+      "FDG-PET"
+    ],
+    "metastasis": [
+      "distant metastases",
+      "M1 disease",
+      "stage IV",
+      "metastatic NSCLC"
+    ]
   },
   "rule_json": {
     "logic": "OR",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Non-small cell lung cancer that is inoperable, unresectable, recurrent, or metastatic",
-       "keywords": ["NSCLC", "non-small cell lung cancer", "inoperable", "unresectable", "recurrent NSCLC", "metastatic NSCLC", "stage IV NSCLC"]},
-      {"path": "B", "criterion": "Small cell (oat cell) carcinoma of the lung",
-       "keywords": ["small cell lung cancer", "SCLC", "small cell carcinoma", "oat cell carcinoma"]},
-      {"path": "C", "criterion": "Carcinoma of superior sulcus (Pancoast tumor) with multimodal anticancer therapy",
-       "keywords": ["Pancoast tumor", "superior sulcus tumor", "multimodal therapy", "concurrent chemoradiation"],
-       "duration_months_required": 18}
+      {
+        "path": "A",
+        "criterion": "Non-small cell lung cancer that is inoperable, unresectable, recurrent, or metastatic",
+        "keywords": [
+          "NSCLC",
+          "non-small cell lung cancer",
+          "inoperable",
+          "unresectable",
+          "recurrent NSCLC",
+          "metastatic NSCLC",
+          "stage IV NSCLC"
+        ]
+      },
+      {
+        "path": "B",
+        "criterion": "Small cell (oat cell) carcinoma of the lung",
+        "keywords": [
+          "small cell lung cancer",
+          "SCLC",
+          "small cell carcinoma",
+          "oat cell carcinoma"
+        ]
+      },
+      {
+        "path": "C",
+        "criterion": "Carcinoma of superior sulcus (Pancoast tumor) with multimodal anticancer therapy",
+        "keywords": [
+          "Pancoast tumor",
+          "superior sulcus tumor",
+          "multimodal therapy",
+          "concurrent chemoradiation"
+        ],
+        "duration_months_required": 18,
+        "duration_basis": "presumptive_disability"
+      }
     ]
   }
 }

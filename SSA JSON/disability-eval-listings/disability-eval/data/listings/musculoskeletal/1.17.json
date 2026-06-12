@@ -2,16 +2,52 @@
   "code": "1.17",
   "title": "Reconstructive surgery or surgical arthrodesis of a major weight-bearing joint",
   "body_system": "musculoskeletal",
-  "version": 1,
+  "version": 2,
   "summary": "Reconstructive surgery or arthrodesis of a major weight-bearing joint with impairment-related limitation lasting ≥12 months and documented need for two-handed assistive device.",
   "synonyms": {
-    "reconstructive surgery":  ["joint reconstruction", "joint replacement", "arthroplasty", "TKR", "THR", "total hip replacement", "total knee replacement"],
-    "arthrodesis":             ["surgical fusion", "joint fusion", "ankle fusion", "hip fusion", "knee fusion"],
-    "major weight-bearing joint": ["hip", "knee", "ankle", "ankle-hindfoot complex"],
-    "12 months":               ["1 year", "one year", "longstanding", "chronic", "for over a year"],
-    "walker":                  ["rollator", "rolling walker", "wheeled walker"],
-    "bilateral canes":         ["two canes", "double cane"],
-    "physical therapy":        ["PT", "rehab", "rehabilitation"]
+    "reconstructive surgery": [
+      "joint reconstruction",
+      "joint replacement",
+      "arthroplasty",
+      "TKR",
+      "THR",
+      "total hip replacement",
+      "total knee replacement"
+    ],
+    "arthrodesis": [
+      "surgical fusion",
+      "joint fusion",
+      "ankle fusion",
+      "hip fusion",
+      "knee fusion"
+    ],
+    "major weight-bearing joint": [
+      "hip",
+      "knee",
+      "ankle",
+      "ankle-hindfoot complex"
+    ],
+    "12 months": [
+      "1 year",
+      "one year",
+      "longstanding",
+      "chronic",
+      "for over a year"
+    ],
+    "walker": [
+      "rollator",
+      "rolling walker",
+      "wheeled walker"
+    ],
+    "bilateral canes": [
+      "two canes",
+      "double cane"
+    ],
+    "physical therapy": [
+      "PT",
+      "rehab",
+      "rehabilitation"
+    ]
   },
   "rule_json": {
     "logic": "AND",
@@ -20,18 +56,44 @@
       {
         "path": "A",
         "criterion": "Surgical reconstruction or arthrodesis of a major weight-bearing joint (hip, knee, ankle, or ankle-hindfoot complex)",
-        "keywords": ["arthroplasty", "joint replacement", "THR", "TKR", "arthrodesis", "fusion", "hip", "knee", "ankle", "operative report"]
+        "keywords": [
+          "arthroplasty",
+          "joint replacement",
+          "THR",
+          "TKR",
+          "arthrodesis",
+          "fusion",
+          "hip",
+          "knee",
+          "ankle",
+          "operative report"
+        ]
       },
       {
         "path": "B",
         "criterion": "Impairment-related physical limitation of musculoskeletal functioning that has lasted, or is expected to last, ≥12 months from the surgery",
-        "keywords": ["chronic", "12 months", "1 year", "post-operative limitation", "ongoing", "persistent"],
-        "duration_months_required": 12
+        "keywords": [
+          "chronic",
+          "12 months",
+          "1 year",
+          "post-operative limitation",
+          "ongoing",
+          "persistent"
+        ],
+        "duration_months_required": 12,
+        "duration_basis": "expected_duration"
       },
       {
         "path": "C",
         "criterion": "Documented medical need for walker, bilateral canes, bilateral crutches, or two-handed wheeled mobility device",
-        "keywords": ["walker", "rollator", "bilateral canes", "bilateral crutches", "wheelchair", "two-handed device"]
+        "keywords": [
+          "walker",
+          "rollator",
+          "bilateral canes",
+          "bilateral crutches",
+          "wheelchair",
+          "two-handed device"
+        ]
       }
     ]
   }

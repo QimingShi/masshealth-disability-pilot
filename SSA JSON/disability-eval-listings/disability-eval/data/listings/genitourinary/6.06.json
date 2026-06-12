@@ -2,7 +2,7 @@
   "code": "6.06",
   "title": "Nephrotic syndrome",
   "body_system": "genitourinary",
-  "version": 1,
+  "version": 2,
   "summary": "Nephrotic syndrome with laboratory findings of heavy proteinuria (either >=10 g/24h OR >=3.5 g/24h with low serum albumin), AND anasarca persisting at least 90 days despite prescribed treatment.",
   "synonyms": {
     "nephrotic syndrome": [
@@ -58,7 +58,8 @@
               "24-hour urine protein",
               "massive proteinuria"
             ],
-            "duration_months_required": 12
+            "duration_months_required": 12,
+            "duration_basis": "observation_window"
           },
           {
             "logic": "AND",

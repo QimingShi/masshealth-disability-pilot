@@ -2,7 +2,7 @@
   "code": "6.05",
   "title": "Chronic kidney disease with impairment of kidney function",
   "body_system": "genitourinary",
-  "version": 1,
+  "version": 2,
   "summary": "Chronic kidney disease with both: (A) reduced glomerular filtration evidenced by elevated serum creatinine, low creatinine clearance, or low eGFR on at least two occasions 90+ days apart within 12 months, AND (B) one of four complications: renal osteodystrophy with bone pain + imaging, peripheral neuropathy, fluid overload syndrome, or anorexia with BMI <=18.0.",
   "synonyms": {
     "chronic kidney disease": [
@@ -74,7 +74,8 @@
               "elevated creatinine",
               "Cr 4"
             ],
-            "duration_months_required": 12
+            "duration_months_required": 12,
+            "duration_basis": "observation_window"
           },
           {
             "path": "A.2",
@@ -84,7 +85,8 @@
               "CrCl 20",
               "24-hour urine"
             ],
-            "duration_months_required": 12
+            "duration_months_required": 12,
+            "duration_basis": "observation_window"
           },
           {
             "path": "A.3",
@@ -96,7 +98,8 @@
               "stage 4 CKD",
               "stage 5 CKD"
             ],
-            "duration_months_required": 12
+            "duration_months_required": 12,
+            "duration_basis": "observation_window"
           }
         ]
       },
@@ -146,7 +149,8 @@
                   "uncontrolled HTN",
                   "90 days therapy"
                 ],
-                "duration_months_required": 12
+                "duration_months_required": 12,
+                "duration_basis": "observation_window"
               },
               {
                 "path": "B.3.b",
@@ -161,7 +165,8 @@
                   "pleural effusion",
                   "ascites"
                 ],
-                "duration_months_required": 12
+                "duration_months_required": 12,
+                "duration_basis": "observation_window"
               }
             ]
           },
@@ -177,7 +182,8 @@
               "wasting",
               "malnutrition"
             ],
-            "duration_months_required": 12
+            "duration_months_required": 12,
+            "duration_basis": "observation_window"
           }
         ]
       }

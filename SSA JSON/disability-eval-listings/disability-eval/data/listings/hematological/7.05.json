@@ -2,35 +2,116 @@
   "code": "7.05",
   "title": "Hemolytic anemias, including sickle cell disease, thalassemia, and their variants",
   "body_system": "hematological",
-  "version": 1,
+  "version": 2,
   "summary": "Hemolytic anemia (sickle cell disease, thalassemia, etc.) with documented severe complications (vaso-occlusive crises, transfusion needs, hemolytic crises) occurring at specified frequency within 12-month period.",
   "synonyms": {
-    "sickle cell disease":     ["SCD", "sickle cell anemia", "Hb SS", "Hb SC", "sickle β-thalassemia"],
-    "thalassemia":             ["beta thalassemia", "alpha thalassemia", "thalassemia major", "Cooley's anemia"],
-    "hemolytic anemia":        ["autoimmune hemolytic anemia", "AIHA", "hereditary spherocytosis", "G6PD deficiency"],
-    "vaso-occlusive crisis":   ["VOC", "pain crisis", "sickle cell crisis", "SCD crisis"],
-    "acute chest syndrome":    ["ACS"],
-    "blood transfusion":       ["PRBC", "packed red blood cells", "transfusion"],
-    "hemoglobin":              ["Hgb", "Hb", "hematocrit"],
-    "haptoglobin":             ["low haptoglobin"],
-    "LDH":                     ["lactate dehydrogenase", "elevated LDH"],
-    "reticulocyte":            ["reticulocyte count", "elevated reticulocyte count"]
+    "sickle cell disease": [
+      "SCD",
+      "sickle cell anemia",
+      "Hb SS",
+      "Hb SC",
+      "sickle β-thalassemia"
+    ],
+    "thalassemia": [
+      "beta thalassemia",
+      "alpha thalassemia",
+      "thalassemia major",
+      "Cooley's anemia"
+    ],
+    "hemolytic anemia": [
+      "autoimmune hemolytic anemia",
+      "AIHA",
+      "hereditary spherocytosis",
+      "G6PD deficiency"
+    ],
+    "vaso-occlusive crisis": [
+      "VOC",
+      "pain crisis",
+      "sickle cell crisis",
+      "SCD crisis"
+    ],
+    "acute chest syndrome": [
+      "ACS"
+    ],
+    "blood transfusion": [
+      "PRBC",
+      "packed red blood cells",
+      "transfusion"
+    ],
+    "hemoglobin": [
+      "Hgb",
+      "Hb",
+      "hematocrit"
+    ],
+    "haptoglobin": [
+      "low haptoglobin"
+    ],
+    "LDH": [
+      "lactate dehydrogenase",
+      "elevated LDH"
+    ],
+    "reticulocyte": [
+      "reticulocyte count",
+      "elevated reticulocyte count"
+    ]
   },
   "rule_json": {
     "logic": "OR",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Documented painful (vaso-occlusive) crises requiring parenteral narcotic medication occurring at least 6 times within 12-month period, with at least 30 days between crises",
-       "keywords": ["vaso-occlusive crisis", "VOC", "pain crisis", "parenteral opioid", "IV narcotics", "sickle cell crisis", "30 days apart"],
-       "duration_months_required": 12},
-      {"path": "B", "criterion": "Hospital complications occurring at least 3 times within 12-month period (hospital admission lasting ≥48 hours; each at least 30 days apart)",
-       "keywords": ["three hospitalizations", "acute chest syndrome", "stroke", "splenic sequestration", "48 hours", "30 days apart"],
-       "duration_months_required": 12},
-      {"path": "C", "criterion": "Chronic, severe anemia with hemoglobin ≤7.0 g/dL on at least 3 evaluations at least 30 days apart within 12-month period",
-       "keywords": ["hemoglobin 7", "Hgb 7", "chronic anemia", "severe anemia", "30 days apart"],
-       "duration_months_required": 12},
-      {"path": "D", "criterion": "Beta thalassemia major requiring life-long red blood cell transfusions at least once every 6 weeks to maintain Hgb",
-       "keywords": ["beta thalassemia major", "Cooley's anemia", "regular transfusions", "every 6 weeks", "transfusion-dependent"]}
+      {
+        "path": "A",
+        "criterion": "Documented painful (vaso-occlusive) crises requiring parenteral narcotic medication occurring at least 6 times within 12-month period, with at least 30 days between crises",
+        "keywords": [
+          "vaso-occlusive crisis",
+          "VOC",
+          "pain crisis",
+          "parenteral opioid",
+          "IV narcotics",
+          "sickle cell crisis",
+          "30 days apart"
+        ],
+        "duration_months_required": 12,
+        "duration_basis": "observation_window"
+      },
+      {
+        "path": "B",
+        "criterion": "Hospital complications occurring at least 3 times within 12-month period (hospital admission lasting ≥48 hours; each at least 30 days apart)",
+        "keywords": [
+          "three hospitalizations",
+          "acute chest syndrome",
+          "stroke",
+          "splenic sequestration",
+          "48 hours",
+          "30 days apart"
+        ],
+        "duration_months_required": 12,
+        "duration_basis": "observation_window"
+      },
+      {
+        "path": "C",
+        "criterion": "Chronic, severe anemia with hemoglobin ≤7.0 g/dL on at least 3 evaluations at least 30 days apart within 12-month period",
+        "keywords": [
+          "hemoglobin 7",
+          "Hgb 7",
+          "chronic anemia",
+          "severe anemia",
+          "30 days apart"
+        ],
+        "duration_months_required": 12,
+        "duration_basis": "observation_window"
+      },
+      {
+        "path": "D",
+        "criterion": "Beta thalassemia major requiring life-long red blood cell transfusions at least once every 6 weeks to maintain Hgb",
+        "keywords": [
+          "beta thalassemia major",
+          "Cooley's anemia",
+          "regular transfusions",
+          "every 6 weeks",
+          "transfusion-dependent"
+        ]
+      }
     ]
   }
 }

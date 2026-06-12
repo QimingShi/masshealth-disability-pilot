@@ -2,29 +2,84 @@
   "code": "13.07",
   "title": "Multiple myeloma",
   "body_system": "cancer",
-  "version": 1,
+  "version": 2,
   "summary": "Multiple myeloma with failure to respond OR progressive disease following initial anticancer therapy, OR stem cell transplantation.",
   "synonyms": {
-    "multiple myeloma":        ["MM", "myeloma", "plasma cell myeloma"],
-    "monoclonal protein":      ["M-spike", "M protein", "paraprotein"],
-    "SPEP":                    ["serum protein electrophoresis"],
-    "UPEP":                    ["urine protein electrophoresis"],
-    "bone marrow biopsy":      ["BMBx", "BM biopsy", "bone marrow aspirate"],
-    "lytic lesions":           ["lytic bone lesions", "punched-out lesions"],
-    "hypercalcemia":           ["elevated calcium", "Ca elevated"],
-    "stem cell transplant":    ["BMT", "bone marrow transplant", "HSCT", "autologous transplant"]
+    "multiple myeloma": [
+      "MM",
+      "myeloma",
+      "plasma cell myeloma"
+    ],
+    "monoclonal protein": [
+      "M-spike",
+      "M protein",
+      "paraprotein"
+    ],
+    "SPEP": [
+      "serum protein electrophoresis"
+    ],
+    "UPEP": [
+      "urine protein electrophoresis"
+    ],
+    "bone marrow biopsy": [
+      "BMBx",
+      "BM biopsy",
+      "bone marrow aspirate"
+    ],
+    "lytic lesions": [
+      "lytic bone lesions",
+      "punched-out lesions"
+    ],
+    "hypercalcemia": [
+      "elevated calcium",
+      "Ca elevated"
+    ],
+    "stem cell transplant": [
+      "BMT",
+      "bone marrow transplant",
+      "HSCT",
+      "autologous transplant"
+    ]
   },
   "rule_json": {
     "logic": "OR",
     "path": "ROOT",
     "children": [
-      {"path": "PRECONDITION", "criterion": "Pathology-confirmed multiple myeloma",
-       "keywords": ["multiple myeloma", "MM", "plasma cell myeloma", "bone marrow biopsy", "M-spike", "monoclonal protein"]},
-      {"path": "A", "criterion": "Failure to respond OR progressive disease following initial anticancer therapy",
-       "keywords": ["progressive disease", "treatment failure", "relapsed myeloma", "refractory myeloma", "no response"]},
-      {"path": "B", "criterion": "Bone marrow or stem cell transplantation; considered disabled for 12 months from date of transplantation",
-       "keywords": ["stem cell transplant", "HSCT", "BMT", "autologous transplant"],
-       "duration_months_required": 12}
+      {
+        "path": "PRECONDITION",
+        "criterion": "Pathology-confirmed multiple myeloma",
+        "keywords": [
+          "multiple myeloma",
+          "MM",
+          "plasma cell myeloma",
+          "bone marrow biopsy",
+          "M-spike",
+          "monoclonal protein"
+        ]
+      },
+      {
+        "path": "A",
+        "criterion": "Failure to respond OR progressive disease following initial anticancer therapy",
+        "keywords": [
+          "progressive disease",
+          "treatment failure",
+          "relapsed myeloma",
+          "refractory myeloma",
+          "no response"
+        ]
+      },
+      {
+        "path": "B",
+        "criterion": "Bone marrow or stem cell transplantation; considered disabled for 12 months from date of transplantation",
+        "keywords": [
+          "stem cell transplant",
+          "HSCT",
+          "BMT",
+          "autologous transplant"
+        ],
+        "duration_months_required": 12,
+        "duration_basis": "presumptive_disability"
+      }
     ]
   }
 }
