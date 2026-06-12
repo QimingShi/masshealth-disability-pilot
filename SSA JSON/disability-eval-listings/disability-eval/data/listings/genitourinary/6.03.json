@@ -2,8 +2,8 @@
   "code": "6.03",
   "title": "Chronic kidney disease with chronic hemodialysis or peritoneal dialysis",
   "body_system": "genitourinary",
-  "version": 1,
-  "summary": "Chronic kidney disease requiring chronic hemodialysis OR chronic peritoneal dialysis, lasting or expected to last for at least 12 continuous months.",
+  "version": 2,
+  "summary": "Chronic kidney disease with chronic hemodialysis or peritoneal dialysis (see 6.00C1). Ongoing dialysis must have lasted or be expected to last for a continuous period of at least 12 months.",
   "synonyms": {
     "chronic kidney disease": [
       "CKD",
@@ -39,59 +39,11 @@
     "path": "ROOT",
     "children": [
       {
-        "path": "A",
-        "criterion": "Chronic kidney disease diagnosis",
-        "keywords": [
-          "chronic kidney disease",
-          "CKD",
-          "ESRD",
-          "end-stage renal disease",
-          "kidney failure"
-        ]
-      },
-      {
-        "logic": "OR",
-        "path": "B",
-        "criterion": "Chronic dialysis via one of two equivalent modalities",
-        "children": [
-          {
-            "path": "B.1",
-            "criterion": "Chronic hemodialysis",
-            "keywords": [
-              "hemodialysis",
-              "HD",
-              "in-center dialysis",
-              "home hemodialysis",
-              "AV fistula",
-              "AV graft",
-              "dialysis catheter"
-            ]
-          },
-          {
-            "path": "B.2",
-            "criterion": "Chronic peritoneal dialysis",
-            "keywords": [
-              "peritoneal dialysis",
-              "PD",
-              "CAPD",
-              "CCPD",
-              "Tenckhoff catheter",
-              "automated peritoneal dialysis"
-            ]
-          }
-        ]
-      },
-      {
-        "path": "C",
-        "criterion": "Dialysis lasting or expected to last 12 continuous months",
-        "keywords": [
-          "12 months",
-          "1 year",
-          "chronic",
-          "ongoing dialysis",
-          "long-term dialysis"
-        ],
-        "duration_months_required": 12
+        "path": "PRECONDITION",
+        "criterion": "Chronic kidney disease with chronic hemodialysis or peritoneal dialysis (see 6.00C1). Ongoing dialysis must have lasted or be expected to last for a continuous period of at least 12 months. Either modality (hemodialysis or peritoneal dialysis) satisfies the listing.",
+        "keywords": ["chronic kidney disease", "CKD", "ESRD", "end-stage renal disease", "kidney failure", "hemodialysis", "HD", "in-center dialysis", "home hemodialysis", "AV fistula", "AV graft", "dialysis catheter", "peritoneal dialysis", "PD", "CAPD", "CCPD", "Tenckhoff catheter", "12 months", "1 year", "chronic dialysis", "ongoing dialysis", "long-term dialysis"],
+        "duration_months_required": 12,
+        "duration_basis": "expected_duration"
       }
     ]
   }

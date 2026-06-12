@@ -2,8 +2,8 @@
   "code": "4.09",
   "title": "Heart transplant",
   "body_system": "cardiovascular",
-  "version": 1,
-  "summary": "Heart transplantation; claimant considered disabled for 1 year following surgery; afterward evaluated under residual impairment.",
+  "version": 2,
+  "summary": "Heart transplant. Consider under a disability for 1 year following surgery; thereafter, evaluate residual impairment under the appropriate listing.",
   "synonyms": {
     "heart transplant":        ["cardiac transplant", "OHT", "orthotopic heart transplant"],
     "operative report":        ["op report", "surgical report", "OR note", "transplant note"]
@@ -13,15 +13,11 @@
     "path": "ROOT",
     "children": [
       {
-        "path": "A",
-        "criterion": "Heart transplantation documented by operative report or transplant center records",
-        "keywords": ["heart transplant", "cardiac transplantation", "OHT", "orthotopic", "operative report"]
-      },
-      {
-        "path": "B",
-        "criterion": "Within 1 year of transplant date (claimant considered disabled for 1 year post-transplant)",
-        "keywords": ["transplant date", "post-transplant", "1 year"],
-        "duration_months_required": 12
+        "path": "PRECONDITION",
+        "criterion": "Heart transplant. Consider under a disability for 1 year following surgery; thereafter, evaluate residual impairment under the appropriate listing.",
+        "keywords": ["heart transplant", "cardiac transplantation", "OHT", "orthotopic", "operative report", "transplant date", "post-transplant", "1 year", "12 months"],
+        "duration_months_required": 12,
+        "duration_basis": "presumptive_disability"
       }
     ]
   }

@@ -2,8 +2,8 @@
   "code": "6.09",
   "title": "Complications of chronic kidney disease",
   "body_system": "genitourinary",
-  "version": 1,
-  "summary": "Chronic kidney disease (not requiring chronic dialysis) with three hospitalizations within a 12-month period for CKD complications, each lasting at least 48 hours, occurring at least 30 days apart.",
+  "version": 2,
+  "summary": "Complications of chronic kidney disease (see 6.00C8) requiring at least three hospitalizations within a consecutive 12-month period and occurring at least 30 days apart. Each hospitalization must last at least 48 hours, including hours in a hospital emergency department immediately before the hospitalization.",
   "synonyms": {
     "chronic kidney disease": [
       "CKD",
@@ -34,38 +34,11 @@
     "path": "ROOT",
     "children": [
       {
-        "path": "A",
-        "criterion": "Chronic kidney disease (not requiring chronic dialysis)",
-        "keywords": [
-          "chronic kidney disease",
-          "CKD",
-          "stage 4 CKD",
-          "stage 5 CKD",
-          "renal insufficiency"
-        ]
-      },
-      {
-        "path": "B",
-        "criterion": "At least three hospitalizations within a consecutive 12-month period for CKD complications, occurring at least 30 days apart, with each hospitalization lasting at least 48 hours (including hours in a hospital emergency department immediately before the hospitalization)",
-        "keywords": [
-          "three hospitalizations",
-          "CKD complications",
-          "fluid overload",
-          "uremic encephalopathy",
-          "hyperkalemia",
-          "metabolic acidosis",
-          "stroke",
-          "congestive heart failure",
-          "hypertensive crisis",
-          "acute kidney failure",
-          "48 hours",
-          "30 days apart",
-          "emergency department",
-          "ED hours",
-          "ER admission",
-          "ED admission"
-        ],
-        "duration_months_required": 12
+        "path": "PRECONDITION",
+        "criterion": "Complications of chronic kidney disease (see 6.00C8) requiring at least three hospitalizations within a consecutive 12-month period and occurring at least 30 days apart. Each hospitalization must last at least 48 hours, including hours in a hospital emergency department immediately before the hospitalization. The hospitalizations may be for different complications of CKD (e.g., stroke, congestive heart failure, hypertensive crisis, acute kidney failure requiring a short course of hemodialysis).",
+        "keywords": ["chronic kidney disease", "CKD", "stage 4 CKD", "stage 5 CKD", "renal insufficiency", "three hospitalizations", "CKD complications", "fluid overload", "uremic encephalopathy", "hyperkalemia", "metabolic acidosis", "stroke", "congestive heart failure", "hypertensive crisis", "acute kidney failure", "48 hours", "30 days apart", "12-month period", "emergency department", "ED hours"],
+        "duration_months_required": 12,
+        "duration_basis": "observation_window"
       }
     ]
   }

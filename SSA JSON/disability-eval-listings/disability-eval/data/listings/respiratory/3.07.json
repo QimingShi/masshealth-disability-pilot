@@ -2,8 +2,8 @@
   "code": "3.07",
   "title": "Bronchiectasis",
   "body_system": "respiratory",
-  "version": 1,
-  "summary": "Bronchiectasis (imaging-confirmed) with three exacerbations within 12 months requiring hospitalization for ≥48 hours each, with at least 30 days between hospitalizations.",
+  "version": 2,
+  "summary": "Bronchiectasis (see 3.00K), documented by imaging (see 3.00D3), with exacerbations or complications requiring three hospitalizations within a 12-month period and at least 30 days apart. Each hospitalization must last at least 48 hours, including hours in a hospital emergency department immediately before the hospitalization.",
   "synonyms": {
     "bronchiectasis":          ["dilated airways", "chronic bronchiectasis", "abnormal bronchial dilatation"],
     "high-resolution CT":      ["HRCT", "HRCT chest", "high-resolution computed tomography"],
@@ -18,15 +18,11 @@
     "path": "ROOT",
     "children": [
       {
-        "path": "A",
-        "criterion": "Bronchiectasis documented by imaging (high-resolution CT preferred)",
-        "keywords": ["bronchiectasis", "HRCT", "chest CT", "imaging", "dilated bronchi", "tree-in-bud"]
-      },
-      {
-        "path": "B",
-        "criterion": "Three exacerbations or complications within 12 months, each requiring hospitalization for ≥48 hours, with at least 30 days between consecutive hospitalizations",
-        "keywords": ["three hospitalizations", "exacerbation", "hemoptysis", "respiratory infection", "48 hours", "30 days apart"],
-        "duration_months_required": 12
+        "path": "PRECONDITION",
+        "criterion": "Bronchiectasis (see 3.00K), documented by imaging (see 3.00D3), with exacerbations or complications requiring three hospitalizations within a 12-month period and at least 30 days apart. Each hospitalization must last at least 48 hours, including hours in a hospital emergency department immediately before the hospitalization. The 12-month period must occur within the period under consideration.",
+        "keywords": ["bronchiectasis", "HRCT", "chest CT", "imaging", "dilated bronchi", "tree-in-bud", "three hospitalizations", "exacerbation", "hemoptysis", "respiratory infection", "48 hours", "30 days apart", "12-month period"],
+        "duration_months_required": 12,
+        "duration_basis": "observation_window"
       }
     ]
   }

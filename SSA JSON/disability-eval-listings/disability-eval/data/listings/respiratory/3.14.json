@@ -2,8 +2,8 @@
   "code": "3.14",
   "title": "Respiratory failure",
   "body_system": "respiratory",
-  "version": 1,
-  "summary": "Respiratory failure due to chronic respiratory disorder requiring invasive mechanical ventilation or noninvasive ventilation with BiPAP for ≥48 consecutive hours, twice within 12 months with at least 30 days between events.",
+  "version": 2,
+  "summary": "Respiratory failure (see 3.00N) resulting from any underlying chronic respiratory disorder except CF (for CF, see 3.04D), requiring invasive mechanical ventilation, noninvasive ventilation with BiPAP, or a combination of both treatments, for a continuous period of at least 48 hours (or 72 hours if postoperatively), twice within a 12-month period and at least 30 days apart.",
   "synonyms": {
     "respiratory failure":     ["acute respiratory failure", "type I respiratory failure", "type II respiratory failure", "hypercapnic respiratory failure", "hypoxic respiratory failure", "ARF"],
     "mechanical ventilation":  ["intubation", "ventilator", "vent", "endotracheal intubation", "ET tube"],
@@ -18,15 +18,11 @@
     "path": "ROOT",
     "children": [
       {
-        "path": "A",
-        "criterion": "Respiratory failure due to chronic respiratory disorder",
-        "keywords": ["respiratory failure", "chronic respiratory disorder", "COPD", "ILD", "neuromuscular respiratory failure"]
-      },
-      {
-        "path": "B",
-        "criterion": "Two episodes of respiratory failure requiring invasive mechanical ventilation or BiPAP for ≥48 consecutive hours, occurring within a 12-month period with at least 30 days between events",
-        "keywords": ["two episodes", "mechanical ventilation", "intubation", "BiPAP", "NIV", "48 hours", "ICU admission", "30 days apart"],
-        "duration_months_required": 12
+        "path": "PRECONDITION",
+        "criterion": "Respiratory failure (see 3.00N) resulting from any underlying chronic respiratory disorder except CF (for CF, see 3.04D), requiring invasive mechanical ventilation, noninvasive ventilation with BiPAP, or a combination of both treatments, for a continuous period of at least 48 hours, or for a continuous period of at least 72 hours if postoperatively, twice within a 12-month period and at least 30 days apart. The 12-month period must occur within the period under consideration.",
+        "keywords": ["respiratory failure", "chronic respiratory disorder", "COPD", "ILD", "neuromuscular respiratory failure", "two episodes", "twice within 12 months", "mechanical ventilation", "intubation", "BiPAP", "NIV", "NIPPV", "48 hours", "72 hours postoperatively", "ICU admission", "30 days apart"],
+        "duration_months_required": 12,
+        "duration_basis": "observation_window"
       }
     ]
   }

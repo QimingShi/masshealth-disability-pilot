@@ -2,8 +2,8 @@
   "code": "4.10",
   "title": "Aneurysm of aorta or major branches",
   "body_system": "cardiovascular",
-  "version": 1,
-  "summary": "Aortic aneurysm or aneurysm of major branches with dissection not controlled by treatment, demonstrated by appropriate imaging.",
+  "version": 2,
+  "summary": "Aneurysm of aorta or major branches, due to any cause, demonstrated by appropriate medically acceptable imaging, with dissection not controlled by prescribed treatment (see 4.00H6).",
   "synonyms": {
     "aortic aneurysm":         ["aneurysm of aorta", "aortic dilation", "AAA", "abdominal aortic aneurysm", "TAA", "thoracic aortic aneurysm"],
     "aortic dissection":       ["dissecting aneurysm", "dissection", "type A dissection", "type B dissection", "Stanford A", "Stanford B"],
@@ -16,14 +16,9 @@
     "path": "ROOT",
     "children": [
       {
-        "path": "A",
-        "criterion": "Aneurysm of the aorta or major branches with dissection",
-        "keywords": ["aortic aneurysm", "aortic dissection", "thoracic aortic dissection", "abdominal aortic dissection", "type A", "type B", "Stanford"]
-      },
-      {
-        "path": "B",
-        "criterion": "Dissection not controlled by prescribed treatment, demonstrated by imaging",
-        "keywords": ["uncontrolled dissection", "progressive dissection", "expanding aneurysm", "imaging", "CTA", "MRA", "despite treatment"]
+        "path": "PRECONDITION",
+        "criterion": "Aneurysm of aorta or major branches, due to any cause (e.g., atherosclerosis, cystic medial necrosis, Marfan syndrome, trauma), demonstrated by appropriate medically acceptable imaging, with dissection not controlled by prescribed treatment (see 4.00H6). Dissection is not controlled when there is persistence of chest pain due to progression of the dissection, an increase in aneurysm size, or compression of one or more aortic branches supplying the heart, kidneys, brain, or other organs.",
+        "keywords": ["aortic aneurysm", "aortic dissection", "thoracic aortic dissection", "abdominal aortic dissection", "type A", "type B", "Stanford", "uncontrolled dissection", "progressive dissection", "expanding aneurysm", "imaging", "CTA", "MRA", "TEE", "despite treatment", "Marfan syndrome", "atherosclerosis"]
       }
     ]
   }

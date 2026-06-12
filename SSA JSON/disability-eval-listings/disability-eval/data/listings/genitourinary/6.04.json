@@ -2,8 +2,8 @@
   "code": "6.04",
   "title": "Chronic kidney disease with kidney transplant",
   "body_system": "genitourinary",
-  "version": 1,
-  "summary": "Chronic kidney disease with kidney transplantation; claimant considered disabled for 1 year following the date of transplant, after which residual impairment is evaluated.",
+  "version": 2,
+  "summary": "Chronic kidney disease with kidney transplant. Consider under a disability for 1 year following the transplant; thereafter, evaluate the residual impairment (see 6.00C2).",
   "synonyms": {
     "kidney transplant": [
       "renal transplant",
@@ -14,7 +14,8 @@
     ],
     "transplant": [
       "transplantation",
-      "operative report"
+      "operative report",
+      "transplant note"
     ]
   },
   "rule_json": {
@@ -22,27 +23,11 @@
     "path": "ROOT",
     "children": [
       {
-        "path": "A",
-        "criterion": "Kidney transplantation documented by operative report or transplant center records",
-        "keywords": [
-          "kidney transplant",
-          "renal transplant",
-          "kidney transplantation",
-          "deceased donor transplant",
-          "living donor transplant",
-          "operative report"
-        ]
-      },
-      {
-        "path": "B",
-        "criterion": "Within 1 year of transplant date (claimant considered disabled for 1 year post-transplant)",
-        "keywords": [
-          "1 year",
-          "12 months",
-          "transplant date",
-          "post-transplant"
-        ],
-        "duration_months_required": 12
+        "path": "PRECONDITION",
+        "criterion": "Chronic kidney disease with kidney transplant. Consider under a disability for 1 year following the transplant; thereafter, evaluate the residual impairment (see 6.00C2).",
+        "keywords": ["kidney transplant", "renal transplant", "kidney transplantation", "deceased donor transplant", "living donor transplant", "KT", "operative report", "transplant date", "post-transplant", "1 year", "12 months"],
+        "duration_months_required": 12,
+        "duration_basis": "presumptive_disability"
       }
     ]
   }

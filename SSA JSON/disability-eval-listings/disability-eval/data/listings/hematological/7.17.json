@@ -2,8 +2,8 @@
   "code": "7.17",
   "title": "Hematological disorders treated by bone marrow or stem cell transplantation",
   "body_system": "hematological",
-  "version": 1,
-  "summary": "Bone marrow or stem cell transplantation for hematological disorder; considered disabled for 12 months from date of transplantation, after which residual impairment is evaluated.",
+  "version": 2,
+  "summary": "Hematological disorders treated by bone marrow or stem cell transplantation (see 7.00F). Consider under a disability for at least 12 consecutive months from the date of transplantation. After that, evaluate any residual impairment(s) under the criteria for the affected body system.",
   "synonyms": {
     "bone marrow transplant":  ["BMT", "stem cell transplant", "SCT", "HSCT", "hematopoietic stem cell transplant", "allogeneic transplant", "autologous transplant"],
     "GVHD":                    ["graft-versus-host disease", "graft vs host disease", "acute GVHD", "chronic GVHD"],
@@ -13,11 +13,13 @@
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Bone marrow or hematopoietic stem cell transplantation for a hematological disorder",
-       "keywords": ["bone marrow transplant", "BMT", "stem cell transplant", "HSCT", "hematopoietic stem cell transplant", "transplant report"]},
-      {"path": "B", "criterion": "Within 12 months of transplant date (claimant considered disabled for 12 months post-transplant)",
-       "keywords": ["12 months", "transplant date", "post-transplant"],
-       "duration_months_required": 12}
+      {
+        "path": "PRECONDITION",
+        "criterion": "Hematological disorders treated by bone marrow or stem cell transplantation (see 7.00F). Consider under a disability for at least 12 consecutive months from the date of transplantation. After that, evaluate any residual impairment(s) under the criteria for the affected body system.",
+        "keywords": ["bone marrow transplant", "BMT", "stem cell transplant", "SCT", "HSCT", "hematopoietic stem cell transplant", "allogeneic transplant", "autologous transplant", "transplant report", "transplant date", "post-transplant", "12 months", "12 consecutive months", "hematological disorder"],
+        "duration_months_required": 12,
+        "duration_basis": "presumptive_disability"
+      }
     ]
   }
 }

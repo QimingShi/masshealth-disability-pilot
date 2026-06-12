@@ -2,21 +2,23 @@
   "code": "5.09",
   "title": "Liver transplantation",
   "body_system": "digestive",
-  "version": 1,
-  "summary": "Liver transplantation; considered disabled for 1 year following the date of transplantation, after which residual impairment is evaluated.",
+  "version": 2,
+  "summary": "Liver transplantation. Consider under a disability for 1 year following the date of transplantation; thereafter, evaluate the residual impairment(s) (see 5.00D12 and 5.00H).",
   "synonyms": {
-    "liver transplant":        ["orthotopic liver transplant", "OLT", "hepatic transplant"],
-    "operative report":        ["op report", "transplant report"]
+    "liver transplant":        ["orthotopic liver transplant", "OLT", "hepatic transplant", "liver transplantation"],
+    "operative report":        ["op report", "transplant report", "transplant note"]
   },
   "rule_json": {
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Liver transplantation documented by operative report or transplant center records",
-       "keywords": ["liver transplant", "OLT", "orthotopic liver transplant", "hepatic transplantation", "operative report"]},
-      {"path": "B", "criterion": "Within 1 year of transplant date (claimant considered disabled for 1 year post-transplant)",
-       "keywords": ["1 year", "transplant date", "post-transplant"],
-       "duration_months_required": 12}
+      {
+        "path": "PRECONDITION",
+        "criterion": "Liver transplantation. Consider under a disability for 1 year following the date of transplantation; thereafter, evaluate the residual impairment(s) (see 5.00D12 and 5.00H).",
+        "keywords": ["liver transplant", "OLT", "orthotopic liver transplant", "hepatic transplantation", "operative report", "transplant date", "post-transplant", "1 year", "12 months"],
+        "duration_months_required": 12,
+        "duration_basis": "presumptive_disability"
+      }
     ]
   }
 }

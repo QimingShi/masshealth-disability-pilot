@@ -1,29 +1,15 @@
 {
   "code": "5.07",
-  "title": "Intestinal failure",
+  "title": "Short bowel syndrome (SBS)",
   "body_system": "digestive",
-  "version": 1,
-  "summary": "Intestinal failure due to short bowel syndrome, chronic motility disorders, or extensive small bowel mucosal disease, resulting in dependence on daily parenteral nutrition via a central venous catheter for at least 12 months.",
+  "version": 2,
+  "summary": "Short bowel syndrome (SBS), due to surgical resection of more than one-half of the small intestine, with dependence on daily parenteral nutrition via a central venous catheter (see 5.00F).",
   "synonyms": {
-    "intestinal failure": [
-      "intestinal insufficiency",
-      "gut failure"
-    ],
     "short bowel syndrome": [
       "SBS",
       "small bowel resection",
-      "post-resection"
-    ],
-    "chronic motility disorder": [
-      "chronic intestinal pseudo-obstruction",
-      "CIPO",
-      "motility disorder",
-      "intestinal dysmotility"
-    ],
-    "mucosal disease": [
-      "enteropathy",
-      "villous atrophy",
-      "small bowel mucosal injury"
+      "post-resection",
+      "small intestine resection"
     ],
     "parenteral nutrition": [
       "TPN",
@@ -53,73 +39,11 @@
     "path": "ROOT",
     "children": [
       {
-        "logic": "OR",
-        "path": "A",
-        "criterion": "Intestinal failure due to one of three underlying conditions",
-        "children": [
-          {
-            "path": "A.1",
-            "criterion": "Short bowel syndrome",
-            "keywords": [
-              "short bowel syndrome",
-              "SBS",
-              "small bowel resection",
-              "more than half resected",
-              "operative report"
-            ]
-          },
-          {
-            "path": "A.2",
-            "criterion": "Chronic motility disorder",
-            "keywords": [
-              "chronic intestinal pseudo-obstruction",
-              "CIPO",
-              "motility disorder",
-              "intestinal dysmotility",
-              "gastroparesis",
-              "small bowel dysmotility"
-            ]
-          },
-          {
-            "path": "A.3",
-            "criterion": "Extensive small bowel mucosal disease",
-            "keywords": [
-              "mucosal disease",
-              "enteropathy",
-              "villous atrophy",
-              "extensive Crohn's",
-              "radiation enteropathy",
-              "mucosal injury"
-            ]
-          }
-        ]
-      },
-      {
-        "path": "B",
-        "criterion": "Dependence on daily parenteral nutrition via a central venous catheter",
-        "keywords": [
-          "TPN",
-          "total parenteral nutrition",
-          "daily PN",
-          "central venous catheter",
-          "central line",
-          "Hickman",
-          "PICC",
-          "home parenteral nutrition",
-          "HPN"
-        ]
-      },
-      {
-        "path": "C",
-        "criterion": "Parenteral nutrition dependence lasting at least 12 months",
-        "keywords": [
-          "12 months",
-          "1 year",
-          "twelve months",
-          "ongoing",
-          "chronic dependence"
-        ],
-        "duration_months_required": 12
+        "path": "PRECONDITION",
+        "criterion": "Short bowel syndrome (SBS), due to surgical resection of more than one-half of the small intestine, with dependence on daily parenteral nutrition via a central venous catheter (see 5.00F).",
+        "keywords": ["short bowel syndrome", "SBS", "small bowel resection", "more than half resected", "operative report", "TPN", "total parenteral nutrition", "daily PN", "central venous catheter", "central line", "Hickman", "PICC", "home parenteral nutrition", "HPN"],
+        "duration_months_required": 12,
+        "duration_basis": "expected_duration"
       }
     ]
   }

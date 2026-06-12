@@ -2,8 +2,8 @@
   "code": "4.05",
   "title": "Recurrent arrhythmias",
   "body_system": "cardiovascular",
-  "version": 1,
-  "summary": "Recurrent arrhythmias (not due to reversible cause) with uncontrolled syncope or near-syncope, despite prescribed treatment, with documented arrhythmia coincident with symptoms by ECG or Holter monitor.",
+  "version": 2,
+  "summary": "Recurrent arrhythmias, not related to reversible causes, resulting in uncontrolled recurrent episodes of cardiac syncope or near-syncope despite prescribed treatment, and documented by resting or ambulatory (Holter) electrocardiography or other appropriate testing coincident with the syncopal episodes.",
   "synonyms": {
     "recurrent arrhythmias":   ["arrhythmia", "irregular heartbeat", "dysrhythmia", "arrhythmias"],
     "syncope":                 ["passing out", "fainting", "loss of consciousness", "LOC", "fainted"],
@@ -22,19 +22,9 @@
     "path": "ROOT",
     "children": [
       {
-        "path": "A",
-        "criterion": "Recurrent arrhythmias not related to reversible cause (electrolyte abnormality, thyroid dysfunction, drug effect)",
-        "keywords": ["recurrent arrhythmia", "VT", "VF", "AF with RVR", "SVT", "not reversible cause"]
-      },
-      {
-        "path": "B",
-        "criterion": "Uncontrolled recurrent episodes of syncope or near-syncope despite adherence to prescribed treatment",
-        "keywords": ["syncope", "near-syncope", "presyncope", "fainting", "passing out", "despite treatment", "recurrent episodes"]
-      },
-      {
-        "path": "C",
-        "criterion": "Documentation by ECG, ambulatory monitoring (Holter), or other appropriate testing showing arrhythmia coincident with the syncope or near-syncope",
-        "keywords": ["ECG", "EKG", "Holter monitor", "event monitor", "loop recorder", "arrhythmia documented", "coincident with symptoms"]
+        "path": "PRECONDITION",
+        "criterion": "Recurrent arrhythmias, not related to reversible causes such as electrolyte abnormalities or digitalis glycoside or antiarrhythmic drug toxicity, resulting in uncontrolled (see 4.00A3f) recurrent (see 4.00A3c) episodes of cardiac syncope or near-syncope (see 4.00F3b) despite prescribed treatment (see 4.00B3 if no prescribed treatment), and documented by resting or ambulatory (Holter) electrocardiography or by other appropriate medically acceptable testing, coincident with the occurrence of syncope or near-syncope (see 4.00F3c).",
+        "keywords": ["recurrent arrhythmia", "VT", "VF", "AF with RVR", "SVT", "not reversible cause", "syncope", "near-syncope", "presyncope", "fainting", "passing out", "despite treatment", "recurrent episodes", "uncontrolled", "ECG", "EKG", "Holter monitor", "ambulatory ECG", "event monitor", "loop recorder", "arrhythmia documented", "coincident with symptoms"]
       }
     ]
   }

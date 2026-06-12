@@ -2,8 +2,8 @@
   "code": "5.02",
   "title": "Gastrointestinal hemorrhaging from any cause",
   "body_system": "digestive",
-  "version": 1,
-  "summary": "Gastrointestinal hemorrhaging from any cause requiring blood transfusion of at least 2 units of blood per transfusion on at least three occasions during a consecutive 6-month period, with at least 30 days between hospitalizations.",
+  "version": 2,
+  "summary": "Gastrointestinal hemorrhaging from any cause, requiring blood transfusion of at least 2 units per transfusion, occurring at least three times during a consecutive 6-month period (transfusions at least 30 days apart). Consider under a disability for 1 year following the last documented transfusion; thereafter, evaluate the residual impairment(s).",
   "synonyms": {
     "GI bleed":                ["gastrointestinal bleeding", "GIB", "GI hemorrhage", "upper GI bleed", "UGIB", "lower GI bleed", "LGIB"],
     "hematemesis":             ["vomiting blood", "blood emesis", "coffee-ground emesis"],
@@ -17,11 +17,13 @@
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Gastrointestinal hemorrhaging from any cause",
-       "keywords": ["GI bleed", "gastrointestinal hemorrhage", "hematemesis", "melena", "hematochezia", "EGD", "colonoscopy"]},
-      {"path": "B", "criterion": "Required blood transfusion of at least 2 units per transfusion, on at least three occasions during a consecutive 6-month period",
-       "keywords": ["blood transfusion", "2 units", "PRBC", "three transfusions", "6 months", "30 days apart"],
-       "duration_months_required": 6}
+      {
+        "path": "PRECONDITION",
+        "criterion": "Gastrointestinal hemorrhaging from any cause, requiring blood transfusion (with or without hospitalization) of at least 2 units of blood per transfusion, and occurring at least three times during a consecutive 6-month period. The transfusions must be at least 30 days apart within the 6-month period. Consider under a disability for 1 year following the last documented transfusion; thereafter, evaluate the residual impairment(s).",
+        "keywords": ["GI bleed", "gastrointestinal hemorrhage", "hematemesis", "melena", "hematochezia", "EGD", "colonoscopy", "blood transfusion", "2 units", "PRBC", "three transfusions", "6-month period", "30 days apart", "1 year following last transfusion"],
+        "duration_months_required": 6,
+        "duration_basis": "observation_window"
+      }
     ]
   }
 }
