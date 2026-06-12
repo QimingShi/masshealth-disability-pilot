@@ -2,7 +2,7 @@
   "code": "12.03",
   "title": "Schizophrenia spectrum and other psychotic disorders",
   "body_system": "mental",
-  "version": 1,
+  "version": 2,
   "summary": "Schizophrenia, schizoaffective, delusional disorder, or psychotic disorder due to medical condition meeting paragraph A symptom criteria, AND paragraph B (functional limitations) OR paragraph C (serious and persistent ≥2 years).",
   "synonyms": {
     "schizophrenia":           ["schizophrenia spectrum", "schizoaffective disorder", "schizophreniform"],
@@ -71,7 +71,8 @@
             "children": [
               {"path": "C.duration", "criterion": "Medically documented psychotic disorder over period of ≥2 years",
                "keywords": ["2 years", "24 months", "longstanding", "chronic schizophrenia"],
-               "duration_months_required": 24},
+               "duration_months_required": 24,
+               "duration_basis": "documented_history"},
               {"path": "C.1", "criterion": "Reliance on ongoing treatment, therapy, psychosocial supports, or highly structured setting",
                "keywords": ["antipsychotic medication", "ACT team", "supportive housing", "case manager", "ongoing treatment"]},
               {"path": "C.2", "criterion": "Minimal capacity to adapt to changes in environment",

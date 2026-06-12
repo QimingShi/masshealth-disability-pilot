@@ -2,7 +2,7 @@
   "code": "12.04",
   "title": "Depressive, bipolar and related disorders",
   "body_system": "mental",
-  "version": 1,
+  "version": 2,
   "summary": "Depressive disorder OR bipolar disorder meeting paragraph A symptom criteria, AND either paragraph B (extreme/marked limitation in mental functioning areas) OR paragraph C (medically documented disorder ≥2 years with ongoing treatment and minimal capacity to adapt to changes).",
   "synonyms": {
     "depression":              ["major depressive disorder", "MDD", "depressive disorder", "major depression", "clinical depression", "low mood", "depressed mood"],
@@ -199,7 +199,8 @@
                 "path": "C.duration",
                 "criterion": "Medically documented history of the mental disorder over a period of at least 2 years",
                 "keywords": ["2 years", "24 months", "longstanding mental illness", "chronic depression", "chronic bipolar", "history of"],
-                "duration_months_required": 24
+                "duration_months_required": 24,
+                "duration_basis": "documented_history"
               },
               {
                 "path": "C.1",

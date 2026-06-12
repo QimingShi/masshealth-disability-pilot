@@ -2,7 +2,7 @@
   "code": "12.02",
   "title": "Neurocognitive disorders",
   "body_system": "mental",
-  "version": 1,
+  "version": 2,
   "summary": "Neurocognitive disorder (dementia, mild cognitive impairment, neurocognitive impairment from Alzheimer's, vascular, TBI, or substance-induced) with documented cognitive decline AND paragraph B (functional limitations) OR paragraph C (serious and persistent ≥2 years).",
   "synonyms": {
     "neurocognitive disorder": ["NCD", "cognitive disorder", "cognitive impairment", "MCI", "mild cognitive impairment"],
@@ -114,7 +114,8 @@
                 "path": "C.duration",
                 "criterion": "Medically documented neurocognitive disorder over at least 2 years",
                 "keywords": ["2 years", "24 months", "longstanding", "chronic dementia", "progressive cognitive decline"],
-                "duration_months_required": 24
+                "duration_months_required": 24,
+                "duration_basis": "documented_history"
               },
               {
                 "path": "C.1",

@@ -2,8 +2,8 @@
   "code": "11.20",
   "title": "Coma or persistent vegetative state",
   "body_system": "neurological",
-  "version": 1,
-  "summary": "Coma or persistent vegetative state due to any cause, persistent for at least 1 month.",
+  "version": 2,
+  "summary": "Coma or persistent vegetative state, persisting for at least 1 month. Medically induced comas are not considered under 11.20 (evaluate under the underlying disorder instead).",
   "synonyms": {
     "coma":                    ["unresponsive", "comatose", "GCS 3-8"],
     "persistent vegetative state": ["PVS", "vegetative state", "unresponsive wakefulness syndrome"],
@@ -14,15 +14,11 @@
     "path": "ROOT",
     "children": [
       {
-        "path": "A",
-        "criterion": "Coma or persistent vegetative state due to any cause",
-        "keywords": ["coma", "comatose", "persistent vegetative state", "PVS", "vegetative state", "unresponsive", "GCS 3-8"]
-      },
-      {
-        "path": "B",
-        "criterion": "Persisting for at least 1 month",
-        "keywords": ["1 month", "30 days", "persistent", "ongoing"],
-        "duration_months_required": 1
+        "path": "PRECONDITION",
+        "criterion": "Coma or persistent vegetative state (not medically induced - see 11.00R), persisting for at least 1 continuous month",
+        "keywords": ["coma", "comatose", "persistent vegetative state", "PVS", "vegetative state", "unresponsive", "GCS 3-8", "1 month", "30 days", "persistent"],
+        "duration_months_required": 1,
+        "duration_basis": "expected_duration"
       }
     ]
   }

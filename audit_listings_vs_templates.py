@@ -50,15 +50,22 @@ LISTINGS_DIR = (HERE / "SSA JSON" / "disability-eval-listings"
 # Template parsing
 # ---------------------------------------------------------------------------
 
-# Match a paragraph marker at line start, e.g. "____A.", "A.", "____B."
-PARA_MARK_RE = re.compile(r"^[_]*([A-D])\.\s")
-# Match a sub-item marker e.g. "____1.", "1.", "____2."
-SUB_MARK_RE = re.compile(r"^\s*[_]*(\d)\.\s")
+# Match a paragraph marker at line start, e.g. "____A.", "A.", "____B.",
+# "___  A." (12.04 uses ___ followed by spaces before the letter).
+PARA_MARK_RE = re.compile(r"^[_]*\s*([A-D])\.\s")
+# Match a sub-item marker e.g. "____1.", "1.", "____2.", "_   1.".
+SUB_MARK_RE = re.compile(r"^\s*[_]*\s*(\d)\.\s")
 # Look for duration / treatment-adherence language. SSA phrases this
 # many different ways; normalize the spaces (templates have non-breaking
 # spaces + tab artifacts from docx round-trip) before matching.
 DURATION_TREATMENT_RE = re.compile(
-    r"despite\s+adherence\s+to\s+prescribed\s+treatment\s+for\s+at\s+least\s+(\d+)\s+months?",
+    r"despite\s+adherence\s+to\s+prescribed\s+treatment\s+for\s+at\s+least\s+(\d+)\s+(?:consecutive\s+)?months?",
+    re.IGNORECASE)
+# 11.02 epilepsy phrasing: "for at least N consecutive months despite
+# adherence to prescribed treatment" — same basis as DURATION_TREATMENT_RE
+# but the duration appears BEFORE the "despite adherence" clause.
+DURATION_TREATMENT_REVERSED_RE = re.compile(
+    r"for\s+at\s+least\s+(\d+)\s+(?:consecutive\s+)?months?\s+(?:\([^)]+\)\s+)?despite\s+adherence\s+to\s+prescribed\s+treatment",
     re.IGNORECASE)
 # 8.02-8.06 dermatology phrasing: "persist for at least N months despite
 # continuing treatment as prescribed". Same semantic basis as the
@@ -67,7 +74,8 @@ DURATION_PERSIST_TREATMENT_RE = re.compile(
     r"persist\s+for\s+at\s+least\s+(\d+)\s+months?\s+despite\s+continuing\s+treatment",
     re.IGNORECASE)
 DURATION_POSTINJURY_RE = re.compile(
-    r"persisting\s+for\s+at\s+least\s+(\d+)\s+consecutive\s+months?\s+after\s+the\s+injury",
+    r"persisting\s+for\s+(?:at\s+least\s+)?(\d+)\s+(?:consecutive\s+)?months?\s+after\s+the\s+"
+    r"(?:injury|insult|disorder|event|stroke|disorder)",
     re.IGNORECASE)
 # Generic "lasting / expected to last 12 months" — common in 1.xx, 3.xx,
 # 4.xx. Templates use varied wordings ("lasting", "has lasted", "is expected
@@ -76,7 +84,7 @@ DURATION_POSTINJURY_RE = re.compile(
 # noise — if any "lasted" or "expected to last" appears within ~40 chars
 # before "(at least )? N months", count it.
 DURATION_LASTING_RE = re.compile(
-    r"(?:lasting|has\s+lasted|have\s+lasted|expected\s+to\s+last)"
+    r"(?:lasting|has\s+lasted|have\s+lasted|expected\s+to\s+last|persisting)"
     r"[^.]{0,120}?"   # allow intervening clauses (commas / "for a continuous period of" / etc.)
     r"(?:at\s+least\s+)?(\d+)\s+(?:consecutive\s+)?months?",
     re.IGNORECASE | re.DOTALL)
@@ -223,6 +231,7 @@ def extract_template(docx_path: Path) -> dict | None:
     # round-trips inject tabs and non-breaking spaces inside phrases.
     full_text = re.sub(r"\s+", " ", "\n".join(paragraphs))
     treatment_match     = DURATION_TREATMENT_RE.search(full_text)
+    treatment_rev_match = DURATION_TREATMENT_REVERSED_RE.search(full_text)
     persist_treat_match = DURATION_PERSIST_TREATMENT_RE.search(full_text)
     postinjury_match    = DURATION_POSTINJURY_RE.search(full_text)
     lasting_match       = DURATION_LASTING_RE.search(full_text)
@@ -232,6 +241,12 @@ def extract_template(docx_path: Path) -> dict | None:
             "type": "treatment_adherence",
             "months": int(treatment_match.group(1)),
             "raw":    treatment_match.group(0),
+        }
+    elif treatment_rev_match:
+        duration_info = {
+            "type": "treatment_adherence",
+            "months": int(treatment_rev_match.group(1)),
+            "raw":    treatment_rev_match.group(0),
         }
     elif persist_treat_match:
         duration_info = {
@@ -478,7 +493,14 @@ def diff_listing(code: str, template: dict, jdata: dict) -> list[dict]:
         # If post-injury persistence — usually per-paragraph
         if t_basis == "treatment_adherence":
             on_precond = any(d["path"] == "PRECONDITION" for d in j_durs)
-            if not on_precond:
+            # Only flag SHOULD_BE_PRECONDITION when all paragraph-level
+            # durations have the SAME value/basis — that's the "treatment
+            # applies uniformly" signal. If JSON has different durations
+            # per paragraph (e.g. 11.02 epilepsy: A=3mo, C=4mo), the
+            # per-paragraph encoding is intentional and correct.
+            distinct_durations = {(d["months"], d["basis"])
+                                  for d in j_durs if d["path"] != "PRECONDITION"}
+            if not on_precond and len(distinct_durations) <= 1:
                 findings.append({
                     "severity": "MEDIUM",
                     "kind": "DURATION_SHOULD_BE_PRECONDITION",

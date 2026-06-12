@@ -2,7 +2,7 @@
   "code": "11.05",
   "title": "Benign brain tumors",
   "body_system": "neurological",
-  "version": 1,
+  "version": 2,
   "summary": "Benign brain tumor with disorganization of motor function in two extremities, OR marked limitation in physical functioning AND in one mental functioning area.",
   "synonyms": {
     "benign brain tumor":      ["brain tumor", "intracranial mass", "intracranial neoplasm", "meningioma", "pituitary adenoma", "schwannoma", "acoustic neuroma", "vestibular schwannoma"],
@@ -35,12 +35,28 @@
           {
             "logic": "AND",
             "path": "B",
-            "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+            "criterion": "Marked limitation (see 11.00G2) in physical functioning (see 11.00G3a), AND in one of four mental functioning areas",
             "children": [
-              {"path": "B.1", "criterion": "Marked limitation in physical functioning",
-               "keywords": ["marked physical limitation", "decreased mobility"]},
-              {"path": "B.2", "criterion": "Marked limitation in one mental functioning area",
-               "keywords": ["marked cognitive limitation", "executive dysfunction", "memory deficit", "personality change"]}
+              {
+                "path": "B.1",
+                "criterion": "Marked limitation in physical functioning (see 11.00G3a)",
+                "keywords": ["marked physical limitation", "decreased mobility"]
+              },
+              {
+                "logic": "OR",
+                "path": "B.2",
+                "criterion": "Marked limitation in ONE of four mental functioning areas",
+                "children": [
+                  {"path": "B.2.a", "criterion": "Marked limitation in understanding, remembering, or applying information (see 11.00G3b(i))",
+                   "keywords": ["understanding", "remembering", "applying information", "cognitive deficit", "memory deficit"]},
+                  {"path": "B.2.b", "criterion": "Marked limitation in interacting with others (see 11.00G3b(ii))",
+                   "keywords": ["social interaction", "interacting", "social limitation", "personality change"]},
+                  {"path": "B.2.c", "criterion": "Marked limitation in concentrating, persisting, or maintaining pace (see 11.00G3b(iii))",
+                   "keywords": ["concentration", "persistence", "pace", "attention", "executive dysfunction"]},
+                  {"path": "B.2.d", "criterion": "Marked limitation in adapting or managing oneself (see 11.00G3b(iv))",
+                   "keywords": ["adapting", "managing oneself", "self-management"]}
+                ]
+              }
             ]
           }
         ]

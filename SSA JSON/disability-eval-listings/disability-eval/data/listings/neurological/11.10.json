@@ -2,8 +2,8 @@
   "code": "11.10",
   "title": "Amyotrophic lateral sclerosis (ALS)",
   "body_system": "neurological",
-  "version": 1,
-  "summary": "Amyotrophic lateral sclerosis with documentation of clinically appropriate medical history, neurological findings, and EMG findings.",
+  "version": 2,
+  "summary": "Amyotrophic lateral sclerosis (ALS), established by clinical and laboratory findings (see 11.00O). Laboratory testing is required when clinical findings of upper and lower motor neuron disease are not present in three or more regions.",
   "synonyms": {
     "ALS":                     ["amyotrophic lateral sclerosis", "Lou Gehrig's disease", "motor neuron disease", "MND"],
     "EMG":                     ["electromyography", "needle EMG", "nerve conduction study", "NCS"],
@@ -18,14 +18,26 @@
     "path": "ROOT",
     "children": [
       {
-        "path": "A",
-        "criterion": "Documented diagnosis of ALS by clinical history showing progressive UMN and LMN signs",
-        "keywords": ["ALS", "amyotrophic lateral sclerosis", "Lou Gehrig", "motor neuron disease", "MND", "progressive weakness", "UMN signs", "LMN signs", "fasciculations", "atrophy"]
+        "path": "PRECONDITION",
+        "criterion": "Amyotrophic lateral sclerosis (ALS), established by clinical and laboratory findings (see 11.00O). Documentation based on generally accepted methods consistent with prevailing medical practice. Laboratory testing required when clinical findings of UMN and LMN disease are not present in three or more regions.",
+        "keywords": ["ALS", "amyotrophic lateral sclerosis", "Lou Gehrig", "motor neuron disease", "MND", "progressive weakness", "UMN signs", "LMN signs", "fasciculations", "atrophy", "bulbar onset"]
       },
       {
-        "path": "B",
-        "criterion": "EMG/NCS findings consistent with ALS (denervation, fasciculations) when needed for diagnostic confirmation",
-        "keywords": ["EMG", "needle EMG", "denervation", "fibrillations", "fasciculations on EMG", "NCS"]
+        "logic": "OR",
+        "path": "ESTABLISHMENT",
+        "criterion": "Diagnosis established by clinical findings alone (when UMN+LMN signs present in 3+ regions) OR by clinical + laboratory findings",
+        "children": [
+          {
+            "path": "ESTABLISHMENT.clinical",
+            "criterion": "Clinical findings of upper and lower motor neuron disease in three or more regions (sufficient on their own without EMG/NCS)",
+            "keywords": ["UMN signs", "LMN signs", "three regions", "progressive weakness", "hyperreflexia", "atrophy", "fasciculations", "spasticity"]
+          },
+          {
+            "path": "ESTABLISHMENT.lab",
+            "criterion": "Laboratory testing (electrophysiological studies such as EMG/NCS) supporting the diagnosis when clinical findings are not present in three or more regions",
+            "keywords": ["EMG", "needle EMG", "denervation", "fibrillations", "fasciculations on EMG", "NCS", "nerve conduction study"]
+          }
+        ]
       }
     ]
   }

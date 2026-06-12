@@ -2,7 +2,7 @@
   "code": "12.06",
   "title": "Anxiety and obsessive-compulsive disorders",
   "body_system": "mental",
-  "version": 1,
+  "version": 2,
   "summary": "Anxiety disorder, panic disorder, agoraphobia, OR OCD meeting paragraph A symptom criteria, AND either paragraph B (functional limitations) OR paragraph C (serious and persistent ≥2 years).",
   "synonyms": {
     "anxiety":                 ["anxiety disorder", "GAD", "generalized anxiety disorder", "anxious"],
@@ -184,7 +184,8 @@
                 "path": "C.duration",
                 "criterion": "Medically documented history of mental disorder over period of at least 2 years",
                 "keywords": ["2 years", "24 months", "longstanding", "chronic anxiety", "chronic OCD"],
-                "duration_months_required": 24
+                "duration_months_required": 24,
+                "duration_basis": "documented_history"
               },
               {
                 "path": "C.1",

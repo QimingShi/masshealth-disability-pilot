@@ -2,7 +2,7 @@
   "code": "11.06",
   "title": "Parkinsonian syndrome",
   "body_system": "neurological",
-  "version": 1,
+  "version": 2,
   "summary": "Parkinsonian syndrome despite ≥3 months of prescribed treatment, with disorganization of motor function in two extremities OR marked limitation in physical functioning AND one mental functioning area.",
   "synonyms": {
     "Parkinsonian syndrome":   ["Parkinson's disease", "Parkinsonism", "PD", "atypical parkinsonism", "MSA", "multiple system atrophy", "PSP", "progressive supranuclear palsy"],
@@ -21,9 +21,10 @@
     "children": [
       {
         "path": "PRECONDITION",
-        "criterion": "Parkinsonian syndrome diagnosis with limitations persisting despite ≥3 consecutive months of prescribed treatment",
-        "keywords": ["Parkinson's disease", "Parkinsonism", "tremor", "bradykinesia", "rigidity", "despite treatment", "levodopa", "dopaminergic medication"],
-        "duration_months_required": 3
+        "criterion": "Parkinsonian syndrome diagnosis with paragraph A or B criteria persisting despite adherence to prescribed treatment for at least 3 consecutive months (see 11.00C)",
+        "keywords": ["Parkinson's disease", "Parkinsonism", "tremor", "bradykinesia", "rigidity", "despite treatment", "levodopa", "dopaminergic medication", "3 months", "adherence"],
+        "duration_months_required": 3,
+        "duration_basis": "treatment_adherence"
       },
       {
         "logic": "OR",
@@ -38,12 +39,28 @@
           {
             "logic": "AND",
             "path": "B",
-            "criterion": "Marked limitation in physical functioning AND in one mental functioning area",
+            "criterion": "Marked limitation (see 11.00G2) in physical functioning (see 11.00G3a), AND in one of four mental functioning areas",
             "children": [
-              {"path": "B.1", "criterion": "Marked limitation in physical functioning",
-               "keywords": ["marked physical limitation", "decreased mobility", "Parkinson's disability"]},
-              {"path": "B.2", "criterion": "Marked limitation in one mental functioning area",
-               "keywords": ["cognitive impairment", "Parkinson's dementia", "executive dysfunction", "depression"]}
+              {
+                "path": "B.1",
+                "criterion": "Marked limitation in physical functioning (see 11.00G3a)",
+                "keywords": ["marked physical limitation", "decreased mobility", "Parkinson's disability"]
+              },
+              {
+                "logic": "OR",
+                "path": "B.2",
+                "criterion": "Marked limitation in ONE of four mental functioning areas",
+                "children": [
+                  {"path": "B.2.a", "criterion": "Marked limitation in understanding, remembering, or applying information (see 11.00G3b(i))",
+                   "keywords": ["understanding", "remembering", "applying information", "Parkinson's dementia", "cognitive deficit"]},
+                  {"path": "B.2.b", "criterion": "Marked limitation in interacting with others (see 11.00G3b(ii))",
+                   "keywords": ["social interaction", "interacting", "social limitation", "Parkinson's depression"]},
+                  {"path": "B.2.c", "criterion": "Marked limitation in concentrating, persisting, or maintaining pace (see 11.00G3b(iii))",
+                   "keywords": ["concentration", "persistence", "pace", "attention", "executive dysfunction"]},
+                  {"path": "B.2.d", "criterion": "Marked limitation in adapting or managing oneself (see 11.00G3b(iv))",
+                   "keywords": ["adapting", "managing oneself", "self-management"]}
+                ]
+              }
             ]
           }
         ]

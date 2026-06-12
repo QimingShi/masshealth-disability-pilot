@@ -2,8 +2,8 @@
   "code": "11.09",
   "title": "Multiple sclerosis",
   "body_system": "neurological",
-  "version": 1,
-  "summary": "Multiple sclerosis with disorganization of motor function in two extremities, OR visual or mental impairment with marked physical functioning limitation, OR significant fatigue with limited functioning.",
+  "version": 2,
+  "summary": "Multiple sclerosis with one of: A) disorganization of motor function in two extremities causing extreme limitation, or B) marked limitation in physical functioning AND in one of four mental functioning areas.",
   "synonyms": {
     "multiple sclerosis":      ["MS", "demyelinating disease", "RRMS", "relapsing-remitting MS", "SPMS", "secondary-progressive MS", "PPMS", "primary-progressive MS"],
     "MRI brain":               ["MRI of brain", "brain MRI"],
@@ -27,33 +27,50 @@
       {
         "logic": "OR",
         "path": "ALTERNATIVES",
-        "criterion": "Motor disorganization OR functional limitation pattern OR fatigue-based limitation",
+        "criterion": "Paragraph A (motor disorganization) OR Paragraph B (marked physical limitation + one mental area)",
         "children": [
           {
             "path": "A",
-            "criterion": "Disorganization of motor function in two extremities resulting in extreme limitation in standing, balancing, or using upper extremities",
-            "keywords": ["motor weakness", "spasticity", "ataxia", "two extremity weakness", "extreme limitation"]
+            "criterion": "Disorganization of motor function in two extremities (see 11.00D1), resulting in an extreme limitation (see 11.00D2) in the ability to stand up from a seated position, balance while standing or walking, or use the upper extremities",
+            "keywords": ["motor weakness", "spasticity", "ataxia", "two extremity weakness", "extreme limitation", "stand from seated", "balance walking", "upper extremity use"]
           },
           {
             "logic": "AND",
             "path": "B",
-            "criterion": "Visual or mental impairment AND marked physical functioning limitation",
+            "criterion": "Marked limitation (see 11.00G2) in physical functioning (see 11.00G3a), AND in one of four mental functioning areas",
             "children": [
-              {"path": "B.1", "criterion": "Visual impairment per 2.00, OR marked limitation in one mental functioning area",
-               "keywords": ["optic neuritis", "visual impairment", "cognitive impairment", "MS dementia", "executive dysfunction"]},
-              {"path": "B.2", "criterion": "Marked limitation in physical functioning",
-               "keywords": ["marked physical limitation", "decreased mobility", "MS fatigue"]}
-            ]
-          },
-          {
-            "logic": "AND",
-            "path": "C",
-            "criterion": "Significant, reproducible fatigue of motor function AND marked limitation in physical functioning",
-            "children": [
-              {"path": "C.1", "criterion": "Significant, reproducible fatigue of motor function with substantial muscle weakness on repetitive activity",
-               "keywords": ["MS fatigue", "motor fatigue", "weakness with repetition", "fatigability"]},
-              {"path": "C.2", "criterion": "Marked limitation in physical functioning",
-               "keywords": ["marked physical limitation", "decreased mobility"]}
+              {
+                "path": "B.1",
+                "criterion": "Marked limitation in physical functioning (see 11.00G3a)",
+                "keywords": ["marked physical limitation", "decreased mobility", "MS fatigue"]
+              },
+              {
+                "logic": "OR",
+                "path": "B.2",
+                "criterion": "Marked limitation in ONE of four mental functioning areas",
+                "children": [
+                  {
+                    "path": "B.2.a",
+                    "criterion": "Marked limitation in understanding, remembering, or applying information (see 11.00G3b(i))",
+                    "keywords": ["understanding", "remembering", "applying information", "cognitive deficit", "MS cognitive dysfunction"]
+                  },
+                  {
+                    "path": "B.2.b",
+                    "criterion": "Marked limitation in interacting with others (see 11.00G3b(ii))",
+                    "keywords": ["social interaction", "interacting", "social limitation"]
+                  },
+                  {
+                    "path": "B.2.c",
+                    "criterion": "Marked limitation in concentrating, persisting, or maintaining pace (see 11.00G3b(iii))",
+                    "keywords": ["concentration", "persistence", "pace", "attention", "executive dysfunction"]
+                  },
+                  {
+                    "path": "B.2.d",
+                    "criterion": "Marked limitation in adapting or managing oneself (see 11.00G3b(iv))",
+                    "keywords": ["adapting", "managing oneself", "self-management"]
+                  }
+                ]
+              }
             ]
           }
         ]

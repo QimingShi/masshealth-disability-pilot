@@ -2,7 +2,7 @@
   "code": "12.15",
   "title": "Trauma- and stressor-related disorders",
   "body_system": "mental",
-  "version": 1,
+  "version": 2,
   "summary": "PTSD or other trauma/stressor-related disorder with exposure to actual or threatened death/serious injury/violence, re-experiencing, avoidance, mood/behavior disturbance, and increased arousal, AND paragraph B functional limitations OR paragraph C (serious and persistent ≥2 years).",
   "synonyms": {
     "PTSD":                    ["post-traumatic stress disorder", "post traumatic stress", "trauma", "trauma disorder", "combat PTSD", "complex PTSD", "C-PTSD"],
@@ -72,7 +72,8 @@
             "children": [
               {"path": "C.duration", "criterion": "Medically documented PTSD/trauma disorder over period of ≥2 years",
                "keywords": ["2 years", "24 months", "longstanding", "chronic PTSD", "complex PTSD"],
-               "duration_months_required": 24},
+               "duration_months_required": 24,
+               "duration_basis": "documented_history"},
               {"path": "C.1", "criterion": "Reliance on ongoing medical treatment, therapy, psychosocial supports, or highly structured setting",
                "keywords": ["psychiatric medication", "EMDR", "CPT", "PE therapy", "trauma-focused therapy", "case manager"]},
               {"path": "C.2", "criterion": "Minimal capacity to adapt to changes in environment",
