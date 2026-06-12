@@ -2,17 +2,29 @@
   "code": "2.04",
   "title": "Visual impairment (combined acuity and field impairment)",
   "body_system": "special_senses",
-  "version": 1,
-  "summary": "Visual impairment value of 1.00 or greater in the better eye, calculated by adding visual acuity impairment value and visual field impairment value.",
+  "version": 2,
+  "summary": "Loss of visual efficiency, or visual impairment, in the better eye. A) Visual efficiency percentage of 20 or less after best correction; or B) Visual impairment value of 1.00 or greater after best correction.",
   "synonyms": {
+    "visual efficiency":       ["visual efficiency percentage", "VEP"],
     "visual impairment value": ["VIV", "combined visual impairment"],
     "visual acuity impairment value": ["VAIV"],
     "visual field impairment value": ["VFIV"],
     "perimetry":               ["automated perimetry", "HFA"]
   },
   "rule_json": {
+    "logic": "OR",
     "path": "ROOT",
-    "criterion": "Visual impairment value of 1.00 or greater in the better eye (sum of visual acuity impairment value and visual field impairment value calculated per SSA formula)",
-    "keywords": ["visual impairment value", "VIV", "1.00 or greater", "visual acuity impairment value", "visual field impairment value", "automated perimetry"]
+    "children": [
+      {
+        "path": "A",
+        "criterion": "A visual efficiency percentage of 20 or less after best correction (see 2.00A7d). Calculated as: visual acuity efficiency percentage (2.00A7b) × visual field efficiency percentage (2.00A7c) ÷ 100, in the better eye.",
+        "keywords": ["visual efficiency percentage", "20 or less", "visual acuity efficiency", "visual field efficiency", "after best correction", "better eye"]
+      },
+      {
+        "path": "B",
+        "criterion": "A visual impairment value of 1.00 or greater after best correction (see 2.00A8d). Calculated as: visual acuity impairment value (2.00A8b) + visual field impairment value (2.00A8c), in the better eye.",
+        "keywords": ["visual impairment value", "VIV", "1.00 or greater", "visual acuity impairment value", "visual field impairment value", "after best correction", "better eye", "automated perimetry"]
+      }
+    ]
   }
 }

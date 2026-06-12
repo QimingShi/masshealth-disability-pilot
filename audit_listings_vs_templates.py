@@ -96,7 +96,7 @@ DURATION_YEARS_RE = re.compile(
 # Cancer "consider under a disability" pattern — 13.02, 13.07, 13.14,
 # 13.28: "until at least N months from the date of [diagnosis/transplant/treatment]"
 DURATION_UNTIL_RE = re.compile(
-    r"until\s+at\s+least\s+(\d+)\s+months?\s+from\s+the\s+date",
+    r"(?:until\s+at\s+least|for)\s+(\d+)\s+months?\s+from\s+the\s+date",
     re.IGNORECASE)
 # Cochlear implant pattern — 2.11: "for 1 year after initial implantation"
 DURATION_FOR_YEAR_AFTER_RE = re.compile(

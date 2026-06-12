@@ -2,8 +2,8 @@
   "code": "2.07",
   "title": "Disturbance of labyrinthine-vestibular function",
   "body_system": "special_senses",
-  "version": 1,
-  "summary": "Disturbance of labyrinthine-vestibular function with disturbed equilibrium AND hearing impairment, all confirmed by appropriate tests.",
+  "version": 2,
+  "summary": "Disturbance of labyrinthine-vestibular function (including Meniere's disease), characterized by a history of frequent attacks of balance disturbance, tinnitus, and progressive hearing loss, with BOTH A) disturbed vestibular function on caloric/other vestibular tests AND B) hearing loss established by audiometry.",
   "synonyms": {
     "labyrinthine":            ["inner ear", "vestibular", "labyrinthitis"],
     "vestibular dysfunction":  ["vestibulopathy", "vertigo", "imbalance"],
@@ -17,12 +17,21 @@
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "History of frequent attacks of balance disturbance, tinnitus, and progressive hearing loss",
-       "keywords": ["vertigo", "balance disturbance", "tinnitus", "hearing loss", "Meniere's disease", "vestibular dysfunction"]},
-      {"path": "B", "criterion": "Disturbed function of vestibular labyrinth demonstrated by caloric or other vestibular tests",
-       "keywords": ["caloric testing", "ENG", "VNG", "videonystagmography", "vestibular testing", "abnormal calorics"]},
-      {"path": "C", "criterion": "Hearing loss established by audiometry",
-       "keywords": ["audiogram", "audiometry", "hearing loss", "pure-tone average", "PTA"]}
+      {
+        "path": "PRECONDITION",
+        "criterion": "Disturbance of labyrinthine-vestibular function (including Meniere's disease), characterized by a history of frequent attacks of balance disturbance, tinnitus, and progressive loss of hearing",
+        "keywords": ["labyrinthine-vestibular function", "Meniere's disease", "frequent attacks", "balance disturbance", "vertigo", "tinnitus", "progressive hearing loss"]
+      },
+      {
+        "path": "A",
+        "criterion": "Disturbed function of vestibular labyrinth demonstrated by caloric or other vestibular tests",
+        "keywords": ["caloric testing", "ENG", "VNG", "videonystagmography", "vestibular testing", "abnormal calorics", "abnormal vestibular function"]
+      },
+      {
+        "path": "B",
+        "criterion": "Hearing loss established by audiometry",
+        "keywords": ["audiogram", "audiometry", "hearing loss", "pure-tone average", "PTA", "sensorineural hearing loss"]
+      }
     ]
   }
 }

@@ -2,8 +2,8 @@
   "code": "13.21",
   "title": "Kidneys, adrenal glands, or ureters — carcinoma or sarcoma",
   "body_system": "cancer",
-  "version": 1,
-  "summary": "Cancer of kidneys, adrenal glands, or ureters that is inoperable, unresectable, recurrent, OR with metastases beyond regional lymph nodes.",
+  "version": 2,
+  "summary": "Kidneys, adrenal glands, or ureters - carcinoma. A) Inoperable, unresectable, or recurrent, OR B) With metastases to or beyond the regional lymph nodes.",
   "synonyms": {
     "renal cell carcinoma":    ["RCC", "kidney cancer", "renal cancer", "clear cell carcinoma of kidney"],
     "Wilms tumor":             ["nephroblastoma"],
@@ -15,19 +15,26 @@
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "PRECONDITION", "criterion": "Pathology-confirmed cancer of kidneys, adrenal glands, or ureters",
-       "keywords": ["renal cell carcinoma", "RCC", "kidney cancer", "Wilms tumor", "adrenocortical carcinoma", "ureteral cancer", "biopsy"]},
+      {
+        "path": "PRECONDITION",
+        "criterion": "Kidneys, adrenal glands, or ureters - carcinoma (pathology-confirmed)",
+        "keywords": ["renal cell carcinoma", "RCC", "kidney cancer", "Wilms tumor", "adrenocortical carcinoma", "ureteral cancer", "carcinoma of kidney", "carcinoma of adrenal", "carcinoma of ureter", "biopsy"]
+      },
       {
         "logic": "OR",
         "path": "ALTERNATIVES",
-        "criterion": "Inoperable, recurrent, or metastatic disease",
+        "criterion": "Paragraph A (inoperable/unresectable/recurrent) or B (metastases)",
         "children": [
-          {"path": "A", "criterion": "Inoperable or unresectable disease",
-           "keywords": ["inoperable", "unresectable"]},
-          {"path": "B", "criterion": "Recurrent disease following initial anticancer therapy",
-           "keywords": ["recurrent disease", "tumor recurrence"]},
-          {"path": "C", "criterion": "Metastases beyond regional lymph nodes",
-           "keywords": ["distant metastases", "M1 disease", "lung metastases", "bone metastases"]}
+          {
+            "path": "A",
+            "criterion": "Inoperable, unresectable, or recurrent",
+            "keywords": ["inoperable", "unresectable", "recurrent disease", "tumor recurrence", "recurrence"]
+          },
+          {
+            "path": "B",
+            "criterion": "With metastases to or beyond the regional lymph nodes",
+            "keywords": ["regional lymph node metastases", "distant metastases", "M1 disease", "lung metastases", "bone metastases", "metastases beyond regional"]
+          }
         ]
       }
     ]

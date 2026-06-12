@@ -2,22 +2,33 @@
   "code": "10.06",
   "title": "Non-mosaic Down syndrome",
   "body_system": "congenital_multisystem",
-  "version": 1,
-  "summary": "Non-mosaic Down syndrome documented by chromosomal analysis OR by clinical findings consistent with non-mosaic Down syndrome.",
+  "version": 2,
+  "summary": "Non-mosaic Down syndrome (chromosome 21 trisomy or chromosome 21 translocation), documented by A) a karyotype report signed by a physician (or unsigned report plus physician statement), B) a physician's report of chromosome 21 trisomy/translocation consistent with prior karyotype analysis plus distinctive Down syndrome features, or C) a physician's report stating Down syndrome with distinctive features and evidence demonstrating function consistent with non-mosaic Down syndrome.",
   "synonyms": {
     "Down syndrome":           ["DS", "trisomy 21", "Down's syndrome"],
     "non-mosaic":              ["non-mosaic", "complete trisomy 21"],
     "karyotype":               ["chromosomal analysis", "chromosome study", "cytogenetic analysis", "FISH"],
-    "clinical features":       ["facial features", "phenotypic features", "hypotonia"]
+    "clinical features":       ["facial features", "phenotypic features", "hypotonia", "distinctive features"]
   },
   "rule_json": {
     "logic": "OR",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Non-mosaic Down syndrome documented by chromosomal analysis (47,XX,+21 or 47,XY,+21 karyotype)",
-       "keywords": ["Down syndrome", "trisomy 21", "non-mosaic", "karyotype", "47 XX +21", "47 XY +21", "chromosomal analysis", "FISH"]},
-      {"path": "B", "criterion": "Non-mosaic Down syndrome documented by clinical findings consistent with the diagnosis (without genetic confirmation), made by an acceptable medical source",
-       "keywords": ["Down syndrome", "phenotypic features", "physician documentation", "clinical diagnosis"]}
+      {
+        "path": "A",
+        "criterion": "A laboratory report of karyotype analysis signed by a physician, OR both a laboratory report of karyotype analysis not signed by a physician AND a statement by a physician that the claimant has Down syndrome (see 10.00C1)",
+        "keywords": ["karyotype", "47 XX +21", "47 XY +21", "trisomy 21", "translocation", "chromosomal analysis", "physician statement", "Down syndrome"]
+      },
+      {
+        "path": "B",
+        "criterion": "A physician's report stating chromosome 21 trisomy or chromosome 21 translocation consistent with prior karyotype analysis, with distinctive facial or other physical features of Down syndrome (see 10.00C2a)",
+        "keywords": ["physician's report", "prior karyotype", "distinctive facial features", "physical features Down syndrome", "phenotypic features"]
+      },
+      {
+        "path": "C",
+        "criterion": "A physician's report stating that the claimant has Down syndrome with the distinctive facial or other physical features AND evidence demonstrating that the claimant functions at a level consistent with non-mosaic Down syndrome (see 10.00C2b)",
+        "keywords": ["physician's report", "distinctive features", "non-mosaic functional level", "developmental delay", "intellectual functioning consistent"]
+      }
     ]
   }
 }

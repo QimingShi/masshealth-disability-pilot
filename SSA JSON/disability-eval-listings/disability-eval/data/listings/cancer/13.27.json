@@ -2,8 +2,8 @@
   "code": "13.27",
   "title": "Primary site unknown after appropriate search for primary",
   "body_system": "cancer",
-  "version": 1,
-  "summary": "Metastatic carcinoma in which appropriate search for the primary site has been unsuccessful (cancer of unknown primary). Distinct from histologic types covered elsewhere (lymphoma, leukemia, melanoma, etc.).",
+  "version": 2,
+  "summary": "Primary site unknown after appropriate search for primary - metastatic carcinoma or sarcoma, except for squamous cell carcinoma confined to the neck nodes.",
   "synonyms": {
     "cancer of unknown primary": ["CUP", "carcinoma of unknown primary", "occult primary", "unknown primary tumor"],
     "metastasis":              ["metastatic disease", "metastatic carcinoma"],
@@ -14,10 +14,16 @@
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Metastatic carcinoma documented by biopsy",
-       "keywords": ["cancer of unknown primary", "CUP", "metastatic carcinoma", "biopsy", "metastatic disease"]},
-      {"path": "B", "criterion": "Appropriate search for the primary site has been unsuccessful (imaging, endoscopy, immunohistochemistry)",
-       "keywords": ["primary site unknown", "occult primary", "appropriate workup", "PET/CT", "immunohistochemistry", "IHC"]}
+      {
+        "path": "PRECONDITION",
+        "criterion": "Metastatic carcinoma or sarcoma (documented by biopsy) with primary site unknown after appropriate search. Excludes squamous cell carcinoma confined to the neck nodes.",
+        "keywords": ["cancer of unknown primary", "CUP", "metastatic carcinoma", "metastatic sarcoma", "primary site unknown", "occult primary", "biopsy", "PET/CT", "immunohistochemistry", "IHC"]
+      },
+      {
+        "path": "EXCLUSION",
+        "criterion": "Not squamous cell carcinoma confined to the neck nodes (those cases are evaluated under 13.02)",
+        "keywords": ["squamous cell carcinoma", "neck nodes", "cervical lymph nodes", "not confined to neck"]
+      }
     ]
   }
 }

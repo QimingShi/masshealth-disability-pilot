@@ -2,8 +2,8 @@
   "code": "13.11",
   "title": "Skeletal system — sarcoma or carcinoma",
   "body_system": "cancer",
-  "version": 1,
-  "summary": "Skeletal cancer (osteosarcoma, Ewing sarcoma, chondrosarcoma) with inoperable/unresectable disease, recurrence, OR distant metastases.",
+  "version": 2,
+  "summary": "Skeletal system - sarcoma. A) Inoperable or unresectable; B) Recurrent cancer (except local recurrence); C) With distant metastases; or D) All other cancers originating in bone with multimodal anticancer therapy — presumptive disability for 12 months from the date of diagnosis (then evaluate residuals).",
   "synonyms": {
     "osteosarcoma":            ["osteogenic sarcoma", "bone cancer"],
     "Ewing sarcoma":           ["Ewing's sarcoma", "PNET"],
@@ -14,19 +14,38 @@
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "PRECONDITION", "criterion": "Pathology-confirmed skeletal cancer",
-       "keywords": ["osteosarcoma", "Ewing sarcoma", "chondrosarcoma", "skeletal sarcoma", "bone biopsy"]},
+      {
+        "path": "PRECONDITION",
+        "criterion": "Skeletal system - sarcoma (pathology-confirmed)",
+        "keywords": ["osteosarcoma", "Ewing sarcoma", "chondrosarcoma", "skeletal sarcoma", "bone sarcoma", "bone biopsy"]
+      },
       {
         "logic": "OR",
         "path": "ALTERNATIVES",
-        "criterion": "Inoperable, recurrent, or metastatic disease",
+        "criterion": "Paragraph A, B, C, or D",
         "children": [
-          {"path": "A", "criterion": "Inoperable or unresectable disease",
-           "keywords": ["inoperable", "unresectable"]},
-          {"path": "B", "criterion": "Recurrent cancer (except local recurrence that remits with anticancer therapy)",
-           "keywords": ["recurrent disease", "tumor recurrence"]},
-          {"path": "C", "criterion": "Distant metastases",
-           "keywords": ["distant metastases", "M1 disease", "lung metastases"]}
+          {
+            "path": "A",
+            "criterion": "Inoperable or unresectable",
+            "keywords": ["inoperable", "unresectable"]
+          },
+          {
+            "path": "B",
+            "criterion": "Recurrent cancer (except local recurrence) after initial anticancer therapy",
+            "keywords": ["recurrent disease", "tumor recurrence", "recurrent after therapy", "post-therapy recurrence"]
+          },
+          {
+            "path": "C",
+            "criterion": "With distant metastases",
+            "keywords": ["distant metastases", "M1 disease", "lung metastases", "metastatic skeletal sarcoma"]
+          },
+          {
+            "path": "D",
+            "criterion": "All other cancers originating in bone with multimodal anticancer therapy (see 13.00E3c). Consider under a disability for 12 months from the date of diagnosis. Thereafter, evaluate any residual impairment(s) under the criteria for the affected body system.",
+            "keywords": ["multimodal anticancer therapy", "neoadjuvant chemotherapy", "bone cancer therapy", "12 months from diagnosis", "presumptive disability"],
+            "duration_months_required": 12,
+            "duration_basis": "presumptive_disability"
+          }
         ]
       }
     ]

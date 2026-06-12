@@ -2,8 +2,8 @@
   "code": "13.25",
   "title": "Testicles — carcinoma",
   "body_system": "cancer",
-  "version": 1,
-  "summary": "Testicular cancer with progressive or recurrent non-seminomatous germ cell tumor that fails initial chemotherapy.",
+  "version": 2,
+  "summary": "Testicles - cancer with metastatic disease progressive or recurrent following initial chemotherapy.",
   "synonyms": {
     "testicular cancer":       ["testis cancer", "germ cell tumor", "GCT"],
     "non-seminomatous germ cell tumor": ["NSGCT", "non-seminoma", "embryonal carcinoma", "yolk sac tumor", "teratocarcinoma", "choriocarcinoma"],
@@ -16,10 +16,16 @@
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "PRECONDITION", "criterion": "Pathology-confirmed testicular cancer",
-       "keywords": ["testicular cancer", "germ cell tumor", "GCT", "non-seminomatous", "seminoma", "biopsy", "orchiectomy"]},
-      {"path": "A", "criterion": "Progressive or recurrent non-seminomatous germ cell tumor that fails initial chemotherapy",
-       "keywords": ["NSGCT", "non-seminomatous germ cell tumor", "progressive disease", "recurrent disease", "chemotherapy failure", "salvage chemotherapy"]}
+      {
+        "path": "PRECONDITION",
+        "criterion": "Testicular cancer with metastatic disease (pathology-confirmed)",
+        "keywords": ["testicular cancer", "testis cancer", "germ cell tumor", "GCT", "non-seminomatous", "NSGCT", "seminoma", "metastatic testicular cancer", "biopsy", "orchiectomy"]
+      },
+      {
+        "path": "PROGRESSION",
+        "criterion": "Metastatic disease that is progressive or recurrent following initial chemotherapy",
+        "keywords": ["progressive disease", "recurrent disease", "chemotherapy failure", "salvage chemotherapy", "initial chemotherapy", "post-chemo recurrence", "refractory"]
+      }
     ]
   }
 }

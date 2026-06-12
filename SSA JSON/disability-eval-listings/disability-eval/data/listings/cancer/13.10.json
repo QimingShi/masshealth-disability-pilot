@@ -2,28 +2,60 @@
   "code": "13.10",
   "title": "Breast cancer",
   "body_system": "cancer",
-  "version": 1,
-  "summary": "Breast cancer that is locally advanced (inoperable, inflammatory, or with extensive nodal involvement), with distant metastases, recurrent after radical mastectomy, OR small cell carcinoma.",
+  "version": 2,
+  "summary": "Breast cancer (except sarcoma - see 13.04) that is A) locally advanced, B) with extensive nodal/distant metastases, C) recurrent (except local recurrence that remits with therapy), D) small-cell (oat cell), or E) with secondary lymphedema caused by anticancer therapy treated by surgery to salvage or restore an upper extremity (presumptive 12 months from surgery).",
   "synonyms": {
     "breast cancer":           ["breast carcinoma", "invasive ductal carcinoma", "IDC", "invasive lobular carcinoma", "ILC", "DCIS", "ductal carcinoma in situ"],
     "inflammatory breast cancer": ["IBC", "inflammatory carcinoma", "T4d"],
     "metastasis":              ["distant metastases", "M1 disease", "metastatic breast cancer", "MBC", "stage IV"],
     "lymph node":              ["axillary nodes", "supraclavicular nodes", "internal mammary nodes"],
     "biopsy":                  ["core biopsy", "needle biopsy"],
-    "ER/PR/HER2":              ["estrogen receptor", "progesterone receptor", "HER2", "triple-negative"]
+    "ER/PR/HER2":              ["estrogen receptor", "progesterone receptor", "HER2", "triple-negative"],
+    "lymphedema":              ["secondary lymphedema", "post-mastectomy lymphedema", "arm lymphedema"]
   },
   "rule_json": {
-    "logic": "OR",
+    "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Locally advanced cancer (inflammatory carcinoma; cancer of chest wall; or with metastases to the supraclavicular or infraclavicular nodes, or to 10+ axillary nodes, or to internal mammary nodes)",
-       "keywords": ["inflammatory breast cancer", "IBC", "T4 breast cancer", "chest wall invasion", "supraclavicular nodes", "10 axillary nodes", "internal mammary nodes", "locally advanced"]},
-      {"path": "B", "criterion": "Carcinoma with distant metastases (stage IV)",
-       "keywords": ["metastatic breast cancer", "stage IV", "MBC", "distant metastases", "lung metastases", "bone metastases", "liver metastases", "brain metastases"]},
-      {"path": "C", "criterion": "Recurrent carcinoma (except local recurrence that remits with anticancer therapy)",
-       "keywords": ["recurrent breast cancer", "tumor recurrence", "distant recurrence", "regional recurrence"]},
-      {"path": "D", "criterion": "Small cell (oat cell) carcinoma of the breast",
-       "keywords": ["small cell carcinoma", "small cell of breast", "oat cell"]}
+      {
+        "path": "PRECONDITION",
+        "criterion": "Breast cancer (except sarcoma - evaluate sarcoma under 13.04). See 13.00K4.",
+        "keywords": ["breast cancer", "breast carcinoma", "biopsy", "ductal carcinoma", "lobular carcinoma"]
+      },
+      {
+        "logic": "OR",
+        "path": "ALTERNATIVES",
+        "criterion": "Paragraph A, B, C, D, or E",
+        "children": [
+          {
+            "path": "A",
+            "criterion": "Locally advanced cancer (inflammatory carcinoma, cancer of any size with direct extension to the chest wall or skin, or cancer of any size with metastases to the ipsilateral internal mammary nodes)",
+            "keywords": ["inflammatory breast cancer", "IBC", "T4 breast cancer", "chest wall invasion", "skin extension", "ipsilateral internal mammary nodes", "locally advanced"]
+          },
+          {
+            "path": "B",
+            "criterion": "Carcinoma with metastases to the supraclavicular or infraclavicular nodes, to 10 or more axillary nodes, or with distant metastases",
+            "keywords": ["metastatic breast cancer", "stage IV", "MBC", "distant metastases", "supraclavicular nodes", "infraclavicular nodes", "10 axillary nodes", "lung metastases", "bone metastases", "liver metastases", "brain metastases"]
+          },
+          {
+            "path": "C",
+            "criterion": "Recurrent carcinoma, except local recurrence that remits with anticancer therapy",
+            "keywords": ["recurrent breast cancer", "tumor recurrence", "distant recurrence", "regional recurrence", "remitted local recurrence"]
+          },
+          {
+            "path": "D",
+            "criterion": "Small-cell (oat cell) carcinoma",
+            "keywords": ["small cell carcinoma", "small cell of breast", "oat cell"]
+          },
+          {
+            "path": "E",
+            "criterion": "With secondary lymphedema caused by anticancer therapy and treated by surgery to salvage or restore the functioning of an upper extremity (see 13.00K4b). Consider under a disability until at least 12 months from the date of the surgery that treated the secondary lymphedema. Thereafter, evaluate any residual impairment(s) under the criteria for the affected body system.",
+            "keywords": ["secondary lymphedema", "post-mastectomy lymphedema", "salvage surgery", "upper extremity reconstruction", "12 months from surgery", "presumptive disability"],
+            "duration_months_required": 12,
+            "duration_basis": "presumptive_disability"
+          }
+        ]
+      }
     ]
   }
 }
