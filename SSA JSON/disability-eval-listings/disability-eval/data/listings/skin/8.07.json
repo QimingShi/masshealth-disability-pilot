@@ -2,28 +2,52 @@
   "code": "8.07",
   "title": "Genetic photosensitivity disorders",
   "body_system": "skin",
-  "version": 1,
-  "summary": "Genetic photosensitivity disorder (xeroderma pigmentosum or other genetic photosensitivity) with documented diagnosis; xeroderma pigmentosum considered disabled per se.",
+  "version": 2,
+  "summary": "Genetic photosensitivity disorders, established as described in 8.00E. A) Xeroderma pigmentosum — disabled from birth; OR B) Other genetic photosensitivity disorder with extensive skin lesions for 12+ months OR inability to function outside a highly protective environment for 12+ months.",
   "synonyms": {
     "xeroderma pigmentosum":   ["XP", "DNA repair defect"],
-    "genetic photosensitivity": ["porphyria", "erythropoietic protoporphyria", "EPP", "Cockayne syndrome"]
+    "genetic photosensitivity": ["porphyria", "erythropoietic protoporphyria", "EPP", "Cockayne syndrome", "Bloom syndrome", "Rothmund-Thomson"]
   },
   "rule_json": {
     "logic": "OR",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Xeroderma pigmentosum (XP) by genetic confirmation or clinical diagnosis",
-       "keywords": ["xeroderma pigmentosum", "XP", "DNA repair defect", "genetic testing"]},
+      {
+        "path": "A",
+        "criterion": "Xeroderma pigmentosum (XP) — consider the individual disabled from birth",
+        "keywords": ["xeroderma pigmentosum", "XP", "DNA repair defect", "genetic testing"]
+      },
       {
         "logic": "AND",
         "path": "B",
-        "criterion": "Other genetic photosensitivity disorder with extensive skin lesions or substantial limitation in functioning, persisting ≥3 months despite continuing treatment",
+        "criterion": "Other genetic photosensitivity disorder with (B.1) extensive skin lesions OR (B.2) inability to function outside a highly protective environment, in either case for a continuous period of at least 12 months",
         "children": [
-          {"path": "B.1", "criterion": "Genetic photosensitivity disorder (porphyria, EPP, Cockayne syndrome, etc.)",
-           "keywords": ["porphyria", "erythropoietic protoporphyria", "EPP", "Cockayne syndrome", "genetic photosensitivity"]},
-          {"path": "B.2", "criterion": "Extensive skin lesions OR inability to function outside a highly protective environment for at least 3 months",
-           "keywords": ["extensive skin lesions", "protective environment", "3 months", "persistent"],
-           "duration_months_required": 3}
+          {
+            "path": "B.diagnosis",
+            "criterion": "Genetic photosensitivity disorder other than XP (e.g., porphyria, erythropoietic protoporphyria, Cockayne syndrome, Bloom syndrome)",
+            "keywords": ["porphyria", "erythropoietic protoporphyria", "EPP", "Cockayne syndrome", "Bloom syndrome", "genetic photosensitivity"]
+          },
+          {
+            "logic": "OR",
+            "path": "B.alternatives",
+            "criterion": "Any one of B.1 (extensive skin lesions) or B.2 (inability to function outside protective environment), each lasting at least 12 continuous months",
+            "children": [
+              {
+                "path": "B.1",
+                "criterion": "Extensive skin lesions (see 8.00C1) that have lasted or can be expected to last for a continuous period of at least 12 months",
+                "keywords": ["extensive skin lesions", "12 months", "1 year", "lasted", "expected to last"],
+                "duration_months_required": 12,
+                "duration_basis": "expected_duration"
+              },
+              {
+                "path": "B.2",
+                "criterion": "Inability to function outside of a highly protective environment for a continuous period of at least 12 months (see 8.00E2)",
+                "keywords": ["protective environment", "highly protective", "cannot leave home", "12 months", "1 year"],
+                "duration_months_required": 12,
+                "duration_basis": "expected_duration"
+              }
+            ]
+          }
         ]
       }
     ]

@@ -2,8 +2,8 @@
   "code": "8.06",
   "title": "Hidradenitis suppurativa",
   "body_system": "skin",
-  "version": 1,
-  "summary": "Hidradenitis suppurativa with extensive skin lesions involving both axillae, both inguinal areas, or perineum, persisting at least 3 months despite continuing treatment.",
+  "version": 2,
+  "summary": "Hidradenitis suppurativa, with extensive skin lesions involving both axillae, both inguinal areas, or the perineum, that persist for at least 3 months despite continuing treatment as prescribed.",
   "synonyms": {
     "hidradenitis suppurativa": ["HS", "acne inversa", "Verneuil disease"],
     "abscess":                 ["furuncle", "boil", "subcutaneous abscess"],
@@ -13,11 +13,35 @@
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Hidradenitis suppurativa with extensive skin lesions involving both axillae, both inguinal areas, or the perineum",
-       "keywords": ["hidradenitis suppurativa", "HS", "acne inversa", "abscess", "sinus tract", "axillary", "inguinal", "perineum"]},
-      {"path": "B", "criterion": "Persistent for at least 3 months despite continuing treatment",
-       "keywords": ["3 months", "persistent", "despite treatment"],
-       "duration_months_required": 3}
+      {
+        "path": "PRECONDITION",
+        "criterion": "Hidradenitis suppurativa diagnosis, with extensive skin lesions involving both axillae, both inguinal areas, or the perineum, persisting for at least 3 months despite continuing treatment as prescribed",
+        "keywords": ["hidradenitis suppurativa", "HS", "acne inversa", "abscess", "sinus tract", "axillary", "inguinal", "perineum", "3 months", "despite treatment", "adherence"],
+        "duration_months_required": 3,
+        "duration_basis": "treatment_adherence"
+      },
+      {
+        "logic": "OR",
+        "path": "LOCATION",
+        "criterion": "Extensive skin lesions involving any one of: both axillae, both inguinal areas, or the perineum",
+        "children": [
+          {
+            "path": "LOCATION.axillae",
+            "criterion": "Extensive skin lesions involving both axillae",
+            "keywords": ["bilateral axillary", "both axillae", "axillary abscess"]
+          },
+          {
+            "path": "LOCATION.inguinal",
+            "criterion": "Extensive skin lesions involving both inguinal areas",
+            "keywords": ["bilateral inguinal", "both groins", "inguinal abscess"]
+          },
+          {
+            "path": "LOCATION.perineum",
+            "criterion": "Extensive skin lesions involving the perineum",
+            "keywords": ["perineal lesions", "perineum"]
+          }
+        ]
+      }
     ]
   }
 }

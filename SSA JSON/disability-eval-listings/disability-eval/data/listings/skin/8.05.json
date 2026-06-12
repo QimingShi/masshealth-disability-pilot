@@ -2,11 +2,12 @@
   "code": "8.05",
   "title": "Dermatitis",
   "body_system": "skin",
-  "version": 1,
-  "summary": "Dermatitis (psoriasis, atopic dermatitis, exfoliative dermatitis, allergic contact dermatitis) with extensive skin lesions persisting at least 3 months despite continuing treatment.",
+  "version": 2,
+  "summary": "Dermatitis (e.g., psoriasis, dyshidrosis, atopic dermatitis, exfoliative dermatitis, allergic contact dermatitis), with extensive skin lesions that persist for at least 3 months despite continuing treatment as prescribed.",
   "synonyms": {
     "dermatitis":              ["eczema", "skin inflammation"],
     "psoriasis":               ["psoriatic plaques", "plaque psoriasis", "psoriasis vulgaris"],
+    "dyshidrosis":             ["dyshidrotic eczema", "pompholyx"],
     "atopic dermatitis":       ["AD", "atopic eczema"],
     "exfoliative dermatitis":  ["erythroderma"],
     "contact dermatitis":      ["allergic contact dermatitis"],
@@ -17,11 +18,35 @@
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Dermatitis with extensive skin lesions involving multiple body sites",
-       "keywords": ["dermatitis", "psoriasis", "atopic dermatitis", "exfoliative dermatitis", "extensive skin lesions", "extensive plaques", "erythroderma"]},
-      {"path": "B", "criterion": "Persistent for at least 3 months despite continuing treatment",
-       "keywords": ["3 months", "persistent", "despite treatment", "biologic", "phototherapy", "topical steroids"],
-       "duration_months_required": 3}
+      {
+        "path": "PRECONDITION",
+        "criterion": "Dermatitis diagnosis (psoriasis, dyshidrosis, atopic dermatitis, exfoliative dermatitis, allergic contact dermatitis, etc.), with extensive skin lesions persisting for at least 3 months despite continuing treatment as prescribed",
+        "keywords": ["dermatitis", "psoriasis", "dyshidrosis", "atopic dermatitis", "exfoliative dermatitis", "contact dermatitis", "erythroderma", "extensive plaques", "3 months", "despite treatment", "adherence", "biologic", "phototherapy"],
+        "duration_months_required": 3,
+        "duration_basis": "treatment_adherence"
+      },
+      {
+        "logic": "OR",
+        "path": "EXTENSIVE_LESIONS",
+        "criterion": "Extensive skin lesions (see 8.00C1) — any one of: joint-motion limitation in multiple extremities, palmar lesions limiting fine/gross motor, or sole/perineum/inguinal lesions limiting ambulation",
+        "children": [
+          {
+            "path": "EXTENSIVE_LESIONS.a",
+            "criterion": "Skin lesions that interfere with the motion of joints and very seriously limit use of more than one extremity (two upper, two lower, or one upper and one lower)",
+            "keywords": ["joint contracture", "limited range of motion", "multiple extremities", "two upper extremities", "two lower extremities"]
+          },
+          {
+            "path": "EXTENSIVE_LESIONS.b",
+            "criterion": "Skin lesions on the palms of both hands that very seriously limit fine and gross motor movements",
+            "keywords": ["bilateral palmar lesions", "hand lesions", "fine motor", "gross motor", "palms"]
+          },
+          {
+            "path": "EXTENSIVE_LESIONS.c",
+            "criterion": "Skin lesions on the soles of both feet, the perineum, or both inguinal areas that very seriously limit ambulation",
+            "keywords": ["bilateral sole lesions", "perineum", "inguinal", "ambulation", "cannot walk"]
+          }
+        ]
+      }
     ]
   }
 }

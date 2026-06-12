@@ -2,14 +2,15 @@
   "code": "8.03",
   "title": "Bullous disease",
   "body_system": "skin",
-  "version": 1,
-  "summary": "Bullous disease (pemphigus, bullous pemphigoid, dermatitis herpetiformis, epidermolysis bullosa) with extensive skin lesions persisting at least 3 months despite continuing treatment.",
+  "version": 2,
+  "summary": "Bullous disease (e.g., pemphigus, erythema multiforme bullosum, epidermolysis bullosa, bullous pemphigoid, dermatitis herpetiformis), with extensive skin lesions that persist for at least 3 months despite continuing treatment as prescribed.",
   "synonyms": {
     "bullous disease":         ["bullous disorder", "blistering disorder"],
     "pemphigus":               ["pemphigus vulgaris", "PV", "pemphigus foliaceus"],
     "bullous pemphigoid":      ["BP", "pemphigoid"],
     "dermatitis herpetiformis": ["DH", "Duhring disease"],
     "epidermolysis bullosa":   ["EB", "EB simplex", "junctional EB", "dystrophic EB"],
+    "erythema multiforme":     ["EM bullosum", "Stevens-Johnson spectrum"],
     "blister":                 ["bullae", "vesicles", "blisters"],
     "skin biopsy":             ["DIF", "direct immunofluorescence", "skin biopsy with IF"]
   },
@@ -17,11 +18,35 @@
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Bullous disease with extensive skin lesions",
-       "keywords": ["bullous disease", "pemphigus", "bullous pemphigoid", "dermatitis herpetiformis", "epidermolysis bullosa", "blistering", "bullae", "skin biopsy", "DIF"]},
-      {"path": "B", "criterion": "Persistent for at least 3 months despite continuing treatment",
-       "keywords": ["3 months", "persistent", "despite treatment"],
-       "duration_months_required": 3}
+      {
+        "path": "PRECONDITION",
+        "criterion": "Bullous disease diagnosis (pemphigus, erythema multiforme bullosum, epidermolysis bullosa, bullous pemphigoid, dermatitis herpetiformis, etc.), with extensive skin lesions persisting for at least 3 months despite continuing treatment as prescribed",
+        "keywords": ["bullous disease", "pemphigus", "bullous pemphigoid", "dermatitis herpetiformis", "epidermolysis bullosa", "erythema multiforme", "blistering", "bullae", "skin biopsy", "DIF", "3 months", "despite treatment", "adherence"],
+        "duration_months_required": 3,
+        "duration_basis": "treatment_adherence"
+      },
+      {
+        "logic": "OR",
+        "path": "EXTENSIVE_LESIONS",
+        "criterion": "Extensive skin lesions (see 8.00C1) — any one of: joint-motion limitation in multiple extremities, palmar lesions limiting fine/gross motor, or sole/perineum/inguinal lesions limiting ambulation",
+        "children": [
+          {
+            "path": "EXTENSIVE_LESIONS.a",
+            "criterion": "Skin lesions that interfere with the motion of joints and very seriously limit use of more than one extremity (two upper, two lower, or one upper and one lower)",
+            "keywords": ["joint contracture", "limited range of motion", "multiple extremities", "two upper extremities", "two lower extremities"]
+          },
+          {
+            "path": "EXTENSIVE_LESIONS.b",
+            "criterion": "Skin lesions on the palms of both hands that very seriously limit fine and gross motor movements",
+            "keywords": ["bilateral palmar lesions", "hand lesions", "fine motor", "gross motor", "palms"]
+          },
+          {
+            "path": "EXTENSIVE_LESIONS.c",
+            "criterion": "Skin lesions on the soles of both feet, the perineum, or both inguinal areas that very seriously limit ambulation",
+            "keywords": ["bilateral sole lesions", "perineum", "inguinal", "ambulation", "cannot walk"]
+          }
+        ]
+      }
     ]
   }
 }

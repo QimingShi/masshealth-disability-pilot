@@ -2,8 +2,8 @@
   "code": "8.02",
   "title": "Ichthyosis",
   "body_system": "skin",
-  "version": 1,
-  "summary": "Ichthyosis with extensive skin lesions persisting at least 3 months despite continuing treatment.",
+  "version": 2,
+  "summary": "Ichthyosis, with extensive skin lesions (joint motion impairment in multiple extremities, palms, or soles/perineum/inguinal) that persist for at least 3 months despite continuing treatment as prescribed.",
   "synonyms": {
     "ichthyosis":              ["ichthyosis vulgaris", "X-linked ichthyosis", "lamellar ichthyosis", "epidermolytic hyperkeratosis", "fish-scale skin"],
     "extensive skin lesions":  ["widespread skin lesions", "diffuse skin involvement", "extensive scaling"],
@@ -13,11 +13,35 @@
     "logic": "AND",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Ichthyosis with extensive skin lesions involving multiple body sites (palms, soles, both axillae, both inguinal areas, perineum, etc.)",
-       "keywords": ["ichthyosis", "extensive skin lesions", "fish-scale skin", "scaling", "widespread"]},
-      {"path": "B", "criterion": "Persistent for at least 3 months despite continuing treatment",
-       "keywords": ["3 months", "persistent", "despite treatment", "continuing treatment"],
-       "duration_months_required": 3}
+      {
+        "path": "PRECONDITION",
+        "criterion": "Ichthyosis diagnosis, with extensive skin lesions persisting for at least 3 months despite continuing treatment as prescribed",
+        "keywords": ["ichthyosis", "ichthyosis vulgaris", "lamellar ichthyosis", "X-linked ichthyosis", "fish-scale skin", "epidermolytic hyperkeratosis", "3 months", "despite treatment", "adherence"],
+        "duration_months_required": 3,
+        "duration_basis": "treatment_adherence"
+      },
+      {
+        "logic": "OR",
+        "path": "EXTENSIVE_LESIONS",
+        "criterion": "Extensive skin lesions (see 8.00C1) — any one of: joint-motion limitation in multiple extremities, palmar lesions limiting fine/gross motor, or sole/perineum/inguinal lesions limiting ambulation",
+        "children": [
+          {
+            "path": "EXTENSIVE_LESIONS.a",
+            "criterion": "Skin lesions that interfere with the motion of joints and very seriously limit use of more than one extremity (two upper, two lower, or one upper and one lower)",
+            "keywords": ["joint contracture", "limited range of motion", "multiple extremities", "two upper extremities", "two lower extremities"]
+          },
+          {
+            "path": "EXTENSIVE_LESIONS.b",
+            "criterion": "Skin lesions on the palms of both hands that very seriously limit fine and gross motor movements",
+            "keywords": ["bilateral palmar lesions", "hand lesions", "fine motor", "gross motor", "palms"]
+          },
+          {
+            "path": "EXTENSIVE_LESIONS.c",
+            "criterion": "Skin lesions on the soles of both feet, the perineum, or both inguinal areas that very seriously limit ambulation",
+            "keywords": ["bilateral sole lesions", "perineum", "inguinal", "ambulation", "cannot walk"]
+          }
+        ]
+      }
     ]
   }
 }

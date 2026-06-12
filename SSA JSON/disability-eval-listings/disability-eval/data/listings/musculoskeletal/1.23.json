@@ -2,8 +2,8 @@
   "code": "1.23",
   "title": "Non-healing or complex fracture of an upper extremity",
   "body_system": "musculoskeletal",
-  "version": 1,
-  "summary": "Non-healing (nonunion) or complex fracture of upper extremity (humerus, radius, ulna), imaging-confirmed, with ≥12-month inability to use both upper extremities for fine and gross movements.",
+  "version": 2,
+  "summary": "Non-healing (nonunion) or complex fracture of an upper extremity (humerus, radius, or ulna) (see 1.00N), AND impairment-related limitation lasting 12+ months with inability to use both upper extremities for fine and gross movements.",
   "synonyms": {
     "nonunion":                ["non-union", "non-healing fracture", "failure to unite", "delayed union"],
     "complex fracture":        ["comminuted fracture", "compound fracture", "open fracture", "multiple fragments"],
@@ -21,31 +21,15 @@
     "children": [
       {
         "path": "A",
-        "criterion": "Non-healing (nonunion) or complex fracture of an upper extremity (humerus, radius, ulna)",
-        "keywords": ["nonunion", "non-healing fracture", "complex fracture", "comminuted", "humerus fracture", "radius fracture", "ulna fracture"]
+        "criterion": "Non-healing (nonunion) or complex fracture of an upper extremity (humerus, radius, or ulna) (see 1.00N), documented by imaging or operative report",
+        "keywords": ["nonunion", "non-healing fracture", "complex fracture", "comminuted", "humerus fracture", "radius fracture", "ulna fracture", "X-ray", "CT scan", "MRI", "no callus", "fracture line persists"]
       },
       {
         "path": "B",
-        "criterion": "Imaging documenting the non-healing or complex nature of the fracture",
-        "keywords": ["X-ray", "CT scan", "MRI", "no callus", "fracture line persists"]
-      },
-      {
-        "logic": "AND",
-        "path": "C",
-        "criterion": "≥12-month inability to use both upper extremities for fine and gross movements",
-        "children": [
-          {
-            "path": "C.1",
-            "criterion": "Impairment-related limitation lasting or expected to last ≥12 continuous months",
-            "keywords": ["chronic", "12 months", "1 year", "longstanding"],
-            "duration_months_required": 12
-          },
-          {
-            "path": "C.2",
-            "criterion": "Inability to use both upper extremities for fine and gross movements (work-related activities)",
-            "keywords": ["bilateral upper extremity", "cannot manipulate", "fine and gross movements", "loss of manual dexterity"]
-          }
-        ]
+        "criterion": "Impairment-related physical limitation of musculoskeletal functioning that has lasted, or is expected to last, for at least 12 continuous months, AND medical documentation of the inability to use both upper extremities to the extent that neither can be used to independently initiate, sustain, and complete work-related activities involving fine and gross movements (see 1.00E4)",
+        "keywords": ["chronic", "12 months", "1 year", "longstanding", "bilateral upper extremity", "cannot manipulate", "fine and gross movements", "loss of manual dexterity"],
+        "duration_months_required": 12,
+        "duration_basis": "expected_duration"
       }
     ]
   }

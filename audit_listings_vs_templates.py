@@ -60,6 +60,12 @@ SUB_MARK_RE = re.compile(r"^\s*[_]*(\d)\.\s")
 DURATION_TREATMENT_RE = re.compile(
     r"despite\s+adherence\s+to\s+prescribed\s+treatment\s+for\s+at\s+least\s+(\d+)\s+months?",
     re.IGNORECASE)
+# 8.02-8.06 dermatology phrasing: "persist for at least N months despite
+# continuing treatment as prescribed". Same semantic basis as the
+# "despite adherence" pattern — treatment_adherence.
+DURATION_PERSIST_TREATMENT_RE = re.compile(
+    r"persist\s+for\s+at\s+least\s+(\d+)\s+months?\s+despite\s+continuing\s+treatment",
+    re.IGNORECASE)
 DURATION_POSTINJURY_RE = re.compile(
     r"persisting\s+for\s+at\s+least\s+(\d+)\s+consecutive\s+months?\s+after\s+the\s+injury",
     re.IGNORECASE)
@@ -216,15 +222,22 @@ def extract_template(docx_path: Path) -> dict | None:
     # Duration language — locate. Normalize whitespace because docx
     # round-trips inject tabs and non-breaking spaces inside phrases.
     full_text = re.sub(r"\s+", " ", "\n".join(paragraphs))
-    treatment_match  = DURATION_TREATMENT_RE.search(full_text)
-    postinjury_match = DURATION_POSTINJURY_RE.search(full_text)
-    lasting_match    = DURATION_LASTING_RE.search(full_text)
+    treatment_match     = DURATION_TREATMENT_RE.search(full_text)
+    persist_treat_match = DURATION_PERSIST_TREATMENT_RE.search(full_text)
+    postinjury_match    = DURATION_POSTINJURY_RE.search(full_text)
+    lasting_match       = DURATION_LASTING_RE.search(full_text)
     duration_info = None
     if treatment_match:
         duration_info = {
             "type": "treatment_adherence",
             "months": int(treatment_match.group(1)),
             "raw":    treatment_match.group(0),
+        }
+    elif persist_treat_match:
+        duration_info = {
+            "type": "treatment_adherence",
+            "months": int(persist_treat_match.group(1)),
+            "raw":    persist_treat_match.group(0),
         }
     elif postinjury_match:
         duration_info = {
