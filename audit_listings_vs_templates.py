@@ -101,6 +101,17 @@ CROSSREF_RE = re.compile(r"\(?see\s+(\d+\.\d+[A-Z]?\d*[a-z]?(?:\([ivx]+\))?)\)?"
                          re.IGNORECASE)
 CHAR_BY_RE = re.compile(r"characterized\s+by\s+([A-Z](?:\s*,\s*[A-Z])*\s*(?:,?\s*or\s+[A-Z])?)",
                         re.IGNORECASE)
+# "documented by A, B, and C:" / "documented by A, B, C, or D:" / "documented by A and B:"
+# Some templates spell out the paragraph set this way and don't use explicit
+# "____A." headings — e.g. 1.19-1.23, 8.02-8.06, 13.xx, 4.xx forms. The
+# intro line and the circling table at the bottom ("A B C D (NEED 1)") are
+# the only places the labels appear in those forms. Match both.
+DOCUMENTED_BY_RE = re.compile(
+    r"documented\s+by\s+([A-D](?:\s*[,]?\s*(?:and|or)?\s*[A-D])*)[:\s]",
+    re.IGNORECASE)
+# Match the form's circling table line "A B C D (NEED 1)" or "A B (NEED ALL)"
+CIRCLING_TABLE_RE = re.compile(
+    r"^([A-D])(?:\s+[A-D])+\s*(?:\(NEED\b|$)", re.IGNORECASE | re.MULTILINE)
 
 
 def extract_template(docx_path: Path) -> dict | None:
@@ -148,6 +159,59 @@ def extract_template(docx_path: Path) -> dict | None:
         m = SUB_MARK_RE.match(t)
         if m and current_para is not None:
             sub_items[current_para].append(m.group(1))
+
+    # Track whether the docx has *explicit* paragraph headings (____A. etc).
+    # When it doesn't, the docx is an abbreviated checklist form (e.g.
+    # 1.19-1.23, 1.20, 8.02-8.06) that omits the full SSA paragraph
+    # prose and only encodes labels in the intro and circling table.
+    # In that case, the absence of "lasting 12 months" language in the
+    # docx does NOT mean the SSA listing has no duration — so don't
+    # flag DURATION_SPURIOUS downstream.
+    fully_labeled = bool(para_letters)
+
+    # Fallback: if no explicit "____A." headings were found, fall back to
+    # the intro "documented by A, B, and C:" line and the circling table
+    # at the bottom ("A B C D (NEED 1)"). For forms that use only these
+    # markers (1.19-1.23, 1.21, parts of 4.xx/8.xx/13.xx), this is the
+    # only source of truth.
+    if not para_letters:
+        joined = "\n".join(paragraphs)
+        m = DOCUMENTED_BY_RE.search(joined)
+        if m:
+            # Use word-boundary so "and" doesn't yield a spurious D.
+            implicit = re.findall(r"\b[A-D]\b", m.group(1).upper())
+            for c in implicit:
+                if c not in para_letters:
+                    para_letters.append(c)
+        if not para_letters:
+            # last resort: scan circling-table line — handles forms where
+            # the intro pattern is "characterized by ..." or other phrasings.
+            for t in paragraphs:
+                # Normalize tabs/multi-space to single space for the regex.
+                norm = re.sub(r"\s+", " ", t.strip())
+                m = re.match(
+                    r"^([A-D](?:\s+[A-D])+)(?:\s*\(NEED\b|\s*$)", norm)
+                if m:
+                    for c in m.group(1).split():
+                        if c not in para_letters:
+                            para_letters.append(c)
+                    break
+        # If implicit paragraphs were found, also extract sub-item counts
+        # per paragraph from the circling table — lines like
+        #   "C  1  2  3  (NEED 1)"  or  "B 1 2 3 (NEED 1)".
+        # Without these the auditor would still flag SUBITEMS_MISSING for
+        # forms whose paragraph text isn't enumerated as "____1." in prose.
+        if para_letters:
+            for t in paragraphs:
+                norm = re.sub(r"\s+", " ", t.strip())
+                m = re.match(
+                    r"^([A-D])\s+(\d(?:\s+\d)*)\s*(?:\(NEED\b|$)", norm)
+                if m:
+                    para = m.group(1)
+                    nums = m.group(2).split()
+                    # Only fill if we haven't already seen prose sub-items.
+                    if not sub_items.get(para):
+                        sub_items[para] = nums
 
     # Duration language — locate. Normalize whitespace because docx
     # round-trips inject tabs and non-breaking spaces inside phrases.
@@ -214,6 +278,7 @@ def extract_template(docx_path: Path) -> dict | None:
         "duration_info": duration_info,
         "crossrefs": crossrefs,
         "raw_paragraphs": paragraphs,
+        "fully_labeled": fully_labeled,
     }
 
 
@@ -369,18 +434,23 @@ def diff_listing(code: str, template: dict, jdata: dict) -> list[dict]:
                        f"JSON has no duration field anywhere"),
         })
     elif not t_dur and j_durs:
-        # JSON has duration but template doesn't — possible spurious clause
-        for jd in j_durs:
-            # Skip if it's the "post_injury_persistence" basis on a TBI-like
-            # listing — but that should only appear when the template also
-            # has the post-injury language, which we already checked.
-            findings.append({
-                "severity": "HIGH",
-                "kind": "DURATION_SPURIOUS",
-                "detail": (f"JSON has duration_months_required={jd['months']} "
-                           f"on path={jd['path']} (basis={jd['basis']}), but "
-                           f"template has no duration language"),
-            })
+        # JSON has duration but template doesn't — possible spurious clause.
+        # SKIP this check when the docx form is abbreviated (only labels
+        # paragraphs in the intro line or circling table, no full prose):
+        # those forms routinely omit duration language that's present in
+        # the SSA listing proper, so absence in docx ≠ absence in SSA.
+        if template.get("fully_labeled", True):
+            for jd in j_durs:
+                # Skip if it's the "post_injury_persistence" basis on a TBI-like
+                # listing — but that should only appear when the template also
+                # has the post-injury language, which we already checked.
+                findings.append({
+                    "severity": "HIGH",
+                    "kind": "DURATION_SPURIOUS",
+                    "detail": (f"JSON has duration_months_required={jd['months']} "
+                               f"on path={jd['path']} (basis={jd['basis']}), but "
+                               f"template has no duration language"),
+                })
     elif t_dur and j_durs:
         t_basis = t_dur["type"]
         j_bases = {d["basis"] for d in j_durs}
