@@ -2,8 +2,8 @@
   "code": "1.18",
   "title": "Abnormality of a major joint(s) in any extremity",
   "body_system": "musculoskeletal",
-  "version": 1,
-  "summary": "Major joint abnormality with chronic pain or stiffness, abnormal motion or instability, imaging confirmation of joint abnormality, and ≥12-month limitation requiring assistive device or producing inability to use upper extremities.",
+  "version": 2,
+  "summary": "Major joint abnormality documented by A (chronic joint pain or stiffness), B (abnormal motion, instability, or immobility), C (anatomical abnormality on exam or imaging), and D (≥12-month limitation with documented assistive device need or upper extremity inability).",
   "synonyms": {
     "joint pain":              ["arthralgia", "joint discomfort", "joint ache"],
     "joint stiffness":         ["stiffness", "decreased ROM", "limited range of motion", "reduced mobility"],
@@ -22,51 +22,52 @@
     "children": [
       {
         "path": "A",
-        "criterion": "Chronic joint pain or stiffness in a major joint",
+        "criterion": "Chronic joint pain or stiffness",
         "keywords": ["arthralgia", "joint pain", "joint stiffness", "chronic pain", "decreased ROM"]
       },
       {
         "path": "B",
-        "criterion": "Abnormal motion, instability, or immobility on physical examination of the joint",
+        "criterion": "Abnormal motion, instability, or immobility of the affected joint(s)",
         "keywords": ["limited ROM", "joint instability", "ligamentous laxity", "giving way", "ankylosis", "subluxation"]
       },
       {
+        "logic": "OR",
         "path": "C",
-        "criterion": "Imaging or other findings of joint abnormality (joint space narrowing, bony destruction, ankylosis, instability)",
-        "keywords": ["X-ray", "MRI", "CT", "joint space narrowing", "bony destruction", "ankylosis", "instability on stress views"]
+        "criterion": "Anatomical abnormality of the affected joint(s) noted on C.1 or C.2",
+        "children": [
+          {
+            "path": "C.1",
+            "criterion": "Physical examination (for example, subluxation, contracture, or bony or fibrous ankylosis)",
+            "keywords": ["physical exam", "subluxation", "contracture", "bony ankylosis", "fibrous ankylosis"]
+          },
+          {
+            "path": "C.2",
+            "criterion": "Imaging (for example, joint space narrowing, bony destruction, or ankylosis or arthrodesis of the affected joint)",
+            "keywords": ["X-ray", "MRI", "CT", "joint space narrowing", "bony destruction", "ankylosis", "arthrodesis"]
+          }
+        ]
       },
       {
         "logic": "AND",
         "path": "D",
-        "criterion": "Physical limitation lasting ≥12 months with documented assistive device need OR upper extremity inability",
+        "criterion": "Impairment-related physical limitation of musculoskeletal functioning that has lasted, or is expected to last, for a continuous period of at least 12 months, AND medical documentation of at least one of D.1, D.2, or D.3",
+        "duration_months_required": 12,
+        "duration_basis": "expected_duration",
         "children": [
           {
-            "path": "D.duration",
-            "criterion": "Impairment-related physical limitation lasting or expected to last ≥12 continuous months",
-            "keywords": ["chronic", "12 months", "1 year", "longstanding", "ongoing"],
-            "duration_months_required": 12
+            "path": "D.1",
+            "criterion": "Documented medical need (see 1.00C6a) for a walker, bilateral canes, or bilateral crutches (see 1.00C6d), or a wheeled and seated mobility device involving the use of both hands (see 1.00C6e(i))",
+            "keywords": ["walker", "rollator", "bilateral canes", "bilateral crutches", "wheelchair", "two-handed device"]
           },
           {
-            "logic": "OR",
-            "path": "D.mobility",
-            "criterion": "Documented two-handed assistive device need OR upper extremity limitation",
-            "children": [
-              {
-                "path": "D.1",
-                "criterion": "Documented medical need for walker, bilateral canes, bilateral crutches, or two-handed wheeled mobility device",
-                "keywords": ["walker", "rollator", "bilateral canes", "bilateral crutches", "wheelchair"]
-              },
-              {
-                "path": "D.2",
-                "criterion": "Inability to use one upper extremity for fine and gross movements; needs one-handed assistive device requiring the other upper extremity",
-                "keywords": ["one-handed device", "single cane", "fine motor limitation", "cannot grasp"]
-              },
-              {
-                "path": "D.3",
-                "criterion": "Inability to use either upper extremity for fine and gross movements",
-                "keywords": ["bilateral upper extremity", "cannot manipulate", "fine and gross movements", "loss of manual dexterity"]
-              }
-            ]
+            "path": "D.2",
+            "criterion": "Inability to use one upper extremity to independently initiate, sustain, and complete work-related activities involving fine and gross movements (see 1.00E4), AND documented medical need (see 1.00C6a) for a one-handed, hand-held assistive device that requires the use of the other upper extremity, or a wheeled and seated mobility device involving the use of one hand (see 1.00C6e(ii))",
+            "keywords": ["one-handed device", "single cane", "fine motor limitation", "one upper extremity", "hand-held assistive device"]
+          },
+          {
+            "path": "D.3",
+            "criterion": "Inability to use both upper extremities to the extent that neither can be used to independently initiate, sustain, and complete work-related activities involving fine and gross movements (see 1.00E4)",
+            "keywords": ["bilateral upper extremity", "cannot manipulate", "fine and gross movements", "loss of manual dexterity"]
           }
         ]
       }

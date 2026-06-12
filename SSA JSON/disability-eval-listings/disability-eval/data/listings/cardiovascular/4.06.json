@@ -2,46 +2,71 @@
   "code": "4.06",
   "title": "Symptomatic congenital heart disease",
   "body_system": "cardiovascular",
-  "version": 1,
-  "summary": "Symptomatic congenital heart disease with one of: cyanosis at rest, intermittent right-to-left shunting with hypoxemia, or secondary pulmonary vascular disease.",
+  "version": 2,
+  "summary": "Symptomatic congenital heart disease (cyanotic or acyanotic), documented by appropriate medically acceptable imaging (see 4.00A3d) or cardiac catheterization, meeting one of: A cyanosis at rest with A.1 hematocrit ≥55% or A.2 arterial O2 saturation <90% in room air or resting PaO2 ≤60 Torr; B intermittent right-to-left shunting resulting in cyanosis on exertion (e.g., Eisenmenger's physiology) with arterial PaO2 ≤60 Torr at a workload ≤5 METs; or C secondary pulmonary vascular obstructive disease with pulmonary arterial systolic pressure ≥70% of the systemic arterial systolic pressure.",
   "synonyms": {
     "congenital heart disease": ["CHD", "congenital cardiac defect", "congenital heart defect"],
-    "cyanosis":                ["central cyanosis", "blue lips", "bluish skin"],
+    "cyanosis":                ["central cyanosis", "blue lips", "bluish skin", "cyanosis at rest"],
     "right-to-left shunt":     ["R-to-L shunt", "intracardiac shunt", "Eisenmenger"],
     "Eisenmenger":             ["Eisenmenger syndrome", "Eisenmenger physiology"],
     "tetralogy of Fallot":     ["TOF", "Fallot's tetralogy"],
     "ABG":                     ["arterial blood gas", "PaO2", "blood gas"],
     "hematocrit":              ["Hct", "elevated hematocrit", "polycythemia"],
-    "echocardiogram":          ["echo", "TTE", "TEE", "transesophageal echo"]
+    "echocardiogram":          ["echo", "TTE", "TEE", "transesophageal echo"],
+    "pulmonary vascular obstructive disease": ["pulmonary hypertension", "secondary PH", "PVOD"]
   },
   "rule_json": {
     "logic": "AND",
     "path": "ROOT",
     "children": [
       {
-        "path": "A",
-        "criterion": "Documented symptomatic congenital heart disease",
-        "keywords": ["congenital heart disease", "CHD", "tetralogy of Fallot", "transposition", "single ventricle", "Eisenmenger", "echocardiogram"]
+        "path": "PRECONDITION",
+        "criterion": "Symptomatic congenital heart disease (cyanotic or acyanotic), documented by appropriate medically acceptable imaging (see 4.00A3d) or cardiac catheterization",
+        "keywords": ["congenital heart disease", "CHD", "cyanotic", "acyanotic", "cardiac catheterization", "echocardiogram", "tetralogy of Fallot", "single ventricle", "transposition"]
       },
       {
         "logic": "OR",
-        "path": "B",
-        "criterion": "One of: cyanosis at rest, hypoxemic spells, or pulmonary vascular disease",
+        "path": "ALTERNATIVES",
+        "criterion": "One of A, B, or C",
         "children": [
           {
-            "path": "B.1",
-            "criterion": "Cyanosis at rest with hematocrit ≥55% on two evaluations 3+ months apart in a 12-month period, or arterial PaO2 ≤60 mm Hg at altitude <3000 feet",
-            "keywords": ["central cyanosis", "hematocrit 55", "polycythemia", "PaO2 60", "ABG", "blood gas at rest"]
+            "logic": "AND",
+            "path": "A",
+            "criterion": "Cyanosis at rest, AND one of A.1 or A.2",
+            "children": [
+              {
+                "path": "A.cyanosis",
+                "criterion": "Cyanosis at rest",
+                "keywords": ["cyanosis at rest", "central cyanosis", "blue lips"]
+              },
+              {
+                "logic": "OR",
+                "path": "A.alternatives",
+                "criterion": "A.1 or A.2",
+                "children": [
+                  {
+                    "path": "A.1",
+                    "criterion": "Hematocrit of 55 percent or greater",
+                    "keywords": ["hematocrit 55", "Hct 55", "polycythemia", "elevated hematocrit"]
+                  },
+                  {
+                    "path": "A.2",
+                    "criterion": "Arterial O2 saturation of less than 90 percent in room air, OR resting arterial PO2 of 60 Torr or less",
+                    "keywords": ["O2 saturation 90", "SpO2 <90", "PaO2 60", "PO2 60 Torr", "arterial blood gas", "room air"]
+                  }
+                ]
+              }
+            ]
           },
           {
-            "path": "B.2",
-            "criterion": "Intermittent right-to-left shunting with hypoxemia at rest or with exercise",
-            "keywords": ["right-to-left shunt", "intermittent shunting", "exercise hypoxemia", "echocardiogram bubble study"]
+            "path": "B",
+            "criterion": "Intermittent right-to-left shunting resulting in cyanosis on exertion (e.g., Eisenmenger's physiology) and with arterial PO2 of 60 Torr or less at a workload equivalent to 5 METs or less",
+            "keywords": ["right-to-left shunt", "Eisenmenger physiology", "Eisenmenger syndrome", "cyanosis on exertion", "PaO2 60", "5 METs"]
           },
           {
-            "path": "B.3",
-            "criterion": "Secondary pulmonary vascular disease with mean pulmonary artery pressure ≥40 mm Hg",
-            "keywords": ["pulmonary hypertension", "mPAP 40", "right heart catheterization", "Eisenmenger physiology"]
+            "path": "C",
+            "criterion": "Secondary pulmonary vascular obstructive disease with pulmonary arterial systolic pressure elevated to at least 70 percent of the systemic arterial systolic pressure",
+            "keywords": ["pulmonary vascular obstructive disease", "pulmonary arterial systolic pressure", "70% of systemic", "pulmonary hypertension", "right heart catheterization"]
           }
         ]
       }

@@ -2,8 +2,8 @@
   "code": "4.04",
   "title": "Ischemic heart disease",
   "body_system": "cardiovascular",
-  "version": 1,
-  "summary": "Ischemic heart disease with chest discomfort due to myocardial ischemia, plus one of: positive exercise tolerance test at low workload, three ischemic episodes within 12 months requiring revascularization, or coronary angiography showing significant disease.",
+  "version": 2,
+  "summary": "Ischemic heart disease with symptoms of myocardial ischemia while on prescribed treatment, meeting one of: A sign- or symptom-limited exercise tolerance test at ≤5 METs with A.1 horizontal/downsloping ST depression ≥0.10 mV, A.2 ≥0.1 mV ST elevation in non-infarct leads, A.3 systolic BP drop ≥10 mm Hg from LV dysfunction, or A.4 imaging-documented ischemia at ≤5 METs; B three separate ischemic episodes within a consecutive 12-month period each requiring revascularization or not amenable to revascularization; or C angiographic CAD with significant risk of exercise testing AND both C.1 angiographic criteria (C.1.a-e) and C.2 very serious limitation of ADLs.",
   "synonyms": {
     "ischemic heart disease":  ["IHD", "coronary artery disease", "CAD", "coronary heart disease", "CHD"],
     "myocardial ischemia":     ["myocardial infarction", "MI", "heart attack", "STEMI", "NSTEMI", "ACS", "acute coronary syndrome"],
@@ -13,6 +13,7 @@
     "revascularization":       ["PCI", "percutaneous coronary intervention", "coronary stent", "CABG", "coronary artery bypass", "angioplasty", "balloon angioplasty"],
     "coronary angiography":    ["cardiac catheterization", "cath", "coronary angiogram", "left heart cath"],
     "MET":                     ["metabolic equivalents", "METs", "5 METs"],
+    "radionuclide imaging":    ["radionuclide perfusion scan", "myocardial perfusion imaging", "MPI", "stress echocardiography"],
     "12 months":               ["1 year", "one year", "12-month period"]
   },
   "rule_json": {
@@ -21,29 +22,91 @@
     "children": [
       {
         "path": "PRECONDITION",
-        "criterion": "Symptoms due to myocardial ischemia (typical angina, atypical angina, or anginal equivalent) while on prescribed treatment",
-        "keywords": ["angina", "chest pain", "chest discomfort", "DOE", "anginal equivalent", "exertional symptoms"]
+        "criterion": "Ischemic heart disease, with symptoms due to myocardial ischemia, as described in 4.00E3-4.00E7, while on a regimen of prescribed treatment (see 4.00B3 if there is no regimen of prescribed treatment)",
+        "keywords": ["ischemic heart disease", "myocardial ischemia", "angina", "chest pain", "chest discomfort", "anginal equivalent", "prescribed treatment"]
       },
       {
         "logic": "OR",
         "path": "ALTERNATIVES",
-        "criterion": "One of: ETT findings, three ischemic episodes, or significant coronary disease on angiography",
+        "criterion": "One of A, B, or C",
         "children": [
           {
+            "logic": "OR",
             "path": "A",
-            "criterion": "Sign- or symptom-limited exercise tolerance test demonstrating ischemic findings (ST depression ≥1 mm in non-leads, decrease in BP, abnormal radionuclide uptake) at workload equivalent to ≤5 METs",
-            "keywords": ["exercise tolerance test", "ETT", "ST depression", "5 METs", "stress test", "ischemic ECG", "abnormal stress test", "reversible perfusion defect"]
+            "criterion": "Sign- or symptom-limited exercise tolerance test demonstrating at least one of A.1, A.2, A.3, or A.4 at a workload equivalent to 5 METs or less",
+            "children": [
+              {
+                "path": "A.1",
+                "criterion": "Horizontal or downsloping depression, in the absence of digitalis glycoside treatment or hypokalemia, of the ST segment of at least -0.10 millivolts (-1.0 mm) in at least 3 consecutive complexes that are on a level baseline in any lead other than aVR, and depression of at least -0.10 millivolts lasting for at least 1 minute of recovery",
+                "keywords": ["horizontal ST depression", "downsloping ST depression", "ST segment depression", "1 mm ST depression", "3 consecutive complexes"]
+              },
+              {
+                "path": "A.2",
+                "criterion": "At least 0.1 millivolt (1 mm) ST elevation above resting baseline in non-infarct leads during both exercise and 1 or more minutes of recovery",
+                "keywords": ["ST elevation", "1 mm ST elevation", "non-infarct leads", "exercise ST elevation"]
+              },
+              {
+                "path": "A.3",
+                "criterion": "Decrease of 10 mm Hg or more in systolic pressure below the baseline blood pressure or the preceding systolic pressure measured during exercise (see 4.00E9e) due to left ventricular dysfunction, despite an increase in workload",
+                "keywords": ["systolic BP drop", "10 mm Hg decrease", "left ventricular dysfunction", "exercise-induced hypotension"]
+              },
+              {
+                "path": "A.4",
+                "criterion": "Documented ischemia at an exercise level equivalent to 5 METs or less on appropriate medically acceptable imaging, such as radionuclide perfusion scans or stress echocardiography",
+                "keywords": ["documented ischemia", "5 METs", "radionuclide perfusion scan", "stress echocardiography", "reversible perfusion defect", "wall motion abnormality"]
+              }
+            ]
           },
           {
             "path": "B",
-            "criterion": "Three separate ischemic episodes requiring revascularization or unsuccessful revascularization within 12 months",
-            "keywords": ["three ischemic episodes", "PCI", "stent placement", "CABG", "revascularization", "MI", "ACS"],
-            "duration_months_required": 12
+            "criterion": "Three separate ischemic episodes, each requiring revascularization or not amenable to revascularization (see 4.00E9f), within a consecutive 12-month period (see 4.00A3e)",
+            "keywords": ["three ischemic episodes", "revascularization", "PCI", "stent placement", "CABG", "not amenable to revascularization", "12-month period"],
+            "duration_months_required": 12,
+            "duration_basis": "observation_window"
           },
           {
+            "logic": "AND",
             "path": "C",
-            "criterion": "Coronary angiography showing 50% or greater stenosis of left main coronary artery, or 70% or greater stenosis of another non-bypassed coronary artery, or 50% or greater stenosis of a bypass graft, with very serious limitation of ADLs",
-            "keywords": ["coronary angiography", "coronary stenosis", "left main 50%", "70% stenosis", "bypass graft stenosis", "very serious limitation"]
+            "criterion": "Coronary artery disease, demonstrated by angiography (obtained independent of Social Security disability evaluation) or other appropriate medically acceptable imaging, and in the absence of a timely exercise tolerance test or a timely normal drug-induced stress test, an MC (preferably one experienced in cardiovascular disease) has concluded that performance of exercise tolerance testing would present a significant risk to the individual, with BOTH C.1 and C.2",
+            "children": [
+              {
+                "logic": "OR",
+                "path": "C.1",
+                "criterion": "Angiographic evidence showing one of C.1.a, C.1.b, C.1.c, C.1.d, or C.1.e",
+                "children": [
+                  {
+                    "path": "C.1.a",
+                    "criterion": "50 percent or more narrowing of a nonbypassed left main coronary artery",
+                    "keywords": ["left main coronary artery", "50% narrowing", "left main stenosis"]
+                  },
+                  {
+                    "path": "C.1.b",
+                    "criterion": "70 percent or more narrowing of another nonbypassed coronary artery",
+                    "keywords": ["70% narrowing", "nonbypassed coronary artery", "significant coronary stenosis"]
+                  },
+                  {
+                    "path": "C.1.c",
+                    "criterion": "50 percent or more narrowing involving a long (greater than 1 cm) segment of a nonbypassed coronary artery",
+                    "keywords": ["50% narrowing", "long segment", "1 cm segment", "diffuse coronary disease"]
+                  },
+                  {
+                    "path": "C.1.d",
+                    "criterion": "50 percent or more narrowing of at least two nonbypassed coronary arteries",
+                    "keywords": ["50% narrowing", "two coronary arteries", "multivessel disease", "two-vessel disease"]
+                  },
+                  {
+                    "path": "C.1.e",
+                    "criterion": "70 percent or more narrowing of a bypass graft vessel",
+                    "keywords": ["bypass graft", "70% narrowing", "graft stenosis", "vein graft", "SVG stenosis"]
+                  }
+                ]
+              },
+              {
+                "path": "C.2",
+                "criterion": "Resulting in very serious limitations in the ability to independently initiate, sustain, or complete activities of daily living",
+                "keywords": ["very serious limitations", "ADL limitation", "limited activities of daily living"]
+              }
+            ]
           }
         ]
       }

@@ -2,12 +2,13 @@
   "code": "4.12",
   "title": "Peripheral arterial disease",
   "body_system": "cardiovascular",
-  "version": 1,
-  "summary": "Peripheral arterial disease (PAD) with intermittent claudication and one of: significantly reduced ankle-brachial systolic pressure ratio, low resting toe systolic pressure, or low resting toe-brachial pressure ratio.",
+  "version": 2,
+  "summary": "Peripheral arterial disease (as determined by appropriate medically acceptable imaging per 4.00A3d, 4.00G2, 4.00G5, 4.00G6) causing intermittent claudication (see 4.00G1), meeting one of: A resting ankle/brachial systolic blood pressure ratio less than 0.50; B decrease in systolic blood pressure at the ankle on exercise of 50% or more of pre-exercise level requiring ≥10 minutes to return to pre-exercise level (see 4.00G7a, 4.00C16-4.00C17); C resting toe systolic pressure less than 30 mm Hg (see 4.00G7c, 4.00G8); or D resting toe/brachial systolic blood pressure ratio less than 0.40 (see 4.00G7c).",
   "synonyms": {
     "peripheral arterial disease": ["PAD", "PVD", "peripheral vascular disease", "lower extremity arterial disease", "LEAD"],
     "intermittent claudication": ["claudication", "leg pain with walking", "calf pain with exertion", "exertional leg pain"],
-    "ABI":                     ["ankle-brachial index", "ankle brachial pressure index", "ABPI"],
+    "ABI":                     ["ankle-brachial index", "ankle brachial pressure index", "ABPI", "ankle/brachial ratio"],
+    "TBI":                     ["toe-brachial index", "toe brachial ratio"],
     "Doppler":                 ["arterial Doppler", "ABI study", "PVR study", "pulse volume recording"],
     "rest pain":               ["ischemic rest pain", "leg pain at rest"],
     "ulcer":                   ["arterial ulcer", "ischemic ulcer", "non-healing wound", "gangrene"]
@@ -17,34 +18,34 @@
     "path": "ROOT",
     "children": [
       {
-        "path": "A",
-        "criterion": "Peripheral arterial disease as determined by appropriate medically acceptable imaging or testing, with intermittent claudication",
-        "keywords": ["PAD", "peripheral arterial disease", "intermittent claudication", "claudication", "exertional leg pain"]
+        "path": "PRECONDITION",
+        "criterion": "Peripheral arterial disease, as determined by appropriate medically acceptable imaging (see 4.00A3d, 4.00G2, 4.00G5, and 4.00G6), causing intermittent claudication (see 4.00G1)",
+        "keywords": ["peripheral arterial disease", "PAD", "intermittent claudication", "claudication", "medically acceptable imaging", "arterial Doppler"]
       },
       {
         "logic": "OR",
-        "path": "B",
-        "criterion": "One of: low ABI, low resting toe pressure, low toe-brachial ratio, or exercise testing with significant drop",
+        "path": "ALTERNATIVES",
+        "criterion": "One of A, B, C, or D",
         "children": [
           {
-            "path": "B.1",
-            "criterion": "Resting ankle-brachial systolic pressure ratio (ABI) less than 0.50",
-            "keywords": ["ABI", "ankle-brachial index", "less than 0.50", "0.5", "ABI study"]
+            "path": "A",
+            "criterion": "Resting ankle/brachial systolic blood pressure ratio of less than 0.50",
+            "keywords": ["ABI", "ankle-brachial index", "less than 0.50", "0.5", "resting ABI"]
           },
           {
-            "path": "B.2",
-            "criterion": "Resting toe systolic pressure less than 30 mm Hg",
-            "keywords": ["toe pressure", "30 mm Hg", "toe systolic pressure", "TBI"]
+            "path": "B",
+            "criterion": "Decrease in systolic blood pressure at the ankle on exercise (see 4.00G7a and 4.00C16-4.00C17) of 50 percent or more of pre-exercise level and requiring 10 minutes or more to return to pre-exercise level",
+            "keywords": ["exercise ABI", "post-exercise ankle pressure", "50% drop", "10 minutes recovery", "treadmill ABI"]
           },
           {
-            "path": "B.3",
-            "criterion": "Resting toe-brachial pressure ratio less than 0.40",
-            "keywords": ["toe-brachial index", "TBI", "0.40", "toe-brachial ratio"]
+            "path": "C",
+            "criterion": "Resting toe systolic pressure of less than 30 mm Hg (see 4.00G7c and 4.00G8)",
+            "keywords": ["toe systolic pressure", "30 mm Hg", "toe pressure", "low toe pressure"]
           },
           {
-            "path": "B.4",
-            "criterion": "Resting systolic blood pressure in ankle ≤50% of systolic BP at peripheral arterial site, with exercise drop",
-            "keywords": ["exercise testing", "exercise Doppler", "treadmill ABI", "post-exercise"]
+            "path": "D",
+            "criterion": "Resting toe/brachial systolic blood pressure ratio of less than 0.40 (see 4.00G7c)",
+            "keywords": ["toe-brachial index", "TBI", "toe/brachial ratio", "0.40", "toe brachial less than 0.40"]
           }
         ]
       }

@@ -2,8 +2,8 @@
   "code": "4.02",
   "title": "Chronic heart failure",
   "body_system": "cardiovascular",
-  "version": 1,
-  "summary": "Chronic heart failure (systolic or diastolic) with documented ventricular dysfunction by echocardiogram or other testing, persistent symptoms despite treatment, plus inability to perform exercise testing safely OR three episodes of heart failure within 12 months.",
+  "version": 2,
+  "summary": "Chronic heart failure while on prescribed treatment, meeting BOTH A and B. A documents systolic failure (A.1: LVEDD >6.0 cm or EF ≤30% during stability) or diastolic failure (A.2: LV posterior wall + septal thickness ≥2.5 cm with left atrium ≥4.5 cm and normal/elevated EF). B documents one of: B.1 persistent symptoms very seriously limiting ADLs in a patient for whom exercise testing would present significant risk; B.2 three or more episodes of acute CHF within a consecutive 12-month period with fluid retention, requiring hospitalization/ER ≥12 hours; or B.3 inability to perform an exercise tolerance test at a workload ≤5 METs due to B.3.a dyspnea/fatigue/palpitations/chest discomfort, B.3.b VT or ventricular ectopy ≥6/min, B.3.c ≥10 mm Hg systolic BP drop, or B.3.d signs of inadequate cerebral perfusion.",
   "synonyms": {
     "chronic heart failure":   ["CHF", "congestive heart failure", "heart failure", "HF", "HFrEF", "HFpEF"],
     "systolic dysfunction":    ["reduced ejection fraction", "HFrEF", "low EF", "decreased LV function"],
@@ -15,9 +15,11 @@
     "edema":                   ["lower extremity edema", "LE edema", "swelling", "fluid retention", "pitting edema"],
     "fluid retention":         ["volume overload", "fluid overload", "edema"],
     "NYHA":                    ["NYHA class", "New York Heart Association", "NYHA III", "NYHA IV"],
-    "exercise tolerance test": ["ETT", "stress test", "treadmill test", "exercise stress test"],
+    "exercise tolerance test": ["ETT", "stress test", "treadmill test", "exercise stress test", "exercise test"],
+    "METs":                    ["metabolic equivalents", "5 METs", "low workload"],
     "BNP":                     ["B-type natriuretic peptide", "NT-proBNP", "elevated BNP"],
     "hospitalization":         ["hospital admission", "inpatient", "ER visit", "emergency department"],
+    "premature ventricular contractions": ["PVCs", "ventricular ectopy", "VT", "ventricular tachycardia"],
     "12 months":               ["1 year", "one year", "12-month period"]
   },
   "rule_json": {
@@ -25,35 +27,70 @@
     "path": "ROOT",
     "children": [
       {
-        "path": "A",
-        "criterion": "Documented chronic heart failure (systolic or diastolic) on imaging while medically stable: ejection fraction ≤30% during stable period, OR diastolic dysfunction with LV posterior wall + septum ≥2.5 cm and enlarged left atrium",
-        "keywords": ["echocardiogram", "ejection fraction", "EF 30%", "LVEF", "diastolic dysfunction", "left atrial enlargement", "wall thickness"]
-      },
-      {
-        "path": "B",
-        "criterion": "Persistent symptoms of heart failure that very seriously limit ability to do activities of daily living",
-        "keywords": ["NYHA III", "NYHA IV", "DOE", "orthopnea", "PND", "fatigue", "limited ADLs", "shortness of breath at rest"]
+        "path": "PRECONDITION",
+        "criterion": "Chronic heart failure while on a regimen of prescribed treatment, with symptoms and signs described in 4.00D2",
+        "keywords": ["chronic heart failure", "CHF", "prescribed treatment", "on heart failure regimen"]
       },
       {
         "logic": "OR",
-        "path": "C",
-        "criterion": "Inability to perform exercise tolerance test OR three episodes of heart failure",
+        "path": "A",
+        "criterion": "Medically documented presence of A.1 (systolic failure) or A.2 (diastolic failure)",
         "children": [
           {
-            "path": "C.1",
-            "criterion": "Inability to perform exercise tolerance test at workload equivalent to 5 METs or less due to symptoms (chest discomfort, dyspnea, fatigue, ischemic ECG changes, arrhythmia, BP drop)",
-            "keywords": ["exercise tolerance test", "ETT", "5 METs", "stress test", "low workload", "ischemic ECG changes", "arrhythmia on stress"]
+            "path": "A.1",
+            "criterion": "Systolic failure (see 4.00D1a(i)), with left ventricular end diastolic dimensions greater than 6.0 cm OR ejection fraction of 30 percent or less during a period of stability (not during an episode of acute heart failure)",
+            "keywords": ["systolic failure", "HFrEF", "LVEDD", "left ventricular end diastolic", "ejection fraction 30%", "low EF", "echocardiogram"]
           },
           {
-            "path": "C.2",
-            "criterion": "Three or more separate episodes of acute heart failure within 12 months requiring emergency department or hospital treatment, with intervening period of stability",
-            "keywords": ["three hospitalizations", "acute heart failure", "decompensated heart failure", "ER visit", "hospital admission", "diuresis"],
-            "duration_months_required": 12
+            "path": "A.2",
+            "criterion": "Diastolic failure (see 4.00D1a(ii)), with left ventricular posterior wall plus septal thickness totaling 2.5 cm or greater on imaging, with an enlarged left atrium ≥4.5 cm, with normal or elevated ejection fraction during a period of stability (not during an episode of acute heart failure)",
+            "keywords": ["diastolic failure", "HFpEF", "posterior wall thickness", "septal thickness", "left atrium 4.5", "preserved ejection fraction"]
+          }
+        ]
+      },
+      {
+        "logic": "OR",
+        "path": "B",
+        "criterion": "Resulting in one of B.1, B.2, or B.3",
+        "children": [
+          {
+            "path": "B.1",
+            "criterion": "Persistent symptoms of heart failure which very seriously limit the ability to independently initiate, sustain, or complete activities of daily living in an individual for whom an MC, preferably one experienced in the care of patients with cardiovascular disease, has concluded that the performance of an exercise test would present a significant risk to the individual",
+            "keywords": ["persistent symptoms", "very seriously limit ADLs", "exercise test significant risk", "NYHA IV", "limited ADLs"]
           },
           {
-            "path": "C.3",
-            "criterion": "Inability to perform exercise tolerance test at workload of 5 METs because exercise testing would present significant risk to the individual",
-            "keywords": ["exercise testing contraindicated", "high risk", "unable to exercise"]
+            "path": "B.2",
+            "criterion": "Three or more separate episodes of acute congestive heart failure within a consecutive 12-month period (see 4.00A3e), with evidence of fluid retention (see 4.00D2b(ii)) from clinical and imaging assessments at the time of the episodes, requiring acute extended physician intervention such as hospitalization or emergency room treatment for 12 hours or more, separated by periods of stabilization (see 4.00D4c)",
+            "keywords": ["three episodes", "acute CHF", "decompensated heart failure", "12-month period", "fluid retention", "hospitalization", "emergency room", "12 hours"],
+            "duration_months_required": 12,
+            "duration_basis": "observation_window"
+          },
+          {
+            "logic": "OR",
+            "path": "B.3",
+            "criterion": "Inability to perform on an exercise tolerance test at a workload equivalent to 5 METs or less due to one of B.3.a, B.3.b, B.3.c, or B.3.d",
+            "children": [
+              {
+                "path": "B.3.a",
+                "criterion": "Dyspnea, fatigue, palpitations, or chest discomfort",
+                "keywords": ["dyspnea", "fatigue", "palpitations", "chest discomfort", "exercise tolerance test"]
+              },
+              {
+                "path": "B.3.b",
+                "criterion": "Three or more consecutive premature ventricular contractions (ventricular tachycardia), or increasing frequency of ventricular ectopy with at least 6 premature ventricular contractions per minute",
+                "keywords": ["ventricular tachycardia", "VT", "premature ventricular contractions", "PVCs", "ventricular ectopy", "6 PVCs per minute"]
+              },
+              {
+                "path": "B.3.c",
+                "criterion": "Decrease of 10 mm Hg or more in systolic pressure below the baseline systolic blood pressure or the preceding systolic pressure measured during exercise (see 4.00D4d) due to left ventricular dysfunction, despite an increase in workload",
+                "keywords": ["systolic BP drop", "10 mm Hg decrease", "left ventricular dysfunction", "exercise-induced hypotension"]
+              },
+              {
+                "path": "B.3.d",
+                "criterion": "Signs attributable to inadequate cerebral perfusion, such as ataxic gait or mental confusion",
+                "keywords": ["inadequate cerebral perfusion", "ataxic gait", "mental confusion", "cerebral hypoperfusion"]
+              }
+            ]
           }
         ]
       }

@@ -2,22 +2,47 @@
   "code": "13.16",
   "title": "Esophagus or stomach cancer",
   "body_system": "cancer",
-  "version": 1,
-  "summary": "Cancer of the esophagus or stomach. Esophageal cancer at any stage qualifies. Gastric cancer with inoperable/unresectable disease, recurrence, or metastases qualifies.",
+  "version": 2,
+  "summary": "Esophagus or stomach cancer meeting one of: A carcinoma or sarcoma of the esophagus, B carcinoma or sarcoma of the stomach (B.1 inoperable/unresectable/extending to surrounding structures or recurrent, or B.2 with metastases to or beyond the regional lymph nodes), or C small-cell (oat cell) carcinoma.",
   "synonyms": {
     "esophageal cancer":       ["esophageal carcinoma", "esophageal adenocarcinoma", "esophageal squamous cell carcinoma"],
     "stomach cancer":          ["gastric cancer", "gastric carcinoma", "gastric adenocarcinoma"],
     "GE junction":             ["gastroesophageal junction", "GEJ"],
-    "biopsy":                  ["EGD with biopsy", "endoscopic biopsy"]
+    "biopsy":                  ["EGD with biopsy", "endoscopic biopsy"],
+    "small cell carcinoma":    ["oat cell carcinoma", "small-cell carcinoma"],
+    "regional lymph nodes":    ["regional nodes", "perigastric nodes", "celiac nodes"]
   },
   "rule_json": {
     "logic": "OR",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Carcinoma or sarcoma of the esophagus, at any stage",
-       "keywords": ["esophageal cancer", "esophageal carcinoma", "esophageal adenocarcinoma", "esophageal squamous cell carcinoma", "GEJ cancer"]},
-      {"path": "B", "criterion": "Stomach cancer that is inoperable, unresectable, extending to surrounding structures, recurrent, OR with distant metastases",
-       "keywords": ["gastric cancer", "stomach cancer", "gastric carcinoma", "inoperable", "unresectable", "recurrent gastric cancer", "metastatic gastric cancer"]}
+      {
+        "path": "A",
+        "criterion": "Carcinoma or sarcoma of the esophagus",
+        "keywords": ["esophageal cancer", "esophageal carcinoma", "esophageal adenocarcinoma", "esophageal squamous cell carcinoma", "esophageal sarcoma", "GEJ cancer"]
+      },
+      {
+        "logic": "OR",
+        "path": "B",
+        "criterion": "Carcinoma or sarcoma of the stomach, as described in B.1 or B.2",
+        "children": [
+          {
+            "path": "B.1",
+            "criterion": "Inoperable, unresectable, extending to surrounding structures, or recurrent",
+            "keywords": ["gastric cancer", "stomach cancer", "inoperable", "unresectable", "extending to surrounding structures", "recurrent gastric cancer"]
+          },
+          {
+            "path": "B.2",
+            "criterion": "With metastases to or beyond the regional lymph nodes",
+            "keywords": ["gastric cancer", "metastases beyond regional lymph nodes", "distant metastases", "nodal metastases"]
+          }
+        ]
+      },
+      {
+        "path": "C",
+        "criterion": "Small-cell (oat cell) carcinoma",
+        "keywords": ["small-cell carcinoma", "oat cell carcinoma", "small cell"]
+      }
     ]
   }
 }

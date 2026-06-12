@@ -2,34 +2,62 @@
   "code": "13.06",
   "title": "Leukemia",
   "body_system": "cancer",
-  "version": 1,
-  "summary": "Leukemia: acute leukemia (considered disabled until ≥24 months from diagnosis or relapse), chronic myelogenous leukemia in accelerated/blast phase, chronic lymphocytic leukemia in advanced stage, OR stem cell transplantation.",
+  "version": 2,
+  "summary": "Leukemia meeting A (acute leukemia including T-cell lymphoblastic lymphoma; presumptive disability until ≥24 mo from diagnosis/relapse or ≥12 mo from BMT/SCT, whichever is later) or B (chronic myelogenous leukemia: B.1 accelerated/blast phase with same presumptive timeline, or B.2 chronic phase with B.2.a 12-mo post-transplant presumption or B.2.b progressive disease after initial anticancer therapy).",
   "synonyms": {
-    "acute lymphoblastic leukemia": ["ALL"],
+    "acute lymphoblastic leukemia": ["ALL", "T-cell lymphoblastic lymphoma", "T-LBL"],
     "acute myelogenous leukemia": ["AML", "acute myeloid leukemia"],
     "chronic myelogenous leukemia": ["CML", "chronic myeloid leukemia", "Philadelphia chromosome", "Ph+", "BCR-ABL"],
-    "chronic lymphocytic leukemia": ["CLL", "small lymphocytic lymphoma", "SLL"],
     "blast phase":             ["blast crisis", "blastic phase"],
     "accelerated phase":       ["accelerated CML"],
-    "stem cell transplant":    ["BMT", "bone marrow transplant", "HSCT"],
+    "stem cell transplant":    ["BMT", "bone marrow transplant", "HSCT", "hematopoietic stem cell transplant"],
     "induction chemotherapy":  ["induction chemo", "consolidation chemotherapy"],
-    "Rai staging":             ["Rai stage III", "Rai stage IV"],
-    "Binet staging":           ["Binet stage C"]
+    "anticancer therapy":      ["chemotherapy", "chemo", "targeted therapy", "tyrosine kinase inhibitor", "TKI", "imatinib"]
   },
   "rule_json": {
     "logic": "OR",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Acute leukemia (AML or ALL); considered disabled until at least 24 months from date of diagnosis or relapse, or 12 months from date of bone marrow/stem cell transplantation, whichever is later",
-       "keywords": ["acute lymphoblastic leukemia", "ALL", "acute myeloid leukemia", "AML", "acute leukemia", "induction chemotherapy", "24 months from diagnosis"],
-       "duration_months_required": 24},
-      {"path": "B", "criterion": "Chronic myelogenous leukemia (CML) in accelerated phase or blast phase",
-       "keywords": ["chronic myelogenous leukemia", "CML", "accelerated phase", "blast phase", "blast crisis", "Philadelphia chromosome"]},
-      {"path": "C", "criterion": "Chronic lymphocytic leukemia (CLL) in Rai stage III/IV or Binet stage C, OR with significant constitutional symptoms",
-       "keywords": ["chronic lymphocytic leukemia", "CLL", "Rai stage III", "Rai stage IV", "Binet stage C", "advanced CLL"]},
-      {"path": "D", "criterion": "Bone marrow or stem cell transplantation; considered disabled for 12 months from date of transplantation",
-       "keywords": ["stem cell transplant", "HSCT", "BMT", "bone marrow transplant"],
-       "duration_months_required": 12}
+      {
+        "path": "A",
+        "criterion": "Acute leukemia (including T-cell lymphoblastic lymphoma). Consider under a disability until at least 24 months from the date of diagnosis or relapse, or at least 12 months from the date of bone marrow or stem cell transplantation, whichever is later. Thereafter, evaluate any residual impairment(s) under the criteria for the affected body system.",
+        "keywords": ["acute lymphoblastic leukemia", "ALL", "acute myeloid leukemia", "AML", "acute leukemia", "T-cell lymphoblastic lymphoma", "induction chemotherapy", "24 months from diagnosis"],
+        "duration_months_required": 24,
+        "duration_basis": "presumptive_disability"
+      },
+      {
+        "logic": "OR",
+        "path": "B",
+        "criterion": "Chronic myelogenous leukemia, as described in B.1 or B.2",
+        "children": [
+          {
+            "path": "B.1",
+            "criterion": "Accelerated or blast phase (see 13.00K2b). Consider under a disability until at least 24 months from the date of diagnosis or relapse, or at least 12 months from the date of bone marrow or stem cell transplantation, whichever is later. Thereafter, evaluate any residual impairment(s) under the criteria for the affected body system.",
+            "keywords": ["CML accelerated phase", "CML blast phase", "blast crisis", "blastic phase", "Philadelphia chromosome"],
+            "duration_months_required": 24,
+            "duration_basis": "presumptive_disability"
+          },
+          {
+            "logic": "OR",
+            "path": "B.2",
+            "criterion": "Chronic phase, as described in B.2.a or B.2.b",
+            "children": [
+              {
+                "path": "B.2.a",
+                "criterion": "Consider under a disability until at least 12 months from the date of bone marrow or stem cell transplantation. Thereafter, evaluate any residual impairment(s) under the criteria for the affected body system.",
+                "keywords": ["stem cell transplant", "BMT", "HSCT", "bone marrow transplant", "post-transplant", "12 months from transplantation"],
+                "duration_months_required": 12,
+                "duration_basis": "presumptive_disability"
+              },
+              {
+                "path": "B.2.b",
+                "criterion": "Progressive disease following initial anticancer therapy",
+                "keywords": ["progressive disease", "progression on TKI", "imatinib failure", "treatment failure", "progression after therapy"]
+              }
+            ]
+          }
+        ]
+      }
     ]
   }
 }

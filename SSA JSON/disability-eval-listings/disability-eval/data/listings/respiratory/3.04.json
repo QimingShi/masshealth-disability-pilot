@@ -2,21 +2,23 @@
   "code": "3.04",
   "title": "Cystic fibrosis",
   "body_system": "respiratory",
-  "version": 1,
-  "summary": "Cystic fibrosis (genetic/sweat test confirmed) meeting one of: low FEV1, exacerbations requiring hospitalization, low SpO2, hemoptysis, pulmonary hypertension, weight loss, or respiratory failure.",
+  "version": 2,
+  "summary": "Cystic fibrosis (documented per 3.00J2) meeting one of: A FEV1 ≤ Table VII-A/VII-B value; B three hospitalizations within a 12-month period ≥30 days apart; C spontaneous pneumothorax requiring chest tube; D respiratory failure requiring ≥48 hours of invasive/noninvasive ventilation; E pulmonary hemorrhage requiring vascular embolization; F SpO2 ≤ Table VIII value twice within a 12-month period ≥30 days apart; or G two qualifying exacerbations/complications (G.1 IV-antibiotic exacerbation, G.2 hemoptysis hospitalization, G.3 enteral/parenteral nutrition ≥90 days, or G.4 CFRD requiring insulin ≥90 days) within a 12-month period.",
   "synonyms": {
     "cystic fibrosis":         ["CF", "mucoviscidosis"],
-    "sweat test":               ["sweat chloride test", "pilocarpine iontophoresis"],
+    "sweat test":              ["sweat chloride test", "pilocarpine iontophoresis"],
     "CFTR":                    ["CFTR gene", "CFTR mutation", "F508del", "delta-F508"],
     "FEV1":                    ["forced expiratory volume", "FEV-1"],
     "spirometry":              ["pulmonary function test", "PFT"],
     "exacerbation":            ["pulmonary exacerbation", "CF exacerbation", "lung exacerbation"],
     "IV antibiotics":          ["intravenous antibiotics", "IV abx"],
-    "hemoptysis":              ["coughing up blood", "blood-tinged sputum"],
+    "hemoptysis":              ["coughing up blood", "blood-tinged sputum", "pulmonary hemorrhage"],
     "weight loss":             ["unintentional weight loss", "BMI low", "underweight", "wasting"],
-    "pulmonary hypertension":  ["pulmonary HTN", "PH", "elevated PA pressure", "RVSP"],
+    "pneumothorax":            ["collapsed lung", "spontaneous pneumothorax"],
     "respiratory failure":     ["acute respiratory failure", "type I respiratory failure", "type II respiratory failure"],
     "hospitalization":         ["hospital admission", "inpatient"],
+    "CFRD":                    ["cystic fibrosis related diabetes", "CF-related diabetes"],
+    "embolization":            ["bronchial artery embolization", "vascular embolization"],
     "12 months":               ["1 year", "one year", "12-month period"]
   },
   "rule_json": {
@@ -24,51 +26,77 @@
     "path": "ROOT",
     "children": [
       {
-        "path": "A",
-        "criterion": "Diagnosis of cystic fibrosis by sweat chloride test or genetic testing for CFTR mutations",
+        "path": "PRECONDITION",
+        "criterion": "Cystic Fibrosis documented as described in 3.00J2 (sweat chloride test or CFTR genetic testing)",
         "keywords": ["cystic fibrosis", "CF diagnosis", "sweat chloride", "CFTR mutation", "F508del", "genetic testing"]
       },
       {
         "logic": "OR",
-        "path": "B",
-        "criterion": "One of: low FEV1, exacerbations, low oxygenation, hemoptysis, pulmonary HTN, weight loss, or respiratory failure",
+        "path": "ALTERNATIVES",
+        "criterion": "One of A through G",
         "children": [
           {
-            "path": "B.1",
-            "criterion": "FEV1 ≤ value in SSA Table VII-A or VII-B for age, sex, and height",
+            "path": "A",
+            "criterion": "FEV1 (see 3.00E) less than or equal to the value in Table VII-A or VII-B for age, gender, and height without shoes (see 3.00E3a)",
             "keywords": ["FEV1", "spirometry", "Table VII", "low FEV1"]
           },
           {
-            "path": "B.2",
-            "criterion": "Two or more pulmonary exacerbations in 12 months requiring IV antibiotics, IV chest physiotherapy, or hospitalization",
-            "keywords": ["pulmonary exacerbation", "IV antibiotics", "hospitalization", "two or more exacerbations"],
-            "duration_months_required": 12
+            "path": "B",
+            "criterion": "Exacerbations or complications (see 3.00J3) requiring three hospitalizations of any length within a 12-month period and at least 30 days apart (the 12-month period must occur within the period we are considering in connection with your application or continuing disability review)",
+            "keywords": ["three hospitalizations", "12-month period", "30 days apart", "exacerbation", "CF complications"],
+            "duration_months_required": 12,
+            "duration_basis": "observation_window"
           },
           {
-            "path": "B.3",
-            "criterion": "SpO2 ≤ value in Table VIII on pulse oximetry while breathing room air at rest, or after 6-minute walk",
-            "keywords": ["SpO2", "pulse oximetry", "oxygen saturation", "Table VIII", "6-minute walk", "6MWT"]
+            "path": "C",
+            "criterion": "Spontaneous pneumothorax, secondary to CF, requiring chest tube placement",
+            "keywords": ["pneumothorax", "spontaneous pneumothorax", "chest tube", "tube thoracostomy"]
           },
           {
-            "path": "B.4",
-            "criterion": "Hemoptysis (other than blood-streaked sputum) requiring vascular embolization to control bleeding",
-            "keywords": ["hemoptysis", "embolization", "bronchial artery embolization", "massive hemoptysis"]
+            "path": "D",
+            "criterion": "Respiratory failure (see 3.00N) requiring invasive mechanical ventilation, noninvasive ventilation with BiPAP, or a combination of both treatments, for a continuous period of at least 48 hours, or for a continuous period of at least 72 hours if postoperatively",
+            "keywords": ["respiratory failure", "mechanical ventilation", "BiPAP", "noninvasive ventilation", "48 hours", "72 hours postoperative"]
           },
           {
-            "path": "B.5",
-            "criterion": "Pulmonary hypertension confirmed by mean pulmonary artery pressure ≥25 mm Hg on right heart catheterization",
-            "keywords": ["pulmonary hypertension", "right heart catheterization", "mPAP", "elevated PA pressure"]
+            "path": "E",
+            "criterion": "Pulmonary hemorrhage requiring vascular embolization to control bleeding",
+            "keywords": ["pulmonary hemorrhage", "massive hemoptysis", "vascular embolization", "bronchial artery embolization"]
           },
           {
-            "path": "B.6",
-            "criterion": "Respiratory failure requiring invasive mechanical ventilation, noninvasive ventilation with BiPAP, or a combination of both for ≥48 consecutive hours, occurring twice within 12 months",
-            "keywords": ["respiratory failure", "mechanical ventilation", "BiPAP", "intubation", "ICU"],
-            "duration_months_required": 12
+            "path": "F",
+            "criterion": "SpO2 measured by pulse oximetry (see 3.00H3) either at rest, during a 6MWT, or after a 6MWT, less than or equal to the value in Table VIII, twice within a 12-month period and at least 30 days apart (the 12-month period must occur within the period we are considering in connection with your application or continuing disability review)",
+            "keywords": ["SpO2", "pulse oximetry", "6MWT", "Table VIII", "twice within 12 months", "low oxygen saturation"],
+            "duration_months_required": 12,
+            "duration_basis": "observation_window"
           },
           {
-            "path": "B.7",
-            "criterion": "Weight loss with low BMI: BMI ≤18 (adults) or weight loss with documented poor nutritional status",
-            "keywords": ["weight loss", "BMI low", "underweight", "wasting", "malnutrition", "poor nutritional status"]
+            "logic": "AND",
+            "path": "G",
+            "criterion": "Two of the following exacerbations or complications (either two of the same or two different, see 3.00J3 and 3.00J4) within a 12-month period (G.1 through G.4)",
+            "duration_months_required": 12,
+            "duration_basis": "observation_window",
+            "children": [
+              {
+                "path": "G.1",
+                "criterion": "Pulmonary exacerbation requiring 10 consecutive days of intravenous antibiotic treatment",
+                "keywords": ["pulmonary exacerbation", "IV antibiotics", "10 consecutive days", "intravenous antibiotic"]
+              },
+              {
+                "path": "G.2",
+                "criterion": "Pulmonary hemorrhage (hemoptysis with more than blood-streaked sputum but not requiring vascular embolization) requiring hospitalization of any length",
+                "keywords": ["hemoptysis", "pulmonary hemorrhage", "hospitalization"]
+              },
+              {
+                "path": "G.3",
+                "criterion": "Weight loss requiring daily supplemental enteral nutrition via a gastrostomy for at least 90 consecutive days, or parenteral nutrition via a central venous catheter for at least 90 consecutive days",
+                "keywords": ["weight loss", "enteral nutrition", "gastrostomy", "G-tube", "parenteral nutrition", "central venous catheter", "90 days"]
+              },
+              {
+                "path": "G.4",
+                "criterion": "CFRD requiring daily insulin therapy for at least 90 consecutive days",
+                "keywords": ["CFRD", "cystic fibrosis related diabetes", "daily insulin", "insulin therapy", "90 days"]
+              }
+            ]
           }
         ]
       }

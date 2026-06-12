@@ -52,7 +52,10 @@ LISTINGS_DIR = (HERE / "SSA JSON" / "disability-eval-listings"
 
 # Match a paragraph marker at line start, e.g. "____A.", "A.", "____B.",
 # "___  A." (12.04 uses ___ followed by spaces before the letter).
-PARA_MARK_RE = re.compile(r"^[_]*\s*([A-D])\.\s")
+# Some listings extend past D — 13.22/13.23 go to E/F, 14.11 HIV goes to I.
+# Allow A-I to cover the longest SSA listings without picking up unrelated
+# single uppercase tokens elsewhere in the prose.
+PARA_MARK_RE = re.compile(r"^[_]*\s*([A-I])\.\s")
 # Match a sub-item marker e.g. "____1.", "1.", "____2.", "_   1.".
 SUB_MARK_RE = re.compile(r"^\s*[_]*\s*(\d)\.\s")
 # Look for duration / treatment-adherence language. SSA phrases this
@@ -344,7 +347,7 @@ def extract_json(json_path: Path) -> dict | None:
         # Top-level paragraph: single letter A/B/C/D at ANY depth (some JSONs
         # have ROOT > A/B/C/D flat, others have ROOT > ALTERNATIVES > A/B/C/D).
         # Exclude PRECONDITION which is a separate concept.
-        if re.fullmatch(r"[A-D]", path or "") and path != "PRECONDITION":
+        if re.fullmatch(r"[A-I]", path or "") and path != "PRECONDITION":
             if path not in top_paragraphs:
                 top_paragraphs.append(path)
         # Anything that descends from a paragraph (path starts with "A.",
@@ -352,7 +355,7 @@ def extract_json(json_path: Path) -> dict | None:
         # numbered list. JSON structures vary — flat (B.1, B.2), nested
         # (B.2.a, B.2.b), labeled (A.decline.1). We just count distinct
         # descendant paths per paragraph.
-        m = re.match(r"^([A-D])\.", path or "")
+        m = re.match(r"^([A-I])\.", path or "")
         if m:
             sub_items[m.group(1)].append(path)
 

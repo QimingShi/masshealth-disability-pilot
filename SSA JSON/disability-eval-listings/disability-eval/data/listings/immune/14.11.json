@@ -2,19 +2,20 @@
   "code": "14.11",
   "title": "HIV infection",
   "body_system": "immune",
-  "version": 1,
-  "summary": "HIV infection documented by appropriate testing, with one of: multicentric Castleman disease, primary effusion lymphoma, primary CNS lymphoma, progressive multifocal leukoencephalopathy, pulmonary Kaposi sarcoma, opportunistic infections, OR repeated manifestations with constitutional symptoms and marked functional limitation.",
+  "version": 2,
+  "summary": "HIV infection (documented per 14.00F1) with one of: A multicentric Castleman disease; B primary CNS lymphoma; C primary effusion lymphoma; D progressive multifocal leukoencephalopathy; E pulmonary Kaposi sarcoma; F absolute CD4 ≤50; G absolute CD4 <200 or CD4% <14 with BMI<18.5 (G.1) or hemoglobin<8.0 (G.2); H complication(s) requiring ≥3 hospitalizations within a 12-month period, ≥30 days apart, each lasting ≥48 hours; or I repeated manifestations with constitutional symptoms and one marked functional limitation (I.1, I.2, or I.3).",
   "synonyms": {
     "HIV":                     ["human immunodeficiency virus", "HIV-1", "HIV-2", "AIDS", "acquired immunodeficiency syndrome"],
     "HIV testing":             ["HIV antibody", "HIV PCR", "HIV viral load", "Western blot", "ELISA"],
     "CD4":                     ["CD4 count", "CD4 cell count", "T-cell count", "absolute CD4"],
     "ART":                     ["antiretroviral therapy", "HAART", "HIV medications", "antiretrovirals"],
     "opportunistic infection": ["OI", "PCP", "Pneumocystis pneumonia", "PJP", "PJP pneumonia", "MAC", "Mycobacterium avium complex", "CMV", "cytomegalovirus", "toxoplasmosis", "cryptococcosis", "candidiasis"],
-    "Kaposi sarcoma":          ["KS", "Kaposi's sarcoma"],
+    "Kaposi sarcoma":          ["KS", "Kaposi's sarcoma", "pulmonary KS"],
     "PML":                     ["progressive multifocal leukoencephalopathy"],
     "Castleman disease":       ["multicentric Castleman disease", "MCD"],
     "primary effusion lymphoma": ["PEL", "body cavity-based lymphoma"],
-    "wasting":                 ["HIV wasting syndrome", "weight loss"]
+    "primary CNS lymphoma":    ["PCNSL", "primary central nervous system lymphoma"],
+    "wasting":                 ["HIV wasting syndrome", "weight loss", "low BMI"]
   },
   "rule_json": {
     "logic": "AND",
@@ -22,33 +23,112 @@
     "children": [
       {
         "path": "PRECONDITION",
-        "criterion": "HIV infection documented by appropriate laboratory testing (HIV antibody, HIV PCR, HIV viral load)",
-        "keywords": ["HIV", "HIV-1", "HIV-2", "HIV antibody", "HIV PCR", "viral load", "CD4 count"]
+        "criterion": "HIV infection with documentation as described in 14.00F1",
+        "keywords": ["HIV", "HIV-1", "HIV-2", "HIV antibody", "HIV PCR", "viral load", "HIV diagnosis"]
       },
       {
         "logic": "OR",
         "path": "ALTERNATIVES",
-        "criterion": "AIDS-defining conditions OR opportunistic infections OR repeated manifestations with marked limitation",
+        "criterion": "One of A through I",
         "children": [
-          {"path": "A", "criterion": "Multicentric Castleman disease, primary effusion lymphoma, primary CNS lymphoma, or progressive multifocal leukoencephalopathy",
-           "keywords": ["multicentric Castleman disease", "MCD", "primary effusion lymphoma", "PEL", "primary CNS lymphoma", "PCNSL", "progressive multifocal leukoencephalopathy", "PML"]},
-          {"path": "B", "criterion": "Pulmonary Kaposi sarcoma, OR Kaposi sarcoma at any extracutaneous site",
-           "keywords": ["Kaposi sarcoma", "KS", "pulmonary KS", "visceral KS"]},
-          {"path": "C", "criterion": "Absolute CD4 count of 50 cells/mm³ or less",
-           "keywords": ["CD4", "CD4 count 50", "low CD4", "severe immunosuppression"]},
-          {"path": "D", "criterion": "Absolute CD4 count <200 cells/mm³ or CD4 percent <14% AND at least one specific complication (BMI<18.5, hemoglobin <8.0, opportunistic infection)",
-           "keywords": ["CD4 200", "CD4 percentage 14", "wasting", "BMI 18.5", "hemoglobin 8.0", "opportunistic infection"]},
+          {
+            "path": "A",
+            "criterion": "Multicentric (not localized or unicentric) Castleman disease affecting multiple groups of lymph nodes or organs containing lymphoid tissue (see 14.00F3a)",
+            "keywords": ["multicentric Castleman disease", "MCD", "Castleman disease"]
+          },
+          {
+            "path": "B",
+            "criterion": "Primary central nervous system lymphoma (see 14.00F3b)",
+            "keywords": ["primary CNS lymphoma", "PCNSL", "primary central nervous system lymphoma"]
+          },
+          {
+            "path": "C",
+            "criterion": "Primary effusion lymphoma (see 14.00F3c)",
+            "keywords": ["primary effusion lymphoma", "PEL", "body cavity-based lymphoma"]
+          },
+          {
+            "path": "D",
+            "criterion": "Progressive multifocal leukoencephalopathy (see 14.00F3d)",
+            "keywords": ["progressive multifocal leukoencephalopathy", "PML", "JC virus"]
+          },
+          {
+            "path": "E",
+            "criterion": "Pulmonary Kaposi sarcoma (see 14.00F3e)",
+            "keywords": ["pulmonary Kaposi sarcoma", "pulmonary KS", "Kaposi sarcoma lung"]
+          },
+          {
+            "path": "F",
+            "criterion": "Absolute CD4 count of 50 cells/mm3 or less (see 14.00F4)",
+            "keywords": ["CD4 50", "absolute CD4 50", "low CD4", "severe immunosuppression"]
+          },
           {
             "logic": "AND",
-            "path": "E",
-            "criterion": "Repeated manifestations of HIV with constitutional symptoms AND marked limitation",
+            "path": "G",
+            "criterion": "Absolute CD4 count of less than 200 cells/mm3 or CD4 percentage of less than 14 percent, AND one of G.1 (BMI<18.5) or G.2 (hemoglobin<8.0 g/dL) (see 14.00F5)",
             "children": [
-              {"path": "E.1", "criterion": "Repeated manifestations of HIV infection",
-               "keywords": ["recurrent HIV-related illness", "AIDS-defining conditions", "OI"]},
-              {"path": "E.2", "criterion": "At least two constitutional symptoms",
-               "keywords": ["fatigue", "fever", "malaise", "weight loss"]},
-              {"path": "E.3", "criterion": "Marked limitation in ADLs, social functioning, or completing tasks",
-               "keywords": ["ADLs", "social functioning", "concentration", "HIV-associated neurocognitive disorder"]}
+              {
+                "path": "G.cd4",
+                "criterion": "Absolute CD4 count <200 cells/mm3 OR CD4 percentage <14 percent",
+                "keywords": ["CD4 200", "CD4 percentage 14", "CD4 <200"]
+              },
+              {
+                "logic": "OR",
+                "path": "G.alternatives",
+                "criterion": "G.1 or G.2 (values do not have to be measured on the same date)",
+                "children": [
+                  {
+                    "path": "G.1",
+                    "criterion": "BMI measurement of less than 18.5",
+                    "keywords": ["BMI 18.5", "BMI <18.5", "low BMI", "wasting"]
+                  },
+                  {
+                    "path": "G.2",
+                    "criterion": "Hemoglobin measurement of less than 8.0 grams per deciliter (g/dL)",
+                    "keywords": ["hemoglobin 8.0", "hemoglobin <8.0", "anemia", "Hgb 8"]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "path": "H",
+            "criterion": "Complication(s) of HIV infection requiring at least three hospitalizations within a 12-month period and at least 30 days apart (see 14.00F6). Each hospitalization must last at least 48 hours, including hours in a hospital emergency department immediately before the hospitalization.",
+            "keywords": ["three hospitalizations", "12-month period", "30 days apart", "48 hours", "HIV complications"],
+            "duration_months_required": 12,
+            "duration_basis": "observation_window"
+          },
+          {
+            "logic": "AND",
+            "path": "I",
+            "criterion": "Repeated (as defined in 14.00I3) manifestations of HIV infection (including those listed in 14.11 A-H without the requisite findings, or other manifestations) resulting in significant, documented symptoms or signs (severe fatigue, fever, malaise, involuntary weight loss, headaches, insomnia, nausea, night sweats, pain, or vomiting) AND one of I.1, I.2, or I.3 at the marked level",
+            "children": [
+              {
+                "path": "I.constitutional",
+                "criterion": "Repeated manifestations with significant, documented symptoms or signs (severe fatigue, fever, malaise, weight loss, headaches, etc.)",
+                "keywords": ["repeated manifestations", "constitutional symptoms", "fever", "fatigue", "malaise", "weight loss", "night sweats", "headaches"]
+              },
+              {
+                "logic": "OR",
+                "path": "I.functional",
+                "criterion": "Marked level limitation in one of I.1, I.2, or I.3",
+                "children": [
+                  {
+                    "path": "I.1",
+                    "criterion": "Marked limitation of activities of daily living",
+                    "keywords": ["ADL limitation", "activities of daily living", "marked limitation"]
+                  },
+                  {
+                    "path": "I.2",
+                    "criterion": "Marked limitation in maintaining social functioning",
+                    "keywords": ["social functioning", "social withdrawal", "marked limitation"]
+                  },
+                  {
+                    "path": "I.3",
+                    "criterion": "Marked limitation in completing tasks in a timely manner due to deficiencies in concentration, persistence, or pace",
+                    "keywords": ["concentration", "persistence", "pace", "HIV-associated dementia", "completing tasks"]
+                  }
+                ]
+              }
             ]
           }
         ]

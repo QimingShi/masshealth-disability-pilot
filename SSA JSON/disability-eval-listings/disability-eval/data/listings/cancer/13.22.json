@@ -2,14 +2,15 @@
   "code": "13.22",
   "title": "Urinary bladder — carcinoma",
   "body_system": "cancer",
-  "version": 1,
-  "summary": "Bladder cancer with infiltration beyond bladder wall, recurrence after total cystectomy, inoperable/unresectable disease, OR metastases to or beyond regional lymph nodes.",
+  "version": 2,
+  "summary": "Bladder cancer meeting A (infiltration beyond bladder wall), B (recurrent after total cystectomy), C (inoperable/unresectable), D (metastases to or beyond regional lymph nodes), or E (small-cell/oat-cell carcinoma).",
   "synonyms": {
     "bladder cancer":          ["urothelial carcinoma", "transitional cell carcinoma", "TCC", "urothelial carcinoma of bladder"],
     "muscle-invasive":         ["muscle-invasive bladder cancer", "MIBC", "T2 bladder cancer", "T3", "T4"],
     "cystectomy":              ["radical cystectomy", "total cystectomy", "bladder removal"],
     "metastasis":              ["distant metastases", "regional metastases", "M1 disease"],
-    "biopsy":                  ["TURBT", "transurethral resection of bladder tumor", "cystoscopy with biopsy"]
+    "biopsy":                  ["TURBT", "transurethral resection of bladder tumor", "cystoscopy with biopsy"],
+    "small cell carcinoma":    ["oat cell carcinoma", "small-cell carcinoma"]
   },
   "rule_json": {
     "logic": "AND",
@@ -29,7 +30,9 @@
           {"path": "C", "criterion": "Inoperable or unresectable disease",
            "keywords": ["inoperable", "unresectable"]},
           {"path": "D", "criterion": "Metastases to or beyond regional lymph nodes",
-           "keywords": ["regional lymph node metastases", "distant metastases", "M1 disease"]}
+           "keywords": ["regional lymph node metastases", "distant metastases", "M1 disease"]},
+          {"path": "E", "criterion": "Small-cell (oat cell) carcinoma",
+           "keywords": ["small-cell carcinoma", "oat cell carcinoma", "small cell bladder cancer"]}
         ]
       }
     ]

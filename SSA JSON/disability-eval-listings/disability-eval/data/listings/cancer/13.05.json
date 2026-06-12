@@ -2,8 +2,8 @@
   "code": "13.05",
   "title": "Lymphoma",
   "body_system": "cancer",
-  "version": 1,
-  "summary": "Lymphoma (Hodgkin or non-Hodgkin) qualifying under one of: aggressive lymphoma not meeting initial response criteria after anticancer therapy, indolent lymphoma requiring more than initial anticancer treatment, mantle cell lymphoma, or stem cell transplantation.",
+  "version": 2,
+  "summary": "Lymphoma (including mycosis fungoides, excluding T-cell lymphoblastic lymphoma--13.06) meeting one of: A non-Hodgkin (aggressive persistent/recurrent or indolent requiring >1 regimen in 12 mo), B Hodgkin not achieving complete remission or recurrent within 12 mo, C stem-cell transplantation (12-month presumptive disability), or D mantle cell lymphoma.",
   "synonyms": {
     "lymphoma":                ["non-Hodgkin lymphoma", "NHL", "Hodgkin lymphoma", "HL", "Hodgkin disease"],
     "DLBCL":                   ["diffuse large B-cell lymphoma"],
@@ -20,19 +20,44 @@
     "logic": "OR",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Non-Hodgkin lymphoma: aggressive lymphoma (DLBCL, mantle cell, etc.) persistent or recurrent following initial anticancer therapy",
-       "keywords": ["DLBCL", "diffuse large B-cell lymphoma", "aggressive lymphoma", "mantle cell lymphoma", "Burkitt", "persistent disease", "recurrent disease", "treatment failure"]},
-      {"path": "B", "criterion": "Non-Hodgkin lymphoma: indolent lymphoma (follicular, marginal zone, small lymphocytic) requiring initiation of more than one anticancer treatment regimen within 12-month period",
-       "keywords": ["follicular lymphoma", "indolent lymphoma", "marginal zone lymphoma", "more than one regimen", "multiple lines of therapy"],
-       "duration_months_required": 12},
-      {"path": "C", "criterion": "Hodgkin lymphoma with failure to achieve clinically complete remission, OR recurrence within 12 months of completing initial anticancer therapy",
-       "keywords": ["Hodgkin lymphoma", "Hodgkin disease", "ABVD", "BEACOPP", "no complete remission", "recurrence within 12 months"],
-       "duration_months_required": 12},
-      {"path": "D", "criterion": "Mantle cell lymphoma diagnosis",
-       "keywords": ["mantle cell lymphoma", "MCL"]},
-      {"path": "E", "criterion": "Bone marrow or stem cell transplantation; considered disabled for 12 months from date of transplantation",
-       "keywords": ["stem cell transplant", "HSCT", "BMT", "bone marrow transplant", "autologous transplant", "allogeneic transplant"],
-       "duration_months_required": 12}
+      {
+        "logic": "OR",
+        "path": "A",
+        "criterion": "Non-Hodgkin lymphoma, as described in A.1 or A.2",
+        "children": [
+          {
+            "path": "A.1",
+            "criterion": "Aggressive lymphoma (including diffuse large B-cell lymphoma) persistent or recurrent following initial anticancer therapy",
+            "keywords": ["aggressive lymphoma", "DLBCL", "diffuse large B-cell lymphoma", "persistent disease", "recurrent disease", "treatment failure"]
+          },
+          {
+            "path": "A.2",
+            "criterion": "Indolent lymphoma (including mycosis fungoides and follicular small cleaved cell) requiring initiation of more than one (single mode or multimodal) anticancer treatment regimen within a period of 12 consecutive months. Consider under a disability from at least the date of initiation of the treatment regimen that failed within 12 months.",
+            "keywords": ["indolent lymphoma", "follicular lymphoma", "mycosis fungoides", "follicular small cleaved cell", "more than one regimen", "multiple lines of therapy"],
+            "duration_months_required": 12,
+            "duration_basis": "observation_window"
+          }
+        ]
+      },
+      {
+        "path": "B",
+        "criterion": "Hodgkin lymphoma with failure to achieve clinically complete remission, or recurrent lymphoma within 12 months of completing initial anticancer therapy",
+        "keywords": ["Hodgkin lymphoma", "Hodgkin disease", "ABVD", "BEACOPP", "no complete remission", "recurrence within 12 months", "relapse"],
+        "duration_months_required": 12,
+        "duration_basis": "observation_window"
+      },
+      {
+        "path": "C",
+        "criterion": "With bone marrow or stem cell transplantation. Consider under a disability until at least 12 months from the date of transplantation. Thereafter, evaluate any residual impairment(s) under the criteria for the affected body system.",
+        "keywords": ["stem cell transplant", "HSCT", "BMT", "bone marrow transplant", "autologous transplant", "allogeneic transplant"],
+        "duration_months_required": 12,
+        "duration_basis": "presumptive_disability"
+      },
+      {
+        "path": "D",
+        "criterion": "Mantle cell lymphoma",
+        "keywords": ["mantle cell lymphoma", "MCL"]
+      }
     ]
   }
 }

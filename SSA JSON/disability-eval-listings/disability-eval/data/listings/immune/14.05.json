@@ -2,8 +2,8 @@
   "code": "14.05",
   "title": "Polymyositis and dermatomyositis",
   "body_system": "immune",
-  "version": 1,
-  "summary": "Polymyositis or dermatomyositis with proximal muscle weakness and one of: dysphagia, dysarthria, severe weakness affecting ADLs, OR repeated manifestations with constitutional symptoms and marked functional limitation.",
+  "version": 2,
+  "summary": "Polymyositis or dermatomyositis with one of: A proximal limb-girdle muscle weakness with documented assistive-device need or upper-extremity inability (A.1, A.2, or A.3); B impaired swallowing with aspiration; C impaired respiration from intercostal/diaphragmatic muscle weakness; D diffuse calcinosis with limitation of joint mobility or intestinal motility; or E repeated manifestations with constitutional symptoms and one marked functional limitation (E.1, E.2, or E.3).",
   "synonyms": {
     "polymyositis":            ["PM", "inflammatory myopathy", "myositis"],
     "dermatomyositis":         ["DM", "dermatomyositis with skin findings"],
@@ -15,31 +15,96 @@
     "Gottron's papules":       ["Gottron papules", "Gottron's sign"],
     "heliotrope rash":         ["heliotrope eruption"],
     "dysphagia":               ["swallowing difficulty"],
-    "proximal weakness":       ["proximal muscle weakness", "shoulder weakness", "hip girdle weakness"]
+    "proximal weakness":       ["proximal muscle weakness", "shoulder weakness", "hip girdle weakness", "limb-girdle weakness"],
+    "calcinosis":              ["calcinosis cutis", "diffuse calcinosis"],
+    "walker":                  ["rollator", "rolling walker"],
+    "bilateral canes":         ["two canes"]
   },
   "rule_json": {
     "logic": "OR",
     "path": "ROOT",
     "children": [
-      {"path": "A", "criterion": "Proximal muscle weakness affecting ability to perform ADLs",
-       "keywords": ["proximal muscle weakness", "shoulder weakness", "hip weakness", "PM", "DM", "elevated CK", "myopathic EMG", "muscle biopsy"]},
-      {"path": "B", "criterion": "Impaired swallowing (dysphagia) with aspiration from oropharyngeal dysphagia",
-       "keywords": ["dysphagia", "aspiration", "swallowing difficulty", "oropharyngeal dysphagia"]},
-      {"path": "C", "criterion": "Impaired respiration with reduced FEV1 or FVC due to respiratory muscle weakness",
-       "keywords": ["respiratory muscle weakness", "FEV1 reduced", "FVC reduced", "ILD", "interstitial lung disease"]},
-      {"path": "D", "criterion": "Diffuse calcinosis with limitation of joint mobility or intestinal motility",
-       "keywords": ["calcinosis", "calcinosis cutis", "joint contractures"]},
+      {
+        "logic": "AND",
+        "path": "A",
+        "criterion": "Proximal limb-girdle (pelvic or shoulder) muscle weakness AND medical documentation of at least one of A.1, A.2, or A.3",
+        "children": [
+          {
+            "path": "A.weakness",
+            "criterion": "Proximal limb-girdle (pelvic or shoulder) muscle weakness",
+            "keywords": ["proximal muscle weakness", "shoulder weakness", "pelvic girdle weakness", "limb-girdle weakness", "PM", "DM", "elevated CK", "myopathic EMG", "muscle biopsy"]
+          },
+          {
+            "logic": "OR",
+            "path": "A.alternatives",
+            "criterion": "One of A.1 (walker/bilateral canes), A.2 (one upper extremity inability + one-handed device), or A.3 (both upper extremities inability)",
+            "children": [
+              {
+                "path": "A.1",
+                "criterion": "Documented medical need (see 14.00C6) for a walker, bilateral canes, or bilateral crutches (see 1.00C6d), or a wheeled and seated mobility device involving the use of both hands (see 1.00C6e(i))",
+                "keywords": ["walker", "rollator", "bilateral canes", "bilateral crutches", "wheelchair", "two-handed wheeled mobility device"]
+              },
+              {
+                "path": "A.2",
+                "criterion": "Inability to use one upper extremity to independently initiate, sustain, and complete work-related activities involving fine and gross movements (see 14.00C7), AND documented medical need (see 14.00C6) for a one-handed, hand-held assistive device that requires the use of the other upper extremity, or a wheeled and seated mobility device involving the use of one hand (see 1.00C6e(ii))",
+                "keywords": ["one-handed device", "single cane", "fine motor limitation", "one upper extremity", "hand-held assistive device"]
+              },
+              {
+                "path": "A.3",
+                "criterion": "Inability to use both upper extremities to the extent that neither can be used to independently initiate, sustain, and complete work-related activities involving fine and gross movements (see 14.00C7)",
+                "keywords": ["bilateral upper extremity", "cannot manipulate", "fine and gross movements", "loss of manual dexterity"]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "path": "B",
+        "criterion": "Impaired swallowing (dysphagia) with aspiration due to muscle weakness",
+        "keywords": ["dysphagia", "aspiration", "swallowing difficulty", "oropharyngeal dysphagia", "aspiration pneumonia"]
+      },
+      {
+        "path": "C",
+        "criterion": "Impaired respiration due to intercostal and diaphragmatic muscle weakness",
+        "keywords": ["respiratory muscle weakness", "intercostal weakness", "diaphragmatic weakness", "FVC reduced", "respiratory failure"]
+      },
+      {
+        "path": "D",
+        "criterion": "Diffuse calcinosis with limitation of joint mobility or intestinal motility",
+        "keywords": ["calcinosis", "calcinosis cutis", "joint contractures", "intestinal motility", "limited joint mobility"]
+      },
       {
         "logic": "AND",
         "path": "E",
-        "criterion": "Repeated manifestations with constitutional symptoms AND marked limitation in one functional area",
+        "criterion": "Repeated manifestations of polymyositis or dermatomyositis, with at least two constitutional symptoms or signs (severe fatigue, fever, malaise, or involuntary weight loss) AND one of E.1, E.2, or E.3 at the marked level",
         "children": [
-          {"path": "E.1", "criterion": "Repeated manifestations of polymyositis/dermatomyositis",
-           "keywords": ["repeated manifestations", "active myositis"]},
-          {"path": "E.2", "criterion": "Two constitutional symptoms",
-           "keywords": ["fatigue", "fever", "malaise", "weight loss"]},
-          {"path": "E.3", "criterion": "Marked limitation in ADLs, social functioning, or completing tasks",
-           "keywords": ["ADLs", "social functioning", "concentration"]}
+          {
+            "path": "E.constitutional",
+            "criterion": "Repeated manifestations with at least two constitutional symptoms (severe fatigue, fever, malaise, or involuntary weight loss)",
+            "keywords": ["repeated manifestations", "active myositis", "fatigue", "fever", "malaise", "weight loss"]
+          },
+          {
+            "logic": "OR",
+            "path": "E.functional",
+            "criterion": "Marked level limitation in one of E.1, E.2, or E.3",
+            "children": [
+              {
+                "path": "E.1",
+                "criterion": "Marked limitation of activities of daily living",
+                "keywords": ["ADL limitation", "activities of daily living", "marked limitation"]
+              },
+              {
+                "path": "E.2",
+                "criterion": "Marked limitation in maintaining social functioning",
+                "keywords": ["social functioning", "social withdrawal", "marked limitation"]
+              },
+              {
+                "path": "E.3",
+                "criterion": "Marked limitation in completing tasks in a timely manner due to deficiencies in concentration, persistence, or pace",
+                "keywords": ["concentration", "persistence", "pace", "completing tasks", "deficiencies"]
+              }
+            ]
+          }
         ]
       }
     ]

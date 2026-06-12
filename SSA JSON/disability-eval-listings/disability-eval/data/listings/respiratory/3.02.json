@@ -2,8 +2,8 @@
   "code": "3.02",
   "title": "Chronic respiratory disorders",
   "body_system": "respiratory",
-  "version": 1,
-  "summary": "Chronic respiratory disorder (COPD, emphysema, pulmonary fibrosis, pneumoconiosis, bronchiectasis) meeting one of: low FEV1, low FVC, low DLCO, low ABG/SpO2, or three exacerbations within 12 months requiring hospitalization.",
+  "version": 2,
+  "summary": "Chronic respiratory disorder due to any cause except CF, meeting one of: A FEV1 ≤ Table I-A/I-B value; B FVC ≤ Table II-A/II-B value; C chronic impairment of gas exchange (C.1 DLCO ≤ Table III, C.2 ABG PaO2/PaCO2 ≤ Table IV-A/B/C, or C.3 SpO2 ≤ Table V); or D exacerbations/complications requiring three hospitalizations within a 12-month period, each lasting ≥48 hours and at least 30 days apart.",
   "synonyms": {
     "COPD":                    ["chronic obstructive pulmonary disease", "chronic bronchitis", "emphysema", "obstructive lung disease"],
     "pulmonary fibrosis":      ["IPF", "idiopathic pulmonary fibrosis", "lung fibrosis", "interstitial lung disease", "ILD"],
@@ -26,36 +26,42 @@
     "children": [
       {
         "path": "A",
-        "criterion": "FEV1 less than or equal to the value in SSA Table I-A or I-B for age, sex, and height (without shoes), measured during stable period",
-        "keywords": ["FEV1", "spirometry", "PFT", "post-bronchodilator", "Table I", "low FEV1", "L"]
+        "criterion": "FEV1 (see 3.00E) less than or equal to the value in Table I-A or I-B for age, gender, and height without shoes (see 3.00E3a)",
+        "keywords": ["FEV1", "spirometry", "PFT", "post-bronchodilator", "Table I", "low FEV1"]
       },
       {
         "path": "B",
-        "criterion": "FVC less than or equal to the value in SSA Table II-A or II-B for age, sex, and height (without shoes)",
+        "criterion": "FVC (see 3.00E) less than or equal to the value in Table II-A or II-B for age, gender, and height without shoes (see 3.00E3a)",
         "keywords": ["FVC", "forced vital capacity", "spirometry", "Table II", "restrictive pattern"]
       },
       {
+        "logic": "OR",
         "path": "C",
-        "criterion": "Chronic impairment of gas exchange demonstrated by DLCO ≤ Table III value, or arterial PaO2/PaCO2 ≤ Table IV-A/B/C, or SpO2 ≤ Table V on pulse oximetry",
-        "keywords": ["DLCO", "diffusing capacity", "PaO2", "PaCO2", "ABG", "SpO2", "pulse oximetry", "gas exchange", "Table III", "Table IV", "Table V"]
-      },
-      {
-        "logic": "AND",
-        "path": "D",
-        "criterion": "Three exacerbations or complications within 12-month period, each lasting ≥48 hours and requiring hospitalization, with at least 30 days between each",
+        "criterion": "Chronic impairment of gas exchange demonstrated by C.1, C.2, or C.3",
         "children": [
           {
-            "path": "D.1",
-            "criterion": "Three separate hospitalizations for respiratory exacerbations or complications within a consecutive 12-month period",
-            "keywords": ["three hospitalizations", "exacerbation", "AECOPD", "hospital admission", "respiratory failure", "acute decompensation"],
-            "duration_months_required": 12
+            "path": "C.1",
+            "criterion": "Average of two unadjusted, single-breath DLCO measurements (see 3.00F) less than or equal to the value in Table III for gender and height without shoes (see 3.00F3a)",
+            "keywords": ["DLCO", "diffusing capacity", "single-breath DLCO", "Table III", "low DLCO"]
           },
           {
-            "path": "D.2",
-            "criterion": "Each hospitalization lasted at least 48 hours, with at least 30 days between consecutive hospitalizations",
-            "keywords": ["48 hours", "30 days apart", "inpatient stay", "length of stay"]
+            "path": "C.2",
+            "criterion": "Arterial PaO2 and PaCO2 measured concurrently by an ABG test, at rest or during steady state exercise, breathing room air (see 3.00G3b), less than or equal to the applicable values in Table IV-A, IV-B, or IV-C",
+            "keywords": ["ABG", "PaO2", "PaCO2", "arterial blood gas", "Table IV", "room air"]
+          },
+          {
+            "path": "C.3",
+            "criterion": "SpO2 measured by pulse oximetry (see 3.00H2) either at rest, during a 6MWT, or after a 6MWT, less than or equal to the value in Table V",
+            "keywords": ["SpO2", "pulse oximetry", "6MWT", "six-minute walk test", "Table V", "low oxygen saturation"]
           }
         ]
+      },
+      {
+        "path": "D",
+        "criterion": "Exacerbations or complications requiring three hospitalizations within a 12-month period and at least 30 days apart (the 12-month period must occur within the period we are considering in connection with your application or continuing disability review). Each hospitalization must last at least 48 hours, including hours in a hospital emergency department immediately before the hospitalization.",
+        "keywords": ["three hospitalizations", "12-month period", "30 days apart", "48 hours", "exacerbation", "AECOPD", "respiratory failure"],
+        "duration_months_required": 12,
+        "duration_basis": "observation_window"
       }
     ]
   }
