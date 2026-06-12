@@ -10,6 +10,29 @@ Why only leaves?
     mostly noise. Only is_leaf=TRUE rows with non-NULL criterion_text get
     embedded. Internal nodes keep their criterion_embedding NULL by design.
 
+Embedding source (enriched):
+    parent code + title + body_system
+    leaf criterion_text
+    leaf-level keywords (the JSON array on each rule node)
+
+    Embedding the bare criterion_text alone produced retrieval misses on
+    short clinical fragments — e.g. an allegation containing "Hodgkin
+    lymphoma" matched 13.05 Lymphoma's paragraph C ("Hodgkin lymphoma
+    with failure to achieve...") only weakly because the embedding had
+    no anchor that this fragment lives under "13.05 Lymphoma (cancer)".
+    Enriching with the parent listing's code+title+body_system gives
+    the leaf a stable medical-context prefix; including the leaf
+    keywords brings everyday synonyms (e.g. "ABVD", "BEACOPP") into
+    the vector mass even when the criterion prose is terse.
+
+    Mirrors the listing-side enrichment in db/compute_listing_embeddings.py
+    so both sides of the matcher land in the same neighborhood.
+
+CLI:
+    py db\\compute_criterion_embeddings.py            # embed only NULL rows
+    py db\\compute_criterion_embeddings.py --force    # re-embed every leaf
+                                                       # (use after enrichment changes)
+
 Dependencies + connection: same as db/compute_listing_embeddings.py.
 
 Cost: ~561 leaves × $0.00002/1K input tokens ≈ ~$0.0005 total Bedrock spend.
@@ -17,6 +40,7 @@ Runtime: ~3-4 minutes (Titan v2 has no batch API, one invoke_model per text).
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import sys
@@ -89,7 +113,65 @@ def connect_pg():
 #  Main
 # ---------------------------------------------------------------------------
 
+def _build_embed_text(
+    code: str,
+    title: str,
+    body_system: str | None,
+    criterion_text: str,
+    keywords: list[str] | None,
+) -> str:
+    """Build the enriched embedding input for a single leaf criterion.
+
+    Format (mirrors the listing-side enrichment so both halves of the
+    matcher's cosine math live in the same vocabulary):
+
+        <code> <title>
+        Body system: <body_system>
+
+        <criterion_text>
+
+        Common terms: <kw1>, <kw2>, ...
+
+    The code+title prefix anchors retrieval against allegations that
+    name the diagnosis explicitly ("Hodgkin lymphoma", "depression")
+    even when the criterion prose is terse or jargon-heavy. The
+    keyword tail brings everyday synonyms into vector mass without
+    diluting the criterion's specificity.
+    """
+    parts = [f"{code} {title}".strip()]
+    if body_system:
+        parts.append(f"Body system: {body_system}")
+    parts.append(criterion_text)
+    if keywords:
+        # Dedupe (case-insensitive) preserving first-seen order, and
+        # cap at 50 to keep Titan's 8K-token input ceiling comfortable
+        # on leaves that carry many keyword variants.
+        uniq = []
+        seen = set()
+        for k in keywords:
+            if not isinstance(k, str):
+                continue
+            kl = k.strip().lower()
+            if kl and kl not in seen:
+                seen.add(kl)
+                uniq.append(k.strip())
+        if uniq:
+            parts.append("Common terms: " + ", ".join(uniq[:50]))
+    return "\n\n".join(parts)
+
+
 def main() -> int:
+    p = argparse.ArgumentParser(
+        description="Compute Titan v2 embeddings for SSA leaf criteria."
+    )
+    p.add_argument(
+        "--force",
+        action="store_true",
+        help="Re-embed all leaves (default: only rows with NULL embedding). "
+             "Use after changing the embedding source text.",
+    )
+    args = p.parse_args()
+
     print("Setting up Bedrock client (profile=user, region=us-east-1)...")
     session = boto3.Session(profile_name="user", region_name="us-east-1")
     bedrock = session.client("bedrock-runtime")
@@ -138,30 +220,64 @@ def main() -> int:
     print(f"  smoke test OK: got {len(test_vec)}-dim vector, L2 norm "
           f"{float(np.linalg.norm(test_vec)):.4f}")
 
-    # Fetch leaves that need embeddings
-    cur.execute("""
-        SELECT c.id, l.code, c.path, c.criterion_text
+    # Fetch leaves that need embeddings.
+    # JOIN on ssa_listings to pull the parent's code+title+body_system, which
+    # we splice into the embedding input alongside the leaf's keywords array.
+    embed_filter = "" if args.force else "AND c.criterion_embedding IS NULL"
+    cur.execute(f"""
+        SELECT c.id,
+               l.code,
+               l.title,
+               l.body_system,
+               c.path,
+               c.criterion_text,
+               c.keywords
         FROM ssa_listing_criteria c
         JOIN ssa_listings l ON l.id = c.listing_id
         WHERE c.is_leaf = TRUE
           AND c.criterion_text IS NOT NULL
-          AND c.criterion_embedding IS NULL
+          {embed_filter}
         ORDER BY l.code, c.path
     """)
     rows = cur.fetchall()
-    print(f"Leaf criteria needing embeddings: {len(rows)}")
+    mode = "ALL (--force)" if args.force else "rows with NULL embedding"
+    print(f"Leaf criteria to embed: {len(rows)}  ({mode})")
     if not rows:
-        print("All leaves already have embeddings. Done.")
+        print("Nothing to do. Pass --force to re-embed everything.")
         return 0
 
-    # Embed each
-    print("Embedding via Bedrock Titan v2...")
+    # Embed each leaf with enriched input (code + title + body_system +
+    # criterion_text + keywords).
+    print("Embedding via Bedrock Titan v2 (enriched source: parent code "
+          "+ title + body_system + criterion_text + keywords)...")
     start = time.time()
     success = 0
     failed: list[tuple[str, str, str]] = []
-    for i, (crit_id, code, path, criterion_text) in enumerate(rows, 1):
+    for i, (crit_id, code, title, body_system, path,
+            criterion_text, keywords) in enumerate(rows, 1):
+        # ssa_listing_criteria.keywords is JSON; psycopg2 may hand it back
+        # as a Python list already (json adaptor) or as a raw str depending
+        # on column type and connection settings. Normalize defensively.
+        kw_list: list[str] | None
+        if keywords is None:
+            kw_list = None
+        elif isinstance(keywords, list):
+            kw_list = keywords
+        elif isinstance(keywords, str):
+            try:
+                kw_list = json.loads(keywords)
+                if not isinstance(kw_list, list):
+                    kw_list = None
+            except json.JSONDecodeError:
+                kw_list = None
+        else:
+            kw_list = None
+
+        embed_input = _build_embed_text(
+            code, title, body_system, criterion_text, kw_list,
+        )
         try:
-            vec = embed_text(bedrock, criterion_text)
+            vec = embed_text(bedrock, embed_input)
         except Exception as e:
             failed.append((code, path, f"{type(e).__name__}: {e}"))
             print(
